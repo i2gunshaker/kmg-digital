@@ -9,7 +9,8 @@ import pytest
 from kurs import config as config_mod
 from kurs.config import Config
 from kurs.llm import LLM, Reply, Usage
-from kurs.review import CATEGORIES, SEVERITIES, main, review, self_check
+from kurs.review import CATEGORIES, SEVERITIES, _resolve_target, check_frames, main, review, self_check
+from kurs.verify import Source
 
 MD = """<!-- page 20 -->
 # § 3. Коллекторы и их свойства
@@ -52,9 +53,9 @@ ITEMS = [
     {"id": "S2", "type": "script_line", "text": "Нефть к скважине толкает напор газа из шапки.", "t_start": 3.0, "t_end": 6.0, "claim_ref": "C1", "on_screen": "Что толкает нефть"},
 ]
 FRAMES = [
-    {"id": "F1", "file": "frames/F1.png", "frame_class": "B", "label": "схема", "shows": "разрез пласта", "plaque": "схема · стр. 20"},
-    {"id": "F2", "file": "frames/F2.png", "frame_class": "A", "label": "фото", "shows": "керн", "plaque": "фото"},
-    {"id": "F3", "file": "frames/F3.png", "frame_class": "B", "label": "симуляция", "shows": "газ, нефть и вода в ловушке", "plaque": "симуляция"},
+    {"id": "F1", "video_id": "v1", "file": "frames/F1.png", "t": 1.0, "frame_class": "B", "label": "схема", "shows": "разрез пласта", "plaque": "схема · стр. 20"},
+    {"id": "F2", "video_id": "v1", "file": "frames/F2.png", "t": 2.0, "frame_class": "A", "label": "реальные данные", "shows": "керн", "plaque": None},
+    {"id": "F3", "video_id": "v1", "file": "frames/F3.png", "t": 3.0, "frame_class": "B", "label": "симуляция", "shows": "газ, нефть и вода в ловушке", "plaque": "симуляция"},
 ]
 
 
@@ -68,8 +69,14 @@ def pkg(tmp_path, monkeypatch):
     for f in FRAMES:
         (d / f["file"]).write_bytes(PNG)
     p = d / "package.json"
-    p.write_text(json.dumps({"package_id": "ctrl-1", "chapter_file": "chapter.md", "items": ITEMS, "scenes": [{"id": "sc1", "objects": []}],
-                             "frames": FRAMES}, ensure_ascii=False), encoding="utf-8")
+    p.write_text(json.dumps({
+        "package_id": "ctrl-1",
+        "chapter": "demo",
+        "chapter_file": "chapter.md",
+        "items": ITEMS,
+        "scenes": [{"video_id": "v1", "spec": {"id": "sc1", "objects": []}}],
+        "frames": FRAMES,
+    }, ensure_ascii=False), encoding="utf-8")
     return Config(), p, tmp_path
 
 
@@ -113,9 +120,21 @@ def test_deterministic_layer_finds_planted_and_spares_baits(pkg):
     assert r["C6"]["category"] == "measured_vs_inferred"
     assert r["A1"]["category"] == "analogy_without_limit"
     assert r["S1"]["category"] == "wrong_scaling"  # на экране 27 %, в фразе и у автора 17 %
-    assert r["F2"]["category"] == "frame_error"
-    for ok in ("C1", "C2", "A2", "F1"):
+    for ok in ("C1", "C2", "A2", "F1", "F2"):
         assert ok not in r, (ok, r.get(ok))
+
+
+def test_check_frames_catches_invalid_label_and_ignores_null_plaque(tmp_path):
+    md = tmp_path / "c.md"
+    md.write_text(MD, encoding="utf-8")
+    src = Source.from_md(md) if hasattr(Source, "from_md") else type("S", (), {"pages": {20: MD}})()
+    rems = check_frames([
+        {"id": "F1", "label": "схема", "plaque": None},
+        {"id": "F2", "label": "фото", "plaque": "фото"},
+    ], tmp_path, src)
+    targets = {x["target"]: x for x in rems}
+    assert "F1" not in targets
+    assert targets["F2"]["category"] == "frame_error"
 
 
 def test_key_json_is_never_read(pkg, tmp_path):
@@ -130,7 +149,8 @@ def test_key_json_is_never_read(pkg, tmp_path):
 def fake_llm(cfg, tmp, calls):
     def transport(model, system, user, schema, effort, max_tokens, images=None):
         props = schema["properties"]
-        calls.append(("vision" if images else "verdicts" if "verdicts" in props else "text", len(images or [])))
+        kind = "verdicts" if "verdicts" in props else ("vision" if images else "text")
+        calls.append((kind, len(images or [])))
         if "verdicts" in props:
             view = json.loads(user)
             # скептик отбрасывает приманку C2 и всё, что без явного противоречия
@@ -139,7 +159,7 @@ def fake_llm(cfg, tmp, calls):
         if images:
             rem = [{"target": "F3", "category": "frame_error", "severity": "critical", "problem": "Газ нарисован под нефтью.",
                     "fix": "Газ над нефтью, нефть над водой.", "page_pdf": 20,
-                    "evidence_quote": "Пористость песчаников меняется от 5 до 25 %"}]
+                    "evidence_quote": "Газ всегда должен быть в верхней части ловушки"}]
             return Reply(json.dumps({"remarks": rem}, ensure_ascii=False), model, Usage(input=100, output=50))
         rem = [
             {"target": "S2", "category": "wrong_mechanism", "severity": "critical", "problem": "Механизм притока не тот.",
@@ -151,8 +171,6 @@ def fake_llm(cfg, tmp, calls):
             # выдуманное доказательство — строгий фильтр выбросит
             {"target": "A2", "category": "wrong_mechanism", "severity": "critical", "problem": "?", "fix": "?", "page_pdf": 21,
              "evidence_quote": "Губка всегда сжимается сильнее любой горной породы."},
-            # чужой target — выброшен
-            {"target": "ZZ", "category": "other", "severity": "minor", "problem": "?", "fix": "?", "page_pdf": 21, "evidence_quote": "Граничное значение"},
         ]
         return Reply(json.dumps({"remarks": rem}, ensure_ascii=False), model, Usage(input=100, output=50))
 
@@ -165,13 +183,16 @@ def test_llm_layers_with_strict_filter(pkg):
     doc = review(cfg, p, tmp / "b.json", llm=fake_llm(cfg, tmp, calls), log=lambda *_: None)["doc"]
     r = by_target(doc)
     assert r["S2"]["category"] == "wrong_mechanism" and r["S2"]["page_pdf"] == 21  # страница уточнена по тексту главы
-    assert "C2" not in r and "A2" not in r and "ZZ" not in r
+    assert "C2" not in r and "A2" not in r
     assert r["F3"]["category"] == "frame_error"
     assert r["C3"]["category"] == "wrong_scaling"  # замечание кода сохраняется и важнее модели
     kinds = [c[0] for c in calls]
-    assert kinds.count("text") == 1 and kinds.count("verdicts") == 1 and kinds.count("vision") == 1
-    assert ("vision", 3) in calls  # три кадра одним запросом
+    assert kinds.count("text") == 1 and kinds.count("verdicts") == 2 and kinds.count("vision") == 1
+    assert ("vision", 3) in calls and ("verdicts", 1) in calls  # визуальный скептик получил PNG кадра F3
     assert self_check(doc) == []
+    assert _resolve_target("F06 — shows: ...", {"F06", "F08"}) == "F06"
+    assert _resolve_target("F07, F08", {"F07", "F08"}) is None
+    assert _resolve_target("ZZ", {"F06"}) is None
 
 
 def test_without_money_only_code_remarks_survive(pkg):

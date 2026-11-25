@@ -22,6 +22,7 @@ key.json модуль не открывает: его читает только 
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 import sys
@@ -241,7 +242,7 @@ def _problem(code: str, msg: str) -> str:
 
 
 def check_frames(frames: list[dict], pkg_dir: Path, src: Source) -> list[dict]:
-    """Код по кадрам: метка происхождения из разрешённого списка, плашка есть, файл на месте."""
+    """Код по кадрам: метка происхождения из разрешённого списка (plaque по схеме опциональна)."""
     out = []
     for fr in frames:
         tid = str(fr.get("id"))
@@ -249,9 +250,6 @@ def check_frames(frames: list[dict], pkg_dir: Path, src: Source) -> list[dict]:
         if label and label not in FRAME_LABELS:
             out.append(_remark(tid, "frame_label", f"Метка происхождения «{fr.get('label')}» не из списка: {', '.join(FRAME_LABELS)}.",
                                "Поставить метку по источнику кадра: реальные данные, симуляция или схема.", _first_page(src)))
-        elif not str(fr.get("plaque") or "").strip():
-            out.append(_remark(tid, "frame_label", "На кадре нет плашки происхождения.", "Добавить плашку с меткой и источником.", _first_page(src),
-                               severity="minor"))
     return out
 
 
@@ -314,15 +312,46 @@ _RULES = """Ты рецензент учебного пакета по нефт�
 их НЕ отмечай. Замечание делай, только если в главе есть фраза, которая прямо противоречит элементу или показывает
 потерянное условие/оговорку. Эту фразу верни ДОСЛОВНО в evidence_quote (копия из главы, без пересказа) и её страницу
 в page_pdf (по меткам <!-- page N -->). fix — исправленная формулировка элемента целиком (или что поправить в кадре).
+В поле target пиши ТОЛЬКО точный id элемента/кадра из списка (например C012, A03, L08, S04, F06), без пояснений и текста.
 На один элемент — не больше одного замечания, самого важного. Ничего не нашёл — пустой список."""
+
+
+def _remarks_schema(allowed_targets: list[str] | None = None) -> dict:
+    sc = copy.deepcopy(_REMARKS_SCHEMA)
+    if allowed_targets:
+        sc["properties"]["remarks"]["items"]["properties"]["target"]["enum"] = list(dict.fromkeys(allowed_targets))
+    return sc
+
+
+def _verdict_schema(allowed_targets: list[str] | None = None) -> dict:
+    sc = copy.deepcopy(_VERDICT_SCHEMA)
+    if allowed_targets:
+        sc["properties"]["verdicts"]["items"]["properties"]["target"]["enum"] = list(dict.fromkeys(allowed_targets))
+    return sc
+
+
+def _resolve_target(raw: str, known: set[str]) -> str | None:
+    s = (raw or "").strip()
+    if s in known:
+        return s
+    hits = {
+        m.group(1)
+        for m in re.finditer(r"(?<![A-Za-z0-9_.-])([A-Z][A-Z0-9_.-]*)(?![A-Za-z0-9_.-])", s)
+        if m.group(1) in known
+    }
+    if len(hits) == 1:
+        return next(iter(hits))
+    return None
 
 
 def _chapter_block(src: Source) -> str:
     return "\n".join(f"<!-- page {p} -->\n{src.pages[p]}" for p in sorted(src.pages))
 
 
-def llm_text_audit(llm, src: Source, items: list[dict], scenes: list, misc: list[dict], pkg_dir: Path) -> list[dict]:
-    """Слой 2: смысловой аудит всех элементов одним запросом (глава в общей части — кэшируется)."""
+def llm_text_audit(llm, src: Source, items: list[dict], scenes: list, misc: list[dict], pkg_dir: Path, batch: int = 25, log=print) -> list[dict]:
+    """Слой 2: смысловой аудит всех элементов батчами (глава в общей части — кэшируется)."""
+    from .llm import LLMError
+
     system = [_RULES + "\n\n" + _CAT_HELP, "Глава:\n" + _chapter_block(src),
               "Типичные заблуждения домена:\n" + "\n".join(f"{m['id']}: {m['text']}" for m in misc)]
     view = []
@@ -333,13 +362,26 @@ def llm_text_audit(llm, src: Source, items: list[dict], scenes: list, misc: list
             if sp.exists():
                 v["scene_spec"] = load_json(sp)
         view.append(v)
-    user = "Сцены роликов (контекст):\n" + json.dumps(scenes, ensure_ascii=False)[:20000] + "\n\nЭлементы пакета:\n" + json.dumps(view, ensure_ascii=False)
-    data = llm.json("senior", system, user, _REMARKS_SCHEMA, label="review-text", effort="high", max_tokens=16000)
-    return [_from_llm(r, "llm") for r in data["remarks"]]
+    scenes_blob = json.dumps(scenes, ensure_ascii=False)[:20000]
+    out: list[dict] = []
+    for i in range(0, max(1, len(view)), batch):
+        part = view[i : i + batch]
+        if not part:
+            continue
+        user = "Сцены роликов (контекст):\n" + scenes_blob + "\n\nЭлементы пакета:\n" + json.dumps(part, ensure_ascii=False)
+        schema = _remarks_schema([str(x["id"]) for x in part])
+        try:
+            data = llm.json("senior", system, user, schema, label=f"review-text-{i // batch}", effort="high", max_tokens=16000)
+            out += [_from_llm(r, "llm") for r in data["remarks"]]
+        except LLMError as e:
+            log(f"смысловой аудит (батч {i // batch}) пропущен: {str(e)[:160]}")
+    return out
 
 
-def llm_frame_audit(llm, src: Source, frames: list[dict], scenes: list, styleguide: dict, pkg_dir: Path, batch: int = 4) -> list[dict]:
-    """Слой 3: кадры моделью со зрением, по 4 за запрос."""
+def llm_frame_audit(llm, src: Source, frames: list[dict], scenes: list, styleguide: dict, pkg_dir: Path, batch: int = 3, log=print) -> list[dict]:
+    """Слой 3: кадры моделью со зрением, по 3 за запрос."""
+    from .llm import LLMError
+
     out = []
     system = [
         _RULES + "\n\n" + _CAT_HELP + "\n\nДля кадров категория почти всегда frame_error. Сверяй картинку с полями shows, label, plaque, "
@@ -354,9 +396,13 @@ def llm_frame_audit(llm, src: Source, frames: list[dict], scenes: list, stylegui
             continue
         meta = [{k: v for k, v in f.items()} for f in part]
         user = "Сцены (контекст):\n" + json.dumps(scenes, ensure_ascii=False)[:12000] + "\n\nКадры по порядку картинок:\n" + json.dumps(meta, ensure_ascii=False)
-        data = llm.json("senior", system, user, _REMARKS_SCHEMA, label=f"review-frames-{i // batch}", effort="high", max_tokens=8000,
-                        images=[pkg_dir / str(f["file"]) for f in part])
-        out += [_from_llm(r, "vision") for r in data["remarks"]]
+        schema = _remarks_schema([str(f["id"]) for f in part])
+        try:
+            data = llm.json("senior", system, user, schema, label=f"review-frames-{i // batch}", effort="high", max_tokens=16000,
+                            images=[pkg_dir / str(f["file"]) for f in part])
+            out += [_from_llm(r, "vision") for r in data["remarks"]]
+        except LLMError as e:
+            log(f"проверка кадров (батч {i // batch}) пропущена: {str(e)[:160]}")
     return out
 
 
@@ -380,7 +426,7 @@ def evidence_ok(src: Source, r: dict) -> bool:
 
 
 def skeptic(llm, src: Source, remarks: list[dict], items_by_id: dict[str, dict], frames_by_id: dict[str, dict]) -> set[str]:
-    """Второй проход: модель ищет, почему замечание может быть ложным. Возвращает target'ы, которые оставить."""
+    """Второй проход по тексту: модель ищет, почему замечание может быть ложным. Возвращает target'ы, которые оставить."""
     if not remarks:
         return set()
     system = [
@@ -392,7 +438,41 @@ def skeptic(llm, src: Source, remarks: list[dict], items_by_id: dict[str, dict],
     ]
     view = [{"target": r["target"], "element": items_by_id.get(r["target"]) or frames_by_id.get(r["target"]), "category": r["category"],
              "problem": r["problem"], "fix": r["fix"], "evidence": r["_evidence"], "page_pdf": r["page_pdf"]} for r in remarks]
-    data = llm.json("senior", system, json.dumps(view, ensure_ascii=False), _VERDICT_SCHEMA, label="review-skeptic", effort="high", max_tokens=8000)
+    data = llm.json("senior", system, json.dumps(view, ensure_ascii=False), _verdict_schema([r["target"] for r in remarks]),
+                    label="review-skeptic", effort="high", max_tokens=12000)
+    return {v["target"] for v in data["verdicts"] if v["keep"]}
+
+
+def vision_skeptic(llm, src: Source, remarks: list[dict], frames_by_id: dict[str, dict], pkg_dir: Path) -> set[str]:
+    """Второй проход по кадрам: передаём сами PNG-кадры, чтобы скептик видел картинку и отсеивал ложные тревоги."""
+    if not remarks:
+        return set()
+    imgs: list[Path] = []
+    view = []
+    for r in remarks:
+        fr = frames_by_id.get(r["target"]) or {}
+        p = pkg_dir / str(fr.get("file", ""))
+        if p.exists():
+            imgs.append(p)
+        view.append({
+            "target": r["target"],
+            "frame": fr,
+            "category": r["category"],
+            "problem": r["problem"],
+            "fix": r["fix"],
+            "evidence": r.get("_evidence", ""),
+            "page_pdf": r.get("page_pdf"),
+        })
+    system = [
+        "Ты строгий визуальный проверяющий. Смотри на сами PNG-кадры и метаданные (shows, label, plaque). "
+        "Оставь замечание (keep=true), только если на картинке реально видна физическая ошибка, неверная ось/направление глубины, "
+        "противоречие с shows/label или потерянное обязательное предупреждение. Если кадр корректен или замечание придирчиво — keep=false.",
+        "Глава:\n" + _chapter_block(src),
+    ]
+    data = llm.json(
+        "senior", system, json.dumps(view, ensure_ascii=False), _verdict_schema([r["target"] for r in remarks]),
+        label="review-vision-skeptic", effort="high", max_tokens=12000, images=imgs or None,
+    )
     return {v["target"] for v in data["verdicts"] if v["keep"]}
 
 
@@ -452,25 +532,50 @@ def review(cfg: Config, pkg_path: Path, out_path: Path, *, team: str | None = No
         llm = llm or LLM(cfg, scope="review", budget=max_usd)
         model_remarks: list[dict] = []
         try:
-            model_remarks += llm_text_audit(llm, src, items, scenes, load_misconceptions(cfg), pkg_dir)
+            model_remarks += llm_text_audit(llm, src, items, scenes, load_misconceptions(cfg), pkg_dir, log=log)
         except LLMError as e:
             log(f"смысловой аудит пропущен: {str(e)[:160]}")
         if use_vision and frames:
             sg_p = cfg.domain_dir / "styleguide.json"
             try:
-                model_remarks += llm_frame_audit(llm, src, frames, scenes, load_json(sg_p) if sg_p.exists() else {}, pkg_dir)
+                model_remarks += llm_frame_audit(llm, src, frames, scenes, load_json(sg_p) if sg_p.exists() else {}, pkg_dir, log=log)
             except LLMError as e:
                 log(f"проверка кадров пропущена: {str(e)[:160]}")
         known = set(items_by_id) | set(frames_by_id)
-        model_remarks = [r for r in model_remarks if r["target"] in known]
-        kept = [r for r in model_remarks if evidence_ok(src, r)]
-        log(f"модель: замечаний {len(model_remarks)}, с дословным доказательством {len(kept)}")
+        resolved: list[dict] = []
+        for r in model_remarks:
+            tgt = _resolve_target(str(r.get("target") or ""), known)
+            if tgt is None:
+                continue
+            r["target"] = tgt
+            resolved.append(r)
+        model_remarks = resolved
+        kept: list[dict] = []
+        for r in model_remarks:
+            if r["_source"] == "vision":
+                if r["target"] in frames_by_id and str(r.get("problem") or "").strip() and str(r.get("fix") or "").strip():
+                    evidence_ok(src, r)  # уточняем page_pdf по тексту, но не выкидываем визуальный дефект без цитаты
+                    kept.append(r)
+            elif evidence_ok(src, r):
+                kept.append(r)
+        log(f"модель: замечаний {len(model_remarks)}, после проверки цитат/кадров {len(kept)}")
         remarks += kept
+
+        dedup = pick_one(remarks)
+        objective_keep = {
+            r["target"] for r in dedup
+            if r.get("_source") == "code" and r.get("category") in ("analogy_without_limit", "frame_error")
+        }
+        vision_pool = [r for r in dedup if r.get("_source") == "vision" and r["target"] not in objective_keep]
+        text_pool = [r for r in dedup if r.get("_source") != "vision" and r["target"] not in objective_keep]
+
+        survivors = set(objective_keep)
         try:
-            survivors = skeptic(llm, src, pick_one(remarks), items_by_id, frames_by_id)
-            before = len(pick_one(remarks))
-            remarks = [r for r in remarks if r["target"] in survivors]
-            log(f"второй проход: оставлено {len(pick_one(remarks))} из {before}")
+            survivors |= skeptic(llm, src, text_pool, items_by_id, frames_by_id)
+            survivors |= vision_skeptic(llm, src, vision_pool, frames_by_id, pkg_dir)
+            before = len(dedup)
+            remarks = [r for r in dedup if r["target"] in survivors]
+            log(f"второй проход: оставлено {len(remarks)} из {before}")
         except LLMError as e:
             # без перепроверки оставляем только доказанное кодом: точность важнее полноты
             log(f"второй проход недоступен ({str(e)[:120]}): оставляю только замечания кода")

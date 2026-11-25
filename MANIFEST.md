@@ -1,0 +1,63 @@
+# Манифест конвейера
+
+Команда: `kmg-digital` (`grampus`)
+Целевая ветка: `main` (подготовка к тегу заморозки до 09:45 26.11.2026)
+
+## Модели
+
+| Этап | Модель | Версия | Где работает | Что уходит наружу | Как заменить |
+| --- | --- | --- | --- | --- | --- |
+| Учебный слой (`outline`, `card`, `judge`, `patch`) | `claude-haiku-5-5` | 5.5 (`profile: cheap`, `senior: medium`, `fast: low`) | облако Anthropic API | текст главы, `domain/geology/` (или `drilling/`), ошибки проверки | `KURS_LLM_BACKEND`, `KURS_LLM_MODEL`, `OPENAI_BASE_URL` в `.env` / `config.yaml` |
+| Курс, задания и маршрутизация | `claude-haiku-5-5` / правила в коде | 5.5 + `kurs/rules.py` | облако / локально (0 LLM для правил и `rebuild`) | узлы слоя без исходных файлов курса | `KURS_LLM_MODEL`, `KURS_LLM_OFFLINE=1` |
+| Модуль проверки («Закладки») | `claude-haiku-5-5` (+ vision PNG) | 5.5 (`effort: high`, строгий 2-й проход) | облако Anthropic API + детерминированный код | текст главы, элементы пакета, PNG-кадры (кроме `key.json`) | `--no-llm`, `--no-vision`, `KURS_LLM_MODEL` |
+| Озвучка (`TTS`) | `ElevenLabs` (`Nikolay`) / резерв `Silero v5`, `edge-tts` | `eleven_v4` (`language_code=ru`, `apply_text_normalization=on`) | облако ElevenLabs API / локально (`Silero v5`) | только текст сценария роликов | `ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL_ID` в `.env`, `--backend silero` |
+| Проверка речи (`ASR`) | `Whisper small` (`mlx-whisper` / `faster-whisper`) | `mlx-community/whisper-small-mlx` | локально (Apple Silicon / CPU) | нет | `KURS_MLX_MODEL` / `KURS_ASR_MODEL` в `.env` |
+| Иллюстрации | `claude-haiku-5-5` + SVG-генератор | 5.5 + `kurs/visual.py` / `illustrations.py` | облако (подбор спеки) + локальный SVG | текст узла и правила физики | `domain/<домен>/visual/*.json`, `--only visual` |
+
+> Примечание: корпоративные данные, внутренние отчёты и `key.json` контрольного пакета наружу не отправляются (в контур попадают только открытые учебники, публичные данные Volve/F3 и проверяемый контрольный пакет). Все сетевые вызовы кэшируются на диске по SHA-256 и ограничены `llm.total_usd` / `--max-usd` / `--max-chars`.
+
+## Инструменты
+
+| Инструмент | Версия | Для чего | Данные наружу |
+| --- | --- | --- | --- |
+| Python | 3.12.4 | конвейер `kurs`, проверка, TTS, тесты | нет |
+| Node.js + Remotion | v26.7.0 / Remotion 4.0.547 | рендер анимированных MP4 (`9:16`, `16:9`) | нет |
+| Playwright (Chromium) | `video/node_modules` | офлайн-QA курсов на 390×844 и 1280×800 | нет |
+| FFmpeg / FFprobe | 9.0.2 | склейка паузы 1.5 с, 2-pass `loudnorm -16 LUFS`, нарезка кадров | нет |
+| KaTeX + SortableJS | локальные ассеты в `kurs/static/` | офлайн-формулы и задания на `file://` без сети | нет |
+
+## Запуск
+
+- Полный прогон новой/тестовой главы одной командой:
+  `KURS_INPUT_DIR="<папка_вводных>" .venv/bin/python -m kurs run <путь.md|id> --max-usd 0.8`
+- Пересборка после ручной правки факта без вызовов модели:
+  `KURS_LLM_OFFLINE=1 .venv/bin/python -m kurs rebuild <id> [<узел>]`
+- Рендер видео по любому узлу слоя:
+  `.venv/bin/python -m kurs.video_render node <id> <node_id> --format 9:16|16:9 --backend elevenlabs`
+- Слепая проверка модуля «Закладки»:
+  `.venv/bin/python -m kurs.review <package.json> -o build/review/out.json --max-usd 0.6`
+
+## Зафиксированные метрики и внеконвейерные шаги перед заморозкой
+
+- **Обучающий корпус (по `STATUS.md`, собрано в ветке `avervill`):**
+  - `latyshova_gl5_par17-20`: 24 узла, 221 утверждение, 177/177 в покрытии, 30 заданий (5 типов), курс 2,6 МБ.
+  - `basniev_gl23-24`: 21 узел, 180 утверждений, 394/394 в покрытии, 27 заданий (4 типа), курс 2,6 МБ.
+  - `kuznetsov_gl10`: 17 узлов, 178 утверждений, 143/143 в покрытии, 23 задания (4 типа), курс 2,1 МБ.
+- **Обучающие ролики (Remotion 4 + `ElevenLabs eleven_v4`, голос `Nikolay`):**
+  - `latyshova_shorts_high_rt.mp4` (`9:16`, 1080×1920, 67.3 с, 4.09 МБ): `-16.08 LUFS`, `WER = 5.88%`, `sync drift = 0.20 с`.
+  - `basniev_deepdive_elastic_funnel.mp4` (`16:9`, 1920×1080, 92.2 с, 5.84 МБ): `-16.04 LUFS`, `WER = 5.76%`, `sync drift = 0.32 с`.
+- **Модуль «Закладки» (контрольный пакет, `ctrl_vendelshtein`, 21 ошибка веса 40):**
+  - Первый слепой прогон (`ctrl_blind_v1.json`, `$0.035`): `64%` по весу (`67%` по числу), **0** ложных тревог.
+  - После общего фикса схемы `enum target` и батчинга (`ctrl_blind_v3.json`, без подглядывания в `key.json`): `17` из `21` полностью (**`85%` по весу**, `81%` по числу), **2** ложных тревоги (**0** на приманках), обе кадровые ошибки (`F06`, `F08`) пойманы.
+- **Репетиция на незнакомой главе и сдвиг языка:**
+  - `vendelshtein_gl1` (`kurs run`, 179 единиц): 30 узлов, 252 утверждения, 30 маршрутов, 30 заданий (5 типов), 26 рисунков моделью (`15` по существу), расход **`$0.4543`** (99 вызовов, 10 судейских вызовов отвалились по `429` rate limit — отмечено в журнале); `kurs fuzz`: поймано `184/245` (`75.1%`); `KURS_LLM_OFFLINE=1 kurs rebuild vendelshtein_gl1`: `0.6 с`, **0** вызовов модели; рендер узла `vendelshtein.kriterii_kollektora` (`mock` 9:16, 59.3 с, `-15.98 LUFS`, `source_issues: []`).
+  - Английский smoke-тест (`build/_rehearsal_en/en_porosity.md`, `$0.0388`, 183 с): распознан `language: en`, 4 узла, 14 утверждений, 4 рисунка, Chromium QA `390×844` и `1280×800` пройден с 0 ошибками.
+- **Честно зафиксировано как сделанное вне конвейера (см. `manual_edits.csv` и `git log`):**
+  - 62 визуальных спецификации в `domain/geology/visual/*.json` и errata по PDF для `latyshova` и `basniev` в `domain/geology/errata/`.
+  - Сборка `domain/drilling/` выполнена за ~3 мин машинной генерации (`STATUS.md`), требует короткой вычитки специалистом перед тестом сдвига домена.
+
+## Метрики достоверности (`kurs metrics --manifest`)
+
+| Глава | Покрытие единиц (цель 100%) | Не преподано | Цитаты на своей странице (цель 100%) | Числа прослеживаются (цель 100%) | Смысловых замечаний | Заданий / типов | Фаззинг: поймано | Фон тревог | $ |
+|---|---|---|---|---|---|---|---|---|---|
+| `vendelshtein_gl1` | 100.0% | 7 | 100.0% | 100.0% | 47 | 30 / 5 | 75.1% | 18.7% | 0.4543 |

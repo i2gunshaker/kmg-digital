@@ -24,10 +24,10 @@ llm:
   profiles:
     cheap:
       models: {anthropic: {senior: claude-haiku-5-5, fast: claude-haiku-5-5}}
-      effort: {senior: high, fast: medium}
+      effort: {senior: medium, fast: low}
       judge: senior
       judge_rounds: 1
-      judge_effort: [high]
+      judge_effort: [medium]
     mid:
       models: {anthropic: {senior: claude-sonnet-5-5, fast: claude-haiku-5-5}}
       effort: {senior: medium, fast: medium}

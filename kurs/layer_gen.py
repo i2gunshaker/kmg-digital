@@ -315,7 +315,7 @@ def make_outline(llm: LLM, system: list[str], units: list[Unit]) -> tuple[dict, 
     size = sum(len(u.text) for u in content_units(units) if u.kind != "table")
     lo, hi = max(5, size // 4500), max(8, size // 2400)
     user = prompt("outline", min=lo, max=hi)
-    ol = llm.json("senior", system, user, OUTLINE_SCHEMA, label="outline")
+    ol = llm.json("senior", system, user, OUTLINE_SCHEMA, label="outline", effort="medium")
     for attempt in (1, 2):
         issues = check_outline(ol, units)
         if not issues:
