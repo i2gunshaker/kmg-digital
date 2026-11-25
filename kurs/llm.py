@@ -69,6 +69,7 @@ class Reply:
     text: str
     model: str
     usage: Usage
+    stop: str = ""  # почему ответ негоден: обрезан или отказ; расход всё равно учитывается
 
 
 def log_total(log_path: Path) -> float:
@@ -234,11 +235,11 @@ def _anthropic_transport() -> Transport:
         except anthropic.APIConnectionError as e:
             raise LLMError(f"нет связи с API: {type(e).__name__}") from e
 
+        stop = ""  # оборванный ответ тоже оплачен: ошибка поднимается после записи расхода
         if msg.stop_reason == "refusal":
-            cat = msg.stop_details.category if msg.stop_details else None
-            raise LLMError(f"модель отказалась отвечать (категория: {cat})")
-        if msg.stop_reason == "max_tokens":
-            raise LLMError(f"ответ обрезан на {max_tokens} токенах")
+            stop = f"модель отказалась отвечать (категория: {msg.stop_details.category if msg.stop_details else None})"
+        elif msg.stop_reason == "max_tokens":
+            stop = f"ответ обрезан на {max_tokens} токенах"
         text = "".join(b.text for b in msg.content if b.type == "text")
         u = msg.usage
         return Reply(
@@ -250,6 +251,7 @@ def _anthropic_transport() -> Transport:
                 cache_read=u.cache_read_input_tokens or 0,
                 output=u.output_tokens or 0,
             ),
+            stop=stop,
         )
 
     return call
@@ -281,10 +283,9 @@ def _openai_transport() -> Transport:
         except openai.APIConnectionError as e:
             raise LLMError(f"нет связи с API: {type(e).__name__}") from e
         choice = resp.choices[0]
-        if choice.finish_reason == "length":
-            raise LLMError(f"ответ обрезан на {max_tokens} токенах")
+        stop = f"ответ обрезан на {max_tokens} токенах" if choice.finish_reason == "length" else ""
         if getattr(choice.message, "refusal", None):
-            raise LLMError("модель отказалась отвечать")
+            stop = "модель отказалась отвечать"
         u = resp.usage
         cached = 0
         if u and u.prompt_tokens_details:
@@ -297,6 +298,7 @@ def _openai_transport() -> Transport:
                 cache_read=cached,
                 output=u.completion_tokens if u else 0,
             ),
+            stop=stop,
         )
 
     return call
@@ -320,6 +322,7 @@ class LLM:
         self.opts = cfg.llm
         self.backend = self._pick_backend(transport is not None)
         self._transport = transport
+        self._real = transport is None
         self.cache_dir = cache_dir or BUILD / ".cache" / "llm"
         self.log_path = log_path or BUILD / "llm_usage.jsonl"
         if wallet is None:
@@ -412,6 +415,9 @@ class LLM:
                 self.cache_hits += 1
             self._log(label, rec["model"], Usage(**rec["usage"]), 0.0, 0.0, True)
             return rec["data"]
+        allow = self.opts.get("allow")
+        if self._real and allow and model not in allow:
+            raise LLMError(f"{label}: модель {model} запрещена, разрешены только: {', '.join(allow)} (llm.allow в config.yaml)")
         if self.offline:
             raise OfflineMiss(f"{label}: ответа нет в кэше, а сетевые вызовы запрещены (KURS_LLM_OFFLINE=1)")
         price = self.forecast(model, system, user, schema, max_tokens)
@@ -453,6 +459,8 @@ class LLM:
                 self.spent += cost
                 self.calls += 1
             self._log(label, reply.model, reply.usage, cost, dt, False)
+            if reply.stop:
+                raise LLMError(f"{label}: {reply.stop}")
             try:
                 data = restore_latex(parse_json(reply.text))
                 jsonschema.validate(data, schema)

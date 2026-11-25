@@ -145,6 +145,7 @@ def test_run_limit_is_shared_between_chapters(env):
 
 def test_total_limit_counts_previous_runs(env):
     cfg, _, _, tmp = env
+    cfg.llm["total_usd"] = 20.0
     row = {"cost_usd": 19.999, "from_cache": False}
     (tmp / "usage.jsonl").write_text(json.dumps(row) + "\nбитая строка\n", encoding="utf-8")
     calls: list[str] = []
@@ -203,6 +204,30 @@ def test_model_without_price_is_not_called(env, monkeypatch):
     # Бесплатной локальной модели предел не нужен.
     cfg.llm["prices"]["неизвестная"] = {"input": 0, "output": 0}
     assert make_llm(cfg, tmp, echo(calls), budget=None).json("fast", ["s"], "один", SCHEMA_A, label="x") == {"a": "один"}
+
+
+def test_only_allowed_models_are_called(env, monkeypatch):
+    cfg, _, _, tmp = env
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
+    cfg.use_profile("max")
+    cfg.llm["allow"] = ["claude-haiku-5-5"]
+    llm = LLM(cfg, scope="t", cache_dir=tmp / "c", log_path=tmp / "u.jsonl", budget=5.0)
+    with pytest.raises(LLMError, match="запрещена"):
+        llm.json("senior", ["s"], "один", SCHEMA_A, label="x")
+    assert llm._transport is None and llm.spent == 0
+
+
+def test_cut_reply_is_paid_and_counted(env):
+    cfg, _, _, tmp = env
+
+    def cut(model, system, user, schema, effort, max_tokens):
+        return Reply("{", "claude-haiku-5-5", Usage(input=1000, output=1000), stop="ответ обрезан на 10 токенах")
+
+    llm = make_llm(cfg, tmp, cut)
+    with pytest.raises(LLMError, match="обрезан"):
+        llm.json("fast", ["s"], "один", SCHEMA_A, label="x")
+    assert llm.calls == 1 and llm.spent == pytest.approx(0.0006)
+    assert json.loads((tmp / "usage.jsonl").read_text(encoding="utf-8"))["cost_usd"] == pytest.approx(0.0006)
 
 
 def test_profiles_and_forecast(env):
@@ -575,6 +600,23 @@ def test_number_notation(text, expected):
     from kurs.verify import numbers
 
     assert numbers(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text, cond",
+    [("глубине менее 5 %", "upper"), ("на глубине более 5 %", "lower"), ("не больше 5 %", "upper"), ("не превышает 5 %", "upper"),
+     ("не менее 5 %", "lower"), ("не ниже 5 %", "lower"), ("no more than 5 %", "upper"), ("k \\leq 5", "upper")],
+)
+def test_negated_conditions(text, cond):
+    from kurs.verify import extract_quantities
+
+    assert extract_quantities(text)[0].cond == cond
+
+
+def test_power_of_ten_after_cdot_is_a_number():
+    from kurs.verify import check_quantities_against_source
+
+    assert check_quantities_against_source("от 7·10⁻¹⁰ до 30·10⁻¹⁰", ["от $7\\cdot10^{-10}$ до $30\\cdot10^{-10}$"]) == []
 
 
 def test_group_mismatch_is_reported():

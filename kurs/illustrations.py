@@ -172,13 +172,21 @@ def auto_spec(node: dict) -> dict:
     return {**base, "template": "tree", "caption": f"Основные понятия шага: {node['title']}.", "params": {"root": node["title"], "children": kids}}
 
 
+def reviewed_specs(cfg: Config, ch: Chapter) -> dict[str, dict | list]:
+    """Описания, проверенные человеком: лежат в доменном пакете."""
+    p = cfg.domain_dir / "visual" / f"{ch.id}.json"
+    return json.loads(p.read_text(encoding="utf-8")).get("nodes", {}) if p.exists() else {}
+
+
+def generated_specs(ch: Chapter) -> dict[str, dict | list]:
+    """Описания, собранные конвейером."""
+    p = ch.build_dir / "visual.json"
+    return json.loads(p.read_text(encoding="utf-8")).get("nodes", {}) if p.exists() else {}
+
+
 def load_visual_specs(cfg: Config, ch: Chapter) -> dict[str, dict | list]:
-    """Спецификации рисунков главы: сначала собранные конвейером, затем из доменного пакета."""
-    out: dict[str, dict | list] = {}
-    for p in (cfg.domain_dir / "visual" / f"{ch.id}.json", ch.build_dir / "visual.json"):
-        if p.exists():
-            out.update(json.loads(p.read_text(encoding="utf-8")).get("nodes", {}))
-    return out
+    """Описания рисунков главы: собранные конвейером, поверх них проверенные человеком."""
+    return {**generated_specs(ch), **reviewed_specs(cfg, ch)}
 
 
 _FIG = re.compile(r"рис(?:\.|унок)?\s*(\d+(?:\.\d+)?)", re.I)
@@ -267,8 +275,8 @@ def build_illustrations(
                 spec = with_reveal(spec)
             try:
                 drawn_specs.append((spec, render_frames(spec, sg) or [("", render(spec, sg))]))
-            except SpecError as e:
-                print(f"рисунок {nid}: {e}; пропускаю спецификацию", file=sys.stderr)
+            except (SpecError, KeyError, ValueError, TypeError, IndexError) as e:
+                print(f"рисунок {nid}: {type(e).__name__} {e}; пропускаю спецификацию", file=sys.stderr)
         if not drawn_specs:
             spec = with_reveal(auto_spec(n)) if nid in interactive else auto_spec(n)
             drawn_specs.append((spec, render_frames(spec, sg) or [("", render(spec, sg))]))
@@ -295,7 +303,7 @@ def build_illustrations(
                     "caption": caption,
                     "alt": spec.get("alt") or caption,
                     "source": spec.get("source") or "",
-                    "claim_ids": [c["id"] for c in n.get("claims", [])],
+                    "claim_ids": spec.get("claim_ids") or [c["id"] for c in n.get("claims", [])],
                 }
             )
             if len(drawn) > 1:

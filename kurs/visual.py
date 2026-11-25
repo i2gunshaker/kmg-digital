@@ -199,10 +199,17 @@ def readable(hexcol: str, bg: str = "#1B222B", need: float = 5.0) -> str:
     return "#FFFFFF"
 
 
+def _clash(a: tuple, b: tuple) -> bool:
+    """Две подписи заметно перекрываются."""
+    dx, dy = min(a[2], b[2]) - max(a[0], b[0]), min(a[3], b[3]) - max(a[1], b[1])
+    return dx > 4 and dy > 4 and dx * dy > 0.12 * min((a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1]))
+
+
 class Canvas:
     def __init__(self, sg: dict) -> None:
         self.sg = sg
         self.parts: list[str] = []
+        self.boxes: list[tuple[float, float, float, float, str]] = []  # места подписей: для проверки наложений
         self.y = 0.0
 
     # краски стайлгайда
@@ -254,6 +261,20 @@ class Canvas:
         if fill and fill not in ("#0F1419", "#FFFFFF"):
             fill = readable(fill)
         tr = f' transform="rotate({rotate} {x:.1f} {y:.1f})"' if rotate is not None else ""
+        if str(s).strip():
+            w = text_w(str(s), size, bold)
+            off = {"start": 0.0, "middle": w / 2, "end": w}[anchor]
+            if rotate is None and halo:  # подпись на рисунке: внутри полотна и не поверх другой подписи
+                x = max(off + 3, min(x, W - 3 - w + off)) if w < W - 6 else x
+                for dy in (0, -20, 20, -38, 38):
+                    box = (x - off, y + dy - 0.76 * size, x - off + w, y + dy + 0.2 * size)
+                    if not any(_clash(box, b) for b in self.boxes):
+                        y += dy
+                        break
+            if rotate is None:
+                self.boxes.append((x - off, y - 0.76 * size, x - off + w, y + 0.2 * size, str(s)))
+            else:  # подпись оси снизу вверх
+                self.boxes.append((x - 0.76 * size, y - w + off, x + 0.2 * size, y + off, str(s)))
         self.raw(
             f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" fill="{fill or self.ink}" text-anchor="{anchor}"'
             f'{" font-weight=" + chr(34) + "700" + chr(34) if bold else ""}{st}{tr}>{esc(s)}</text>'
@@ -444,7 +465,22 @@ def draw_curves(c: Canvas, p: dict) -> float:
         pa = [(sx(v), sy(up(v))) for v in _grid(a, b, xlog, 60)]
         pb = [(sx(v), sy(lo_(v))) for v in _grid(a, b, xlog, 60)]
         c.poly(pa + pb[::-1], fill=c.color(ar.get("color"), "#95A5A6"), op=float(ar.get("op", 0.3)), close=True)
+    for ghost in p.get("ghosts", []):  # остальные кадры тонкой линией: видно, куда сдвинулась кривая
+        for s in p.get("series", []):
+            if s.get("expr"):
+                gf, genv = compile_expr(str(s["expr"])), {**env0, **{k: float(v) for k, v in (s.get("vars") or {}).items()}, **{k: float(v) for k, v in ghost.items()}}
+                run: list[tuple[float, float]] = []
+                for xv in _grid(*(s.get("domain") or [xl, xh]), xlog, 120):
+                    try:
+                        yv = gf({**genv, "x": xv})
+                    except (OverflowError, ZeroDivisionError, ValueError):
+                        continue
+                    if math.isfinite(yv) and yl <= yv <= yh:
+                        run.append((sx(xv), sy(yv)))
+                c.poly(run, stroke="#6C7A89", sw=1.5, dash="3,5")
     ends: list[tuple[float, float, str, str]] = []
+    lines_px: list[list[tuple[float, float]]] = []  # нарисованные кривые: подпись не должна лечь на них
+    wants: list[tuple[int, float | None, str, str]] = []
     palette = ["#4DC4BF", "#F1C40F", "#E67E22", "#9BD7F5", "#A98FD1", "#2ECC71"]
     for i, s in enumerate(p.get("series", [])):
         col = c.color(s.get("color"), palette[i % len(palette)])
@@ -472,7 +508,10 @@ def draw_curves(c: Canvas, p: dict) -> float:
             pts.append((sx(xv), sy(yv)))
         if len(pts) > 1:
             c.poly(pts, stroke=col, sw=s.get("sw", 2.6), dash=s.get("dash"))
-            if s.get("label"):
+            lines_px.append(pts)
+            if s.get("label") and p.get("auto_labels"):
+                wants.append((len(lines_px) - 1, s.get("label_at"), s["label"], col))
+            elif s.get("label"):
                 at = s.get("label_at")
                 k = min(range(len(pts)), key=lambda j: abs(pts[j][0] - sx(float(at)))) if at is not None else len(pts) - 1
                 a0, b0 = pts[max(k - 4, 0)], pts[min(k + 4, len(pts) - 1)]
@@ -527,6 +566,25 @@ def draw_curves(c: Canvas, p: dict) -> float:
             c.line(lx, ly - 5, lx + 26, ly - 5, stroke=col, sw=3)
             c.text(lx + 34, ly, lab, 16, col, "start", True, halo=True)
         ends = []
+    # подписи кривых, которые ставит код: место рядом с линией, где меньше всего помех
+    for idx, at, lab, col in wants:
+        pts, tw = lines_px[idx], text_w(lab, 16, True)
+        n = len(pts)
+        k0 = min(range(n), key=lambda j: abs(pts[j][0] - sx(float(at)))) if at is not None else int(n * 0.7)
+        best: tuple[float, float, float] | None = None
+        for rank, k in enumerate(dict.fromkeys(min(max(k0 + d, 0), n - 1) for d in (0, -n // 8, n // 8, -n // 4, n // 4, -n // 2, n // 2))):
+            px, py = pts[k]
+            for pos, (dx, dy) in enumerate(((8, -10), (8, 22), (-8 - tw, -10), (-8 - tw, 22), (-tw / 2, -16), (-tw / 2, 28))):
+                bx, by = px + dx, py + dy
+                box = (bx - 3, by - 15, bx + tw + 3, by + 6)
+                cost = rank * 1.5 + pos * 0.5
+                cost += 60 * (bx < left + 4 or bx + tw > left + pw - 4 or by - 14 < top or by + 4 > top + ph)
+                cost += sum(4 for line in lines_px for qx, qy in line if box[0] < qx < box[2] and box[1] < qy < box[3])
+                cost += sum(40 for b in c.boxes if _clash(box, b))
+                if best is None or cost < best[0]:
+                    best = (cost, bx, by)
+        if best:
+            c.text(best[1], best[2], lab, 16, col, "start", True, halo=True)
     # подписи кривых: раздвигаем по вертикали, чтобы не слипались
     ends.sort(key=lambda e: e[1])
     last = -1e9
@@ -719,6 +777,10 @@ def draw_reef(c: Canvas, p: dict) -> float:
             c.poly([xy(q) for q in pts], fill=c.color("ok"), op=0.30, stroke=c.color("ok"), sw=4, close=True)
     if p.get("fill_to"):  # заполнение ловушки флюидом до контакта
         fy = base - float(p["fill_to"]) * amp
+        c.raw(f'<clipPath id="rf"><rect x="{left:.1f}" y="{top:.1f}" width="{w:.1f}" height="{max(fy - top, 0):.1f}"/></clipPath><g clip-path="url(#rf)">')
+        for pts in _REEF[kind].values():
+            c.poly([xy(q) for q in pts], fill=c.color("oil"), op=0.5, close=True)
+        c.raw("</g>")
         c.line(left, fy, left + w, fy, stroke=c.color("water"), sw=2.2, dash="8,5")
         c.text(left + 4, fy - 7 if W > 480 else fy + 20, p.get("fill_label", "контакт"), 16, c.ink, "start", True, halo=True)
     for key, pts in _REEF[kind].items():
@@ -754,8 +816,6 @@ def draw_plan(c: Canvas, p: dict) -> float:
     hl = set(p.get("highlight", []))
 
     def mark(x, y, lab):
-        c.circle(x, y, 8, fill="#ECEFF4", stroke="#0F1419", sw=2)
-        c.circle(x, y, 2.6, fill="#0F1419")
         if lab:
             fits = x + 13 + text_w(lab, 16, True) < W - 4
             c.text(x + 13 if fits else x, y + 6 if fits else y + 28, lab, 16, c.ink, "start" if fits else "middle", True, halo=True)
@@ -786,8 +846,13 @@ def draw_plan(c: Canvas, p: dict) -> float:
         scale = ((x1 - x0) / 2, H / 2)
     else:
         raise SpecError(f"план {kind!r}")
-    for q in p.get("wells", []):
-        mark(cx + float(q["x"]) * scale[0], cy + float(q["y"]) * scale[1], q.get("label", ""))
+    spots = [(cx + float(q["x"]) * scale[0], cy + float(q["y"]) * scale[1], q.get("label", "")) for q in p.get("wells", [])]
+    for x, y, _ in spots:
+        c.circle(x, y, 8, fill="#ECEFF4", stroke="#0F1419", sw=2)
+        c.circle(x, y, 2.6, fill="#0F1419")
+        c.boxes.append((x - 9, y - 9, x + 9, y + 9, "точка скважины"))
+    for x, y, lab in spots:
+        mark(x, y, lab)
     return 12 + H + 8
 
 
@@ -930,10 +995,13 @@ def draw_pores(c: Canvas, p: dict) -> float:
     gap = 14.0
     pw = (W - 2 * PAD - gap * (n - 1)) / n
     H = float(p.get("height", 190))
-    top = 36.0
+    heads = [wrap(s.get("head", ""), pw, 17, True) if text_w(s.get("head", ""), 17, True) > pw else [s.get("head", "")] for s in panels]
+    tall = max(len(h) for h in heads)
+    top = 36.0 + 20.0 * (tall - 1)
     for i, s in enumerate(panels):
         x0 = PAD + i * (pw + gap)
-        c.text(x0 + pw / 2, top - 12, s.get("head", ""), 17, c.ink, "middle", True)
+        for k, ln in enumerate(heads[i]):
+            c.text(x0 + pw / 2, top - 12 - 20.0 * (len(heads[i]) - 1 - k), ln, 17, c.ink, "middle", True)
         cid = f"cp{i}"
         c.raw(f'<clipPath id="{cid}"><rect x="{x0:.1f}" y="{top}" width="{pw:.1f}" height="{H}" rx="8"/></clipPath><g clip-path="url(#{cid})">')
         c.rect(x0, top, pw, H, fill=c.color(s.get("fluid"), "#2E8B57"), op=0.9)
@@ -1006,7 +1074,170 @@ def draw_matrix(c: Canvas, p: dict) -> float:
     return y + 8
 
 
+def _catmull(pts: list[tuple[float, float]], closed: bool, n: int = 8) -> list[tuple[float, float]]:
+    """Плавная линия через заданные точки."""
+    if len(pts) < 3:
+        return pts
+    k = len(pts)
+    out: list[tuple[float, float]] = []
+    for i in range(k if closed else k - 1):
+        p0 = pts[(i - 1) % k] if closed or i else pts[0]
+        p1, p2 = pts[i], pts[(i + 1) % k]
+        p3 = pts[(i + 2) % k] if closed or i + 2 < k else pts[-1]
+        for j in range(n):
+            t = j / n
+            out.append(
+                tuple(
+                    0.5 * (2 * b + (c_ - a) * t + (2 * a - 5 * b + 4 * c_ - d) * t * t + (3 * b - a - 3 * c_ + d) * t**3)
+                    for a, b, c_, d in zip(p0, p1, p2, p3)
+                )
+            )
+    if not closed:
+        out.append(pts[-1])
+    return out
+
+
+def _inside(x: float, y: float, poly: list[tuple[float, float]]) -> bool:
+    hit = False
+    for (x0, y0), (x1, y1) in zip(poly, poly[1:] + poly[:1]):
+        if (y0 > y) != (y1 > y) and x < (x1 - x0) * (y - y0) / (y1 - y0) + x0:
+            hit = not hit
+    return hit
+
+
+def _edge_gap(x: float, y: float, poly: list[tuple[float, float]]) -> float:
+    best = 1e9
+    for (x0, y0), (x1, y1) in zip(poly, poly[1:] + poly[:1]):
+        dx, dy = x1 - x0, y1 - y0
+        t = min(max(((x - x0) * dx + (y - y0) * dy) / (dx * dx + dy * dy or 1e-9), 0), 1)
+        best = min(best, math.hypot(x - x0 - t * dx, (y - y0 - t * dy) * 1.6))
+    return best
+
+
+def _label_spot(poly: list[tuple[float, float]]) -> tuple[float, float]:
+    """Точка внутри тела, дальше всего от его границы: туда встаёт подпись."""
+    xs, ys = [q[0] for q in poly], [q[1] for q in poly]
+    best = (-1.0, sum(xs) / len(xs), sum(ys) / len(ys))
+    for i in range(1, 24):
+        for j in range(1, 16):
+            x = min(xs) + (max(xs) - min(xs)) * i / 24
+            y = min(ys) + (max(ys) - min(ys)) * j / 16
+            if _inside(x, y, poly):
+                best = max(best, (_edge_gap(x, y, poly), x, y))
+    return best[1], best[2]
+
+
+def draw_section(c: Canvas, p: dict) -> float:
+    """Разрез или план из произвольных тел, границ, стрелок и скважин; координаты в долях рамки, y растёт вниз."""
+    view = p.get("view", "depth")
+    H = float(p.get("height", 270))
+    wells = p.get("wells", [])
+    top = 32.0 if any(w.get("label") for w in wells) and view != "plan" else 12.0
+    left = 46.0 if view == "depth" else PAD + 2.0
+    w = W - left - PAD
+    c.rect(left, top, w, H, fill="#121C26", stroke="#3A4754")
+    c.raw(f'<clipPath id="sec"><rect x="{left:.1f}" y="{top:.1f}" width="{w:.1f}" height="{H:.1f}"/></clipPath>')
+
+    def xy(q) -> tuple[float, float]:
+        return left + float(q[0]) * w, top + float(q[1]) * H
+
+    if view == "depth":
+        c.line(left - 18, top, left - 18, top + H, stroke=c.muted, sw=1.6, marker="aw")
+        c.text(left - 26, top + H / 2, p.get("depth_label", "глубина"), 16, c.muted, "middle", rotate=-90)
+    def ring(q) -> list[tuple[float, float]]:
+        """Круг [x, y, r]: радиус в долях высоты рамки."""
+        cx, cy = xy(q)
+        return [(cx + float(q[2]) * H * math.cos(a * math.pi / 24), cy + float(q[2]) * H * math.sin(a * math.pi / 24)) for a in range(48)]
+
+    queue: list[tuple[float, float, str, bool]] = []  # x центра, y, текст, жирный
+    c.raw('<g clip-path="url(#sec)">')
+    hot: list[list[tuple[float, float]]] = []
+    for b in p.get("bodies", []):
+        pts = ring(b["circle"]) if b.get("circle") else [xy(q) for q in b["points"]]
+        if b.get("smooth") and not b.get("circle"):
+            pts = _catmull(pts, True)
+        col = c.color(b.get("lith") or b.get("color"), "#8C7B6B")
+        c.poly(pts, fill=col, op=float(b.get("op", 0.6)), stroke="#0F1419", sw=1.2, close=True)
+        pat = b.get("pattern") or _LITH_PATTERN.get(str(b.get("lith")))
+        if pat:
+            c.raw(f'<polygon points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}" fill="url(#{pat})" fill-opacity="0.32"/>')
+        if b.get("fluid"):
+            c.poly(pts, fill=c.color(b["fluid"]), op=0.45, close=True)
+        if b.get("highlight"):
+            hot.append(pts)
+        if b.get("label"):
+            x, y = xy(b["label_at"]) if b.get("label_at") else _label_spot(pts)
+            queue.append((x, y + 6, b["label"], True))
+    for pts in hot:
+        c.poly(pts, stroke=c.color("ok"), sw=4, close=True)
+    style = {"fault": ("#ECEFF4", 2.6, None), "contact": ("#ECEFF4", 2.2, "8,5"), "level": ("#3498DB", 2.2, "8,5"), "border": ("#AEB9C5", 1.6, None), "path": ("#F1C40F", 2.6, "3,5")}
+    for ln in p.get("lines", []):
+        if ln.get("circle"):
+            pts = ring(ln["circle"])
+            pts.append(pts[0])
+        else:
+            pts = [xy(q) for q in ln["points"]]
+            if ln.get("smooth"):
+                pts = _catmull(pts, False)
+        col, sw, dash = style.get(ln.get("kind", "border"), style["border"])
+        c.poly(pts, stroke=c.color(ln.get("color"), col), sw=sw, dash=dash)
+        if ln.get("label"):
+            k = min(int(float(ln.get("label_t", 0.85)) * (len(pts) - 1)), len(pts) - 1)
+            queue.append((pts[k][0], pts[k][1] - 7, ln["label"], False))
+    for wl in wells:
+        if view == "plan" and not wl.get("points"):  # сверху скважина — точка
+            x, y = xy((wl["x"], wl.get("y", wl.get("bottom", 0.5))))
+            c.circle(x, y, 7, fill=c.color(wl.get("color"), "#ECEFF4"), stroke="#0F1419", sw=3)
+            if wl.get("label"):
+                queue.append((x, y - 12, wl["label"], True))
+            continue
+        pts = [xy(q) for q in wl["points"]] if wl.get("points") else [xy((wl["x"], wl.get("top", 0))), xy((wl["x"], wl["bottom"]))]
+        if len(pts) > 2:
+            pts = _catmull(pts, False)
+        c.poly(pts, stroke="#0F1419", sw=7)
+        c.poly(pts, stroke=c.color(wl.get("color"), "#ECEFF4"), sw=4)
+    for a in p.get("arrows", []):
+        (x0, y0), (x1, y1) = xy(a["from"]), xy(a["to"])
+        c.line(x0, y0, x1, y1, stroke="#0F1419", sw=5.5)
+        c.line(x0, y0, x1, y1, stroke="#ECEFF4", sw=2.6, marker="aw")
+        if a.get("label"):
+            queue.append(((x0 + x1) / 2, (y0 + y1) / 2 - 9, a["label"], False))
+    c.raw("</g>")
+    c.rect(left, top, w, H, stroke="#3A4754")
+    for wl in wells:
+        if wl.get("label") and not (view == "plan" and not wl.get("points")):
+            x = xy(wl["points"][0] if wl.get("points") else (wl["x"], 0))[0]
+            half = text_w(wl["label"], 16, True) / 2
+            c.text(min(max(x, left + half), left + w - half), top - 9, wl["label"], 16, c.ink, "middle", True)
+    for t in p.get("labels", []):
+        x, y = xy(t["at"])
+        queue.append((x, y, t["text"], False))
+    # подписи: внутри рамки и не друг на друге; занятое место обходится по вертикали
+    taken: list[tuple[float, float, float, float]] = []
+    for x, y, text, bold in queue:
+        lines = wrap(text, min(w * 0.46, 210), 16, bold)
+        half = max(text_w(s, 16, bold) for s in lines) / 2
+        tall = 20.0 * len(lines)
+        x = min(max(x, left + half + 4), left + w - half - 4)
+        y -= 10.0 * (len(lines) - 1)
+        for step in (0, 20, -20, 40, -40, 60, -60, 80, -80):
+            yy = min(max(y + step, top + 17), top + H - 8 - (tall - 20))
+            box = (x - half - 2, yy - 15, x + half + 2, yy - 15 + tall)
+            if not any(box[0] < t[2] and t[0] < box[2] and box[1] < t[3] and t[1] < box[3] for t in taken):
+                break
+        taken.append(box)
+        for i, s in enumerate(lines):
+            c.text(x, yy + 20 * i, s, 16, c.ink, "middle", bold, halo=True)
+    bottom = top + H + 10
+    if p.get("sides"):
+        c.text(left, top + H + 20, p["sides"][0], 16, c.muted)
+        c.text(left + w, top + H + 20, p["sides"][1], 16, c.muted, "end")
+        bottom += 18
+    return bottom
+
+
 TEMPLATES: dict[str, Callable[[Canvas, dict], float]] = {
+    "section": draw_section,
     "curves": draw_curves,
     "layers": draw_layers,
     "reef": draw_reef,
@@ -1044,6 +1275,24 @@ def _draw(spec: dict, sg: dict, params: dict | None) -> tuple[Canvas, float]:
         return c, TEMPLATES[name](c, merge_params(spec.get("params", {}), params))
     except (KeyError, TypeError, IndexError) as e:
         raise SpecError(f"шаблон {name}: не хватает параметра ({e})") from e
+
+
+def layout_issues(spec: dict, sg: dict) -> list[str]:
+    """Подписи друг на друге и за краем рисунка на обоих полотнах и во всех кадрах."""
+    out: list[str] = []
+    for width in (W, phone_width(spec)):
+        with canvas_width(width):
+            for k, over in enumerate([None] + [{**(f.get("params") or {}), **({"vars": f["vars"]} if f.get("vars") else {})} for f in spec.get("frames", [])]):
+                where = f"{'телефон' if width != 560 else 'компьютер'}, {'кадр ' + str(k) if k else 'рисунок'}"
+                boxes = _draw(spec, sg, over)[0].boxes
+                for x0, y0, x1, y1, s in boxes:
+                    if x0 < 1 or x1 > width - 1:
+                        out.append(f"{where}: подпись «{s[:40]}» выходит за край")
+                for i, a in enumerate(boxes):
+                    for b in boxes[i + 1 :]:
+                        if _clash(a, b):
+                            out.append(f"{where}: подписи «{a[4][:30]}» и «{b[4][:30]}» накладываются")
+    return list(dict.fromkeys(out))
 
 
 def render_frames(spec: dict, sg: dict) -> list[tuple[str, str]]:

@@ -16,6 +16,9 @@ PATCH = (7500, 900)
 OUTLINE_OUT = 16000
 ROUTING = (4400, 6600)
 TASKS = (36500, 17000)
+VISUAL_STEP = (1900, 900)  # карточка шага на входе и описание рисунка в ответе
+VISUAL_RULES = 3800  # правила и каталог шаблонов
+VISUAL_REDO = 0.5  # доля шагов, которые уходят на исправление
 PATCH_SHARE = 0.35  # доля узлов, где после кода осталось что править моделью
 NODE_CHARS = 2600
 
@@ -55,6 +58,15 @@ def estimate(cfg: Config, ch: Chapter, llm: LLM) -> dict[str, float]:
     out["задания"] = llm.cost(senior, Usage(input=TASKS[0], cache_write=base, output=TASKS[1])) + llm.cost(
         fast, Usage(input=8000, output=3000)
     )
+    draw = llm.model_for(str(cfg.llm.get("visual", "fast")))
+    packs = -(-n // 4)
+    size = (VISUAL_STEP[0] * 4, VISUAL_STEP[1] * 4)
+    visual = many(draw, packs, size, VISUAL_RULES)
+    visual += many(draw, max(1, round(packs * VISUAL_REDO)), (size[0] + size[1], size[1]), VISUAL_RULES)
+    check = str(cfg.llm.get("visual_judge", "senior"))
+    if check != "off":
+        visual += many(llm.model_for(check), -(-n // 8), (8 * sum(VISUAL_STEP) + 1500, 1500), 0)
+    out["рисунки"] = visual
     return out
 
 

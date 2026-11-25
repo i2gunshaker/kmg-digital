@@ -143,8 +143,11 @@ _UNIT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"^\s*(?:м|m)\b", re.I), "м"),
 ]
 
-_UPPER_COND_RE = re.compile(r"(?:<=|≤|<|не\s+более|не\s+выше|менее|меньше|ниже|до|at\s+most|less\s+than|below|under)\s*$", re.I)
-_LOWER_COND_RE = re.compile(r"(?:>=|≥|>|не\s+менее|не\s+ниже|более|больше|выше|свыше|от|at\s+least|more\s+than|greater\s+than|above|over)\s*$", re.I)
+# отрицание читается первым: «не больше 5» — верхняя граница, «не меньше 5» — нижняя
+_NOT_MORE_RE = re.compile(r"\b(?:не\s+(?:более|больше|выше|свыше|превы[а-я]+)(?:\s+чем)?|no\s+more\s+than|not\s+more\s+than|not\s+exceed(?:ing)?)\s*$", re.I)
+_NOT_LESS_RE = re.compile(r"\b(?:не\s+(?:менее|меньше|ниже)(?:\s+чем)?|no\s+less\s+than|not\s+less\s+than)\s*$", re.I)
+_UPPER_COND_RE = re.compile(r"(?:<=|≤|<|\\leq?|\bменее|\bменьше|\bниже|\bдо|\bat\s+most|\bless\s+than|\bbelow|\bunder)\s*$", re.I)
+_LOWER_COND_RE = re.compile(r"(?:>=|≥|>|\\geq?|\bболее|\bбольше|\bвыше|\bсвыше|\bот|\bat\s+least|\bmore\s+than|\bgreater\s+than|\babove|\bover)\s*$", re.I)
 
 
 def _norm_num_token(sign: str, num: str) -> str:
@@ -165,6 +168,10 @@ def _extract_unit(tail: str) -> str | None:
 
 def _extract_cond(prefix: str) -> str | None:
     window = prefix[-32:]
+    if _NOT_MORE_RE.search(window):
+        return "upper"
+    if _NOT_LESS_RE.search(window):
+        return "lower"
     if _UPPER_COND_RE.search(window):
         return "upper"
     if _LOWER_COND_RE.search(window):
@@ -175,6 +182,7 @@ def _extract_cond(prefix: str) -> str | None:
 _SUP = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺", "0123456789-+")
 _POWER_RE = re.compile(r"(?<=\d)([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)")
 _TEX_SPACE_RE = re.compile(r"(?<=\d)\\[,;: !]\s*(?=\d{3}(?!\d))")
+_TEX_TIMES_RE = re.compile(r"\\(?:cdot|times)\s*(?=\d)")
 _GROUP_RE = re.compile(r"(?<![\d.,])([1-9]\d{0,2})((?:[ \u00a0\u2009\u202f]\d{3})+)(?![\d]|[.,]\d{3})")
 _EN_GROUP_RE = re.compile(r"(?<![\d.,])([1-9]\d{0,2})((?:,\d{3})+)(?!\d)")
 
@@ -183,6 +191,7 @@ def normalize_numbers(text: str) -> str:
     """Приводит запись чисел к одному виду: «10 000», «10\\,000», «1,500» в английском тексте, степени «10⁻⁵»."""
     s = _POWER_RE.sub(lambda m: "^{" + m.group(1).translate(_SUP) + "}", text or "")
     s = _TEX_SPACE_RE.sub(" ", s)
+    s = _TEX_TIMES_RE.sub(" · ", s)  # «7\\cdot10»: иначе десятка слипается с командой и теряется
     s = _GROUP_RE.sub(lambda m: m.group(1) + re.sub(r"\s", "", m.group(2)), s)
     if not re.search(r"[А-Яа-яЁё]", s):
         s = _EN_GROUP_RE.sub(lambda m: m.group(1) + m.group(2).replace(",", ""), s)

@@ -2,8 +2,9 @@
 
   python -m kurs units   <глава|путь.md>              — вырезать главу и разбить на единицы
   python -m kurs cost    <глава|путь.md>              — прогноз цены и остаток общего предела, бесплатно
-  python -m kurs gen     <глава|путь.md> --max-usd N  — слой, покрытие, маршрутизация и задания
+  python -m kurs gen     <глава|путь.md> --max-usd N  — слой, покрытие, маршрутизация, задания, рисунки
   python -m kurs check   <глава> [layer.json] [cov]   — проверить слой и покрытие
+  python -m kurs visual  <глава>                      — что нарисовано к шагам и замечания, бесплатно
   python -m kurs llm                                  — проверить ключ и модели без платных вызовов
   python -m kurs course  <глава> [--layer ...]        — собрать автономный офлайн-курс (file://)
   python -m kurs specs   [--out build/specs]          — собрать и проверить спецификации роликов для ментора
@@ -51,6 +52,7 @@ def _gen(cfg: Config, args) -> int:
     from .llm import LLM, LLMError
     from .tasks_gen import generate_routing, generate_tasks
     from .verify import report
+    from .visual_gen import generate_visuals
 
     if args.profile:
         cfg.use_profile(args.profile)
@@ -89,6 +91,18 @@ def _gen(cfg: Config, args) -> int:
                 doc, issues = generate_tasks(cfg, ch, llm, layer, load_chapter_units(cfg, ch), force=args.force)
                 print(f"{ch.id}: заданий {len(doc['tasks'])}; {report(issues)}")
                 rc |= 1 if any(i.level == "error" for i in issues) else 0
+            if todo("visual"):
+                rp = ch.build_dir / "routing.json"
+                routing = json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else None
+                rep = generate_visuals(
+                    cfg, ch, llm, layer, load_chapter_units(cfg, ch), routing=routing, everything=bool(args.redo and args.only == "visual"), force=args.force
+                )
+                print(
+                    f"{ch.id}: рисунков моделью {rep['accepted']} из {rep['nodes']}, по существу {rep['rich']};"
+                    f" проверенных раньше {rep['reviewed']}, простой схемой {rep['nodes'] - rep['accepted']}"
+                )
+                for nid, msgs in rep["rejected"].items():
+                    print(f"  простая схема {nid}: {'; '.join(msgs[:2])}")
         except (LLMError, ManualEdits, FileNotFoundError) as e:
             print(f"{ch.id}: {e}", file=sys.stderr)
             rc = 1
@@ -97,6 +111,26 @@ def _gen(cfg: Config, args) -> int:
     if wallet:
         wallet.release()
     return rc
+
+
+def _visual(cfg: Config, args) -> int:
+    from .illustrations import generated_specs, load_visual_specs, reviewed_specs
+    from .layer_gen import load_chapter_units, load_layer
+    from .visual_check import RICH
+    from .visual_gen import survey
+
+    ch = cfg.chapter(args.chapter)
+    rp = ch.build_dir / "routing.json"
+    routing = json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else None
+    made, human = generated_specs(ch), reviewed_specs(cfg, ch)
+    specs = made if args.generated else load_visual_specs(cfg, ch)
+    own = set(made) if args.generated else set(made) - set(human)
+    rows = survey(cfg, ch, load_layer(ch), load_chapter_units(cfg, ch), specs, routing, own)
+    for r in rows:
+        print(f"{r['node']}: {r['template']} ({r['by']})" + ("" if not r["issues"] else " — " + "; ".join(r["issues"][:3])))
+    bad = sum(bool(r["issues"]) for r in rows)
+    print(f"{ch.id}: рисунков {len(rows)}, по существу {sum(r['template'] in RICH for r in rows)}, с замечаниями {bad}; {dict(Counter(r['by'] for r in rows))}")
+    return 1 if bad else 0
 
 
 def _llm_check(cfg: Config) -> int:
@@ -143,7 +177,7 @@ def main(argv=None) -> int:
 
     p = sub.add_parser("gen")
     p.add_argument("chapter", nargs="+")
-    p.add_argument("--only", choices=["layer", "routing", "tasks"], help="только одна часть")
+    p.add_argument("--only", choices=["layer", "routing", "tasks", "visual"], help="только одна часть")
     p.add_argument("--force", action="store_true", help="перезаписать файлы, изменённые вручную")
     p.add_argument("--redo", action="store_true", help="сделать заново то, что уже готово")
     p.add_argument("--max-usd", type=float, help="сколько можно потратить за этот запуск; без него платных вызовов нет")
@@ -152,6 +186,10 @@ def main(argv=None) -> int:
     p = sub.add_parser("cost")
     p.add_argument("chapter", nargs="+")
     p.add_argument("--profile", help="набор моделей: cheap, mid, max")
+
+    p = sub.add_parser("visual")
+    p.add_argument("chapter")
+    p.add_argument("--generated", action="store_true", help="только собранные конвейером, без проверенных человеком")
 
     sub.add_parser("llm")
 
@@ -223,6 +261,9 @@ def main(argv=None) -> int:
 
     if args.cmd == "cost":
         return _cost(cfg, args)
+
+    if args.cmd == "visual":
+        return _visual(cfg, args)
 
     if args.cmd == "llm":
         return _llm_check(cfg)
