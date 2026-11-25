@@ -11,7 +11,7 @@
   <script defer src="./assets/course.js"></script>
 </head>
 {% macro src(page, model=true) -%}
-<span class="src" title="{{ 'Пересказ составлен моделью по этой странице' if model else 'Слова автора книги' }}">стр. {{ page }} · {{ 'модель' if model else 'автор' }}</span>
+<span class="src prov-{{ prov_code(model) }}" title="{{ prov_title(model) }}">стр. {{ page }} · {{ prov_label(model) }}</span>
 {%- endmacro %}
 {% macro pages(list) -%}
 {% for p in list %}{{ p }}{% if not loop.last %}, {% endif %}{% endfor %}
@@ -36,7 +36,7 @@
 {% if q.extra %}
 <ul class="facts">
   {% for c in q.extra %}
-  <li id="claim-{{ c.id }}">{{ c.html }} {{ src(c.page, c.by_model) }}
+  <li id="claim-{{ c.id }}">{{ c.html }} {{ src(c.page, c.prov) }}
     <details class="quotes"><summary>Цитата автора</summary><blockquote>{{ c.quote }} {{ src(c.page, false) }}</blockquote></details>
   </li>
   {% endfor %}
@@ -52,7 +52,7 @@
 {% endmacro %}
 {% macro para(q) %}
 <div class="para">
-  {% if q.text %}<p>{{ q.html }} {{ src(pages(q.pages), q.by_model) }}</p>{% endif %}
+  {% if q.text %}<p>{{ q.html }} {{ src(pages(q.pages), q.prov) }}</p>{% endif %}
   {{ evidence(q) }}
 </div>
 {% endmacro %}
@@ -189,7 +189,7 @@
             {% for q in s.practice %}{{ para(q) }}{% endfor %}
             {% endif %}
             {% if s.now_practice %}
-            <div class="callout"><p><b>Как это делают сейчас.</b> {{ s.now_practice }}</p></div>
+            <div class="callout"><p><b>Как это делают сейчас.</b> {{ s.now_practice }} <span class="src prov-external" title="{{ prov_title('external') }}">{{ prov_label('external') }}</span></p></div>
             {% endif %}
             {% if s.lens %}
             <details class="more">
@@ -278,7 +278,7 @@
             {% for h in s.hypotheses %}<p><span class="chip warn">гипотеза</span> {{ h }}</p>{% endfor %}
             {% if s.it_analogy %}
             <div class="callout">
-              <p><b>Аналогия из ИТ.</b> {{ s.it_analogy.text }}</p>
+              <p><b>Аналогия из ИТ.</b> {{ s.it_analogy.text }} <span class="src prov-external" title="{{ prov_title('external') }}">{{ prov_label('external') }}</span></p>
               <p><b>Где она перестаёт работать.</b> {{ s.it_analogy.breaks_where }}</p>
             </div>
             {% endif %}

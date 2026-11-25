@@ -20,7 +20,7 @@ from .pdfref import load_pdf_pages, reference_block
 from .quotes import PARA_FIELDS, is_substantive, long_sentences, referenced_units, sentences, snap_quote, strict_norm
 from .repair import domain_definitions, repair_card
 from .units import Unit, build_units, cut_chapter, load_pages, load_units
-from .verify import Issue, check_coverage, check_layer
+from .verify import Issue, check_coverage, check_layer, coded_reason
 
 PROMPTS = ROOT / "kurs" / "prompts"
 DIFFICULTY = ["М", "В", "И", "Ф", "П", "Пр", "Н", "Р"]
@@ -676,9 +676,9 @@ def build_coverage(ch: Chapter, ol: dict, units: list[Unit]) -> dict:
             node_ids = []
             near = sorted(captions, key=lambda c: (abs(c.page_pdf - u.page_pdf), abs(c.line - u.line)))
             ref = f"; рисунок учтён по подписи {near[0].id}" if near and abs(near[0].page_pdf - u.page_pdf) <= 1 else ""
-            reason = f"описание рисунка составлено при извлечении md, это не текст автора{ref}"
+            reason = f"model_description: описание рисунка составлено при извлечении md, это не текст автора{ref}"
         elif not node_ids:
-            reason = reasons.get(u.id) or "служебный текст без мысли автора"
+            reason = coded_reason(reasons.get(u.id) or "page_furniture: служебный текст без мысли автора", u.kind)
         rows.append(
             {
                 "unit_id": u.id,

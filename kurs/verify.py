@@ -117,6 +117,7 @@ _NUM_MATCH_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9_.,])([+\-\u2212\u2013]
 
 _UNIT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"^\s*(?:°\s*[cс]|градус(?:а|ов)?\s*[cс]?|deg\s*c)\b", re.I), "°c"),
+    (re.compile(r"^\s*(?:‰|промилле\b)", re.I), "‰"),
     (re.compile(r"^\s*(?:%|процент(?:а|ов)?\b|percent\b)", re.I), "%"),
     (re.compile(r"^\s*(?:ом\s*[·∙*⋅.]\s*м|омм|ohm\s*[·∙*⋅\-]?\s*m|o\s*[·∙.]\s*m)\b", re.I), "ом·м"),
     (re.compile(r"^\s*(?:м³\s*/\s*сут|м3\s*/\s*сут|m3\s*/\s*d(?:ay)?)\b", re.I), "м³/сут"),
@@ -304,14 +305,36 @@ def _texts_of_node(node: dict) -> list[tuple[str, str]]:
     return out
 
 
+def strict_default(cfg: Config) -> bool:
+    """Смысловые проверки (отрицание, условие, допущение…) — ошибка или предупреждение. config.yaml: checks.strict."""
+    return bool((cfg.raw.get("checks") or {}).get("strict", False))
+
+
+def claim_issues(c: dict, src_texts: list[str], context: str, strict: bool, where: str) -> list[Issue]:
+    """Смысловые проверки одного утверждения по его цитате (kurs/claimcheck.py). Числа проверяются отдельно."""
+    from .claimcheck import claim_findings
+
+    level = "error" if strict else "warn"
+    out = []
+    for f in claim_findings(c.get("text", ""), c.get("quote", ""), src_texts, context):
+        if f.code in ("number_not_in_source", "unit_mismatch", "condition_flipped"):
+            continue  # это уже ошибка проверки чисел
+        if f.code == "assumption_as_fact" and c.get("kind") == "assumption":
+            continue  # утверждение само помечено как допущение автора
+        out.append(Issue(level, where, f"{f.code}: {f.msg}"))
+    return out
+
+
 def check_layer(
     cfg: Config,
     ch: Chapter,
     layer: dict,
     check_numbers: bool = True,
     coverage: dict | None = None,
+    strict: bool | None = None,
 ) -> list[Issue]:
     issues: list[Issue] = []
+    strict = strict_default(cfg) if strict is None else strict
     schema = load_schema(cfg, "node.schema.json")
     v = jsonschema.Draft202012Validator(schema)
     for e in v.iter_errors(layer):
@@ -377,6 +400,9 @@ def check_layer(
                 probs = check_quantities_against_source(c.get("text", ""), src_texts)
                 if probs:
                     issues.append(Issue("error", f"{nid}/claim {c['id']}", f"числа не подтверждены исходной единицей: {'; '.join(probs)}"))
+            if ok:
+                context = " ".join(p.get("text", "") for p in n.get("conditions") or [])
+                issues += claim_issues(c, [u.text for u in claim_units] or [quote], context, strict, f"{nid}/claim {c['id']}")
 
         for l in n.get("links", []):
             if l["type"] == "prerequisite":
@@ -401,9 +427,75 @@ def check_layer(
 
 _BAD_REASONS = ("непоказуем", "нельзя показать", "unshowable")
 
+# Закрытый список причин исключения единицы из курса. Свободный текст допускается только после кода: «toc: оглавление главы».
+REASON_CODES: dict[str, str] = {
+    "page_furniture": r"колонтитул|колонцифр|номер страниц|служебн|header|footer|page number",
+    "toc": r"оглавлен|содержание глав|table of contents|\btoc\b",
+    "bibliography": r"литератур|библиограф|список источник|references|bibliograph",
+    "heading_only": r"заголов|heading|название раздела|название параграф",
+    "duplicate": r"дубл|повтор|duplicate|уже учтен|уже учтён",
+    "decorative_figure": r"декоратив|орнамент|decorative",
+    "model_description": r"описание рисунка|не текст автора|model description",
+    "ocr_noise": r"распознаван|ocr|мусор|искажён|искажен|garbled",
+    "out_of_scope": r"вне темы|вне рамок|не относится|out of scope|другой глав|предыдущ\w* глав|следующ\w* глав|начало следующ|конец предыдущ",
+}
 
-def check_coverage(cfg: Config, ch: Chapter, coverage: dict, layer: dict) -> list[Issue]:
+
+def reason_code(reason: str | None) -> str | None:
+    """Код причины исключения: явный префикс «код: …» или распознанный по словам."""
+    r = (reason or "").strip()
+    if not r:
+        return None
+    head = r.split(":", 1)[0].strip()
+    if head in REASON_CODES:
+        return head
+    low = r.lower()
+    for code, rx in REASON_CODES.items():
+        if re.search(rx, low):
+            return code
+    return None
+
+
+def coded_reason(reason: str, kind: str = "") -> str:
+    """Причина с кодом из закрытого списка в начале; нераспознанная остаётся без кода, и проверка о ней скажет."""
+    code = reason_code(reason) or ("heading_only" if kind == "heading" else None)
+    if code is None or reason.split(":", 1)[0].strip() == code:
+        return reason
+    return f"{code}: {reason}"
+
+
+def taught_units(node: dict) -> set[str]:
+    """Единицы, на которые опирается хоть что-то, что курс показывает ученику."""
+    ids: set[str] = set()
+    for c in node.get("claims", []):
+        if c.get("unit_id"):
+            ids.add(c["unit_id"])
+    for v in (node.get("layers") or {}).values():
+        for part in v if isinstance(v, list) else [v]:
+            if isinstance(part, dict):
+                ids.update(part.get("unit_ids") or [])
+                for q in part.get("paragraphs") or []:
+                    ids.update(q.get("unit_ids") or [])
+    for f in ("steps", "conditions"):
+        for p in node.get(f) or []:
+            ids.update(p.get("unit_ids") or [])
+    for w in node.get("worked_examples") or []:
+        ids.update(w.get("unit_ids") or [])
+    for f in node.get("formulas") or []:
+        if f.get("unit_id"):
+            ids.add(f["unit_id"])
+    for t in node.get("book_tasks") or []:
+        if t.get("unit_id"):
+            ids.add(t["unit_id"])
+    return ids
+
+
+def check_coverage(cfg: Config, ch: Chapter, coverage: dict, layer: dict, strict: bool | None = None) -> list[Issue]:
     issues: list[Issue] = []
+    strict = strict_default(cfg) if strict is None else strict
+    soft = "error" if strict else "warn"
+    nodes_by_id = {n["id"]: n for n in layer.get("nodes", [])}
+    taught = {nid: taught_units(n) for nid, n in nodes_by_id.items()}
     schema = load_schema(cfg, "coverage.schema.json")
     for e in jsonschema.Draft202012Validator(schema).iter_errors(coverage):
         issues.append(Issue("error", "coverage-schema", e.message[:200]))
@@ -435,9 +527,14 @@ def check_coverage(cfg: Config, ch: Chapter, coverage: dict, layer: dict) -> lis
             issues.append(Issue("error", uid, "нет ни узла, ни причины"))
         if any(bad in reason.lower() for bad in _BAD_REASONS):
             issues.append(Issue("error", uid, f"недопустимая причина исключения: «{reason}»"))
+        elif reason and not r.get("node_ids") and reason_code(reason) is None and u.kind != "heading" and not u.model_description:
+            issues.append(Issue(soft, uid, f"причина не из закрытого списка ({', '.join(REASON_CODES)}): «{reason[:80]}»"))
         for nid in r.get("node_ids", []):
             if nid not in node_ids:
                 issues.append(Issue("error", uid, f"ссылка на несуществующий узел {nid}"))
+        owners = [nid for nid in r.get("node_ids", []) if nid in taught]
+        if owners and u.kind != "heading" and not u.model_description and not any(uid in taught[nid] for nid in owners):
+            issues.append(Issue(soft, uid, f"mapped_but_untaught: единица отдана узлу {owners[0]}, но ни утверждение, ни абзац на неё не опираются"))
 
     for uid in units_by_id.keys() - seen_uids:
         issues.append(Issue("error", uid, "единица главы не попала в таблицу покрытия"))

@@ -9,6 +9,7 @@ from pathlib import Path
 import jinja2
 import jsonschema
 
+from . import provenance
 from .config import ROOT, Chapter, Config
 from .course_view import (
     DIFF_NAMES,
@@ -365,13 +366,13 @@ def build_course(
         paras = Paragraphs(n, marker, terms)
         paras.add_layer("mechanism", layers.get("mechanism"), pages)
         for st in n.get("steps") or []:
-            paras.add("steps", step_number(st.get("text", "")), st.get("pages") or pages, bool(st.get("by_model", True)), st.get("unit_ids") or ())
+            paras.add("steps", step_number(st.get("text", "")), st.get("pages") or pages, bool(st.get("by_model", True)), st.get("unit_ids") or (), bool(st.get("hypothesis")))
         paras.add_layer("practice", layers.get("practice"), pages)
         for cnd in n.get("conditions") or []:
-            paras.add("conditions", cnd.get("text", ""), cnd.get("pages") or pages, bool(cnd.get("by_model", True)), cnd.get("unit_ids") or ())
+            paras.add("conditions", cnd.get("text", ""), cnd.get("pages") or pages, bool(cnd.get("by_model", True)), cnd.get("unit_ids") or (), bool(cnd.get("hypothesis")))
         paras.add_layer("nuances", layers.get("nuances"), pages)
         for dp in layers.get("deeper") or []:
-            paras.add("deeper", dp.get("text", ""), dp.get("pages") or pages, bool(dp.get("by_model", True)), dp.get("unit_ids") or ())
+            paras.add("deeper", dp.get("text", ""), dp.get("pages") or pages, bool(dp.get("by_model", True)), dp.get("unit_ids") or (), bool(dp.get("hypothesis")))
         paras.attach(n.get("claims", []))
 
         bt_views = []
@@ -483,6 +484,7 @@ def build_course(
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    env.globals.update(prov_code=provenance.normalize, prov_label=provenance.label, prov_title=provenance.title)
     rendered = env.get_template("course.html.j2").render(
         lang=ch.language or "ru",
         chapter_id=ch.id,

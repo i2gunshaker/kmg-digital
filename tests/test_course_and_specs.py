@@ -110,7 +110,9 @@ def test_course_build_offline_and_playwright_390_1280(tmp_path):
     assert "Подтянуто к задаче (задача 100, стр. 104)" in html_text
     assert "Volve 15/9-F-1 B" in html_text
     assert "pIIO" not in html_text.replace(" ", ""), "текст с латинскими омоглифами не показываем"
-    assert html_text.count("стр. 95 · модель") >= 1 and "Цитата автора" in html_text
+    # Происхождение: пять значений вместо «автор / модель»; у каждого — свой класс и подсказка
+    assert re.search(r"стр\. 95 · (?:пояснение ИИ|из книги|вывод)", html_text) and "Цитата автора" in html_text
+    assert "стр. 95 · модель" not in html_text and 'class="src prov-stated"' in html_text
     assert '<source media="(max-width: 560px)"' in html_text
 
     # Реальная браузерная проверка file:// offline на 390px и 1280px
