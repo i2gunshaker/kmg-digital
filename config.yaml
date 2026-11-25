@@ -1,0 +1,49 @@
+# Входные материалы организаторов (в git не кладём). Переопределяется переменной KURS_INPUT_DIR.
+input_dir: ~/Downloads/хакатон-2
+schemas_dir: пакет_вводных/01_схемы
+domain_pack: domain/geology
+
+llm:
+  # backend: anthropic | openai | claude_cli ; переопределяется KURS_LLM_BACKEND / KURS_LLM_MODEL
+  backend: auto
+  model_anthropic: claude-sonnet-5-5
+  model_openai: gpt-6.2-sol
+  model_claude_cli: claude-sonnet-5-5
+
+chapters:
+  latyshova_gl5_par17-20:
+    prefix: latyshova
+    book: books md/train_latyshova.md
+    lines: [4470, 5202]
+    title: "Латышова, гл. V §17–20: разрезы, коллекторы, характер насыщения"
+    set: train
+  basniev_gl23-24:
+    prefix: basniev
+    book: books md/train_basniev.md
+    lines: [16357, 17319]
+    title: "Басниев и др., гл. XXIII и XXIV §1: неустановившееся движение упругой жидкости"
+    set: train
+  kuznetsov_gl10:
+    prefix: kuznetsov
+    book: books md/train_kuznetsov.md
+    lines: [6402, 7075]
+    title: "Кузнецов, гл. 10 §10.1–10.4: рифовые резервуары"
+    set: train
+  vendelshtein_gl1:
+    prefix: vendelshtein
+    file: пакет_вводных/02_модуль_проверки/контрольный_пакет/vendelshtein_gl1.md
+    title: "Вендельштейн, Резванов, гл. I: косвенные количественные признаки"
+    set: control
+  barenblatt_par4:
+    prefix: barenblatt
+    book: books md/ctrl_barenblatt.md
+    lines: [1046, 1483]
+    title: "Баренблатт и др., §4: нестационарное движение сжимаемой жидкости"
+    set: control
+  baraboshkin_par1-2:
+    prefix: baraboshkin
+    book: books md/ctrl_baraboshkin_b.md
+    lines: [450, 700]
+    title: "Барабошкин, §1.2: дельты"
+    page_print_offset: -1
+    set: control

@@ -1,0 +1,10 @@
+*.pdf
+*.mp4
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+/build/
+.DS_Store
