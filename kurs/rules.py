@@ -170,17 +170,91 @@ def order_task(node: dict) -> dict | None:
     )
 
 
+# Какие ошибки годятся в неверный вариант: правдоподобные и меняющие смысл. «Всегда» звучит неестественно.
+_DISTRACTOR_KINDS = ("number_not_in_source", "direction_flip", "negation", "condition_dropped", "condition_flipped", "assumption_as_fact", "unit_mismatch")
+_KIND_RU = {
+    "number_not_in_source": "другое число", "direction_flip": "обратное направление", "negation": "отрицание наоборот",
+    "condition_dropped": "потеряно условие", "condition_flipped": "перевёрнута граница", "assumption_as_fact": "оговорка автора выдана за правило",
+    "unit_mismatch": "другая единица",
+}
+
+
+def distractors(node: dict, claim: dict, k: int = 3) -> list[tuple[str, str]]:
+    """Неверные варианты из утверждения того же шага: правдоподобная ошибка, которую ловит проверка против цитаты.
+
+    Вариант годится, только если проверка находит в нём ошибку против цитаты автора, а среди утверждений
+    шага нет такого же текста: дистрактор не должен подтверждаться ни одним утверждением."""
+    from .claimcheck import CAUGHT_BY, claim_findings, mutations
+
+    own = {_plain(c["text"]).lower() for c in node["claims"]}
+    out: list[tuple[str, str]] = []
+    muts = {m.kind: m.text for m in mutations(claim["text"], seed=claim["id"])}
+    for kind in _DISTRACTOR_KINDS:
+        text = muts.get(kind)
+        if not text or _plain(text).lower() in own or not _short(_plain(text), 220):
+            continue
+        codes = {f.code for f in claim_findings(text, claim["quote"])}
+        if codes & CAUGHT_BY[kind]:
+            out.append((_plain(text), kind))
+        if len(out) >= k:
+            break
+    return out
+
+
 def single_task(node: dict, misc: dict[str, str]) -> dict | None:
-    """Верное утверждение узла против распространённых заблуждений."""
-    ref = (node.get("misconception") or {}).get("ref")
-    good = next((c for c in node["claims"] if _short(_plain(c["text"]), 200) and c["kind"] != "assumption"), None)
-    if good is None or not ref or ref not in misc:
+    """Верное утверждение шага против его же искажений (другое число, обратное направление, потерянное условие).
+
+    Угадать без чтения шага нельзя: все варианты про одно и то же, отличаются той деталью, которую надо знать.
+    Заблуждение шага, если есть, добавляется пятым вариантом."""
+    title = node["title"].lower() if not node["title"].isupper() else node["title"]
+    for good in node["claims"]:
+        if not _short(_plain(good["text"]), 200) or good["kind"] == "assumption":
+            continue
+        wrong = distractors(node, good, 3)
+        if len(wrong) < 2:
+            continue
+        texts = [(_plain(good["text"]), "")] + [(w, "") for w, _ in wrong]
+        ref = (node.get("misconception") or {}).get("ref")
+        if ref and ref in misc and len(texts) < 5:
+            texts.append((misc[ref], ref))
+        kinds = ", ".join(_KIND_RU[k] for _, k in wrong)
+        return _raw(
+            "single", node, [good["id"]], f"Какое утверждение верно? Тема шага: {title}.",
+            f"Так сказано у автора, а в остальных вариантах: {kinds}", "understanding",
+            options=_opts(texts), answer_list=["a"],
+        )
+    return None
+
+
+def transfer_task(node: dict, nodes: list[dict]) -> dict | None:
+    """Перенос: правило шага применяется к новому набору признаков; неверные выводы — искажения вывода и чужие выводы."""
+    from .claimcheck import mutations
+
+    dec = node.get("decision_on_data")
+    if not dec or not dec.get("conclusion") or not dec.get("features"):
         return None
-    others = _pick(node["id"], [m for m in misc if m != ref], 2)
-    texts = [(_plain(good["text"]), "")] + [(misc[m], m) for m in (ref, *others)]
+    concl = _plain(dec["conclusion"])
+    feats = "; ".join(_plain(f) for f in dec["features"][:3])
+    if not _short(concl, 200) or len(feats) > 300:
+        return None
+    wrong = [_plain(m.text) for m in mutations(concl, seed=node["id"]) if m.kind in ("negation", "direction_flip", "number_not_in_source", "condition_dropped")]
+    other = [
+        _plain(n["decision_on_data"]["conclusion"]) for n in nodes
+        if n["id"] != node["id"] and n.get("decision_on_data") and _short(_plain(n["decision_on_data"].get("conclusion", "")), 200)
+    ]
+    wrong = list(dict.fromkeys(w for w in wrong if w.lower() != concl.lower()))[:2] + _pick(node["id"], sorted(set(other) - {concl}), 1)
+    if len(wrong) < 2:
+        # мало искажений вывода: добираем утверждениями других шагов — верными, но не следующими из этого правила
+        far = [_plain(c["text"]) for n in nodes if n["id"] != node["id"] for c in n["claims"] if _short(_plain(c["text"]), 200)]
+        wrong += _pick(node["id"] + "far", sorted(set(far) - set(wrong) - {concl}), 3 - len(wrong))
+    if len(wrong) < 2:
+        return None
+    claims = [c["id"] for c in node["claims"][:2]]
     return _raw(
-        "single", node, [good["id"]], f"Какое утверждение верно? Тема шага: {node['title'].lower() if not node['title'].isupper() else node['title']}.",
-        "Остальные варианты — распространённые заблуждения", "understanding", options=_opts(texts), answer_list=["a"],
+        "single", node, claims,
+        f"На новой скважине вы видите: {feats}. Какой вывод следует по правилу шага «{node['title']}»?",
+        f"Правило шага: {_plain(dec['rule'])}", "transfer",
+        options=_opts([(concl, "")] + [(w, "") for w in wrong]), answer_list=["a"],
     )
 
 
@@ -295,12 +369,12 @@ def tasks_by_rules(layer: dict, misc: list[dict], term_rx, want: int) -> list[di
     """Кандидаты в задания в форме ответа модели; проверяет и отбирает их общий код."""
     nodes = [n for n in layer["nodes"] if n["claims"]]
     texts = {m["id"]: m["text"] for m in misc}
-    by_type: dict[str, list[dict]] = {k: [] for k in ("order", "calc", "multiple", "single", "gap", "term")}
+    by_type: dict[str, list[dict]] = {k: [] for k in ("order", "calc", "multiple", "single", "gap", "term", "transfer")}
     for n in nodes:
         terms = [g["term"] for g in n["glossary"]] + list(n["terms_used"])
         for key, made in (
             ("order", order_task(n)), ("calc", calc_task(n) or range_task(n)), ("multiple", multiple_task(n, nodes)), ("single", single_task(n, texts)),
-            ("gap", gap_task(n, terms, term_rx)), ("term", term_task(n, nodes)),
+            ("gap", gap_task(n, terms, term_rx)), ("term", term_task(n, nodes)), ("transfer", transfer_task(n, nodes)),
         ):
             if made:
                 by_type[key].append(made)
@@ -309,7 +383,7 @@ def tasks_by_rules(layer: dict, misc: list[dict], term_rx, want: int) -> list[di
     # По кругу: типы чередуются, на шаг не больше двух заданий, узнавания не больше трети.
     while len(out) < want and any(by_type.values()):
         moved = False
-        for key in ("order", "single", "multiple", "gap", "calc", "term"):
+        for key in ("order", "single", "transfer", "multiple", "gap", "calc", "term"):
             pool = by_type[key]
             pool.sort(key=lambda t: (per_step.get(t["step_id"], 0)))
             while pool and len(out) < want:

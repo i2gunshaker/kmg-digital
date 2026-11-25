@@ -7,6 +7,7 @@ from typing import Any, Iterable
 
 from markupsafe import Markup, escape
 
+from . import provenance
 from .units import Unit
 from .verify import numbers
 
@@ -172,6 +173,7 @@ def claim_view(c: dict, marker: TermMarker, terms: list[dict]) -> dict:
         "kind": KIND_RU.get(c["kind"], c["kind"]),
         "page": c["page_pdf"],
         "by_model": bool(c.get("by_model")),
+        "prov": provenance.of_claim(c),
         "quote": rich(c["quote"]),
         "notes": [plain_note(s) for s in notes] if text else [],
     }
@@ -184,7 +186,9 @@ class Paragraphs:
         self.node, self.marker, self.terms = node, marker, terms
         self.items: list[dict] = []
 
-    def add(self, block: str, text: str, pages: Iterable[int] | None, by_model: bool, unit_ids: Iterable[str] = ()) -> None:
+    def add(
+        self, block: str, text: str, pages: Iterable[int] | None, by_model: bool, unit_ids: Iterable[str] = (), hypothesis: bool = False
+    ) -> None:
         body, notes = split_notes(text)
         if not body and not notes:
             return
@@ -195,6 +199,7 @@ class Paragraphs:
                 "html": self.marker.html(body, self.terms),
                 "pages": sorted(set(pages or [])),
                 "by_model": by_model,
+                "prov": "hypothesis" if hypothesis else ("explanatory" if by_model else "stated"),
                 "unit_ids": set(unit_ids or ()),
                 "notes": [plain_note(s) for s in notes],
                 "quotes": [],
@@ -208,11 +213,11 @@ class Paragraphs:
         paras = part.get("paragraphs")
         if paras:
             for q in paras:
-                self.add(block, q["text"], q.get("pages") or default_pages, bool(q.get("by_model")), q.get("unit_ids") or ())
+                self.add(block, q["text"], q.get("pages") or default_pages, bool(q.get("by_model")), q.get("unit_ids") or (), bool(q.get("hypothesis")))
             return
         for chunk in re.split(r"\n\s*\n", part.get("text") or ""):
             if chunk.strip():
-                self.add(block, chunk.strip(), part.get("pages") or default_pages, bool(part.get("by_model", True)))
+                self.add(block, chunk.strip(), part.get("pages") or default_pages, bool(part.get("by_model", True)), (), bool(part.get("hypothesis")))
 
     def attach(self, claims: list[dict]) -> None:
         for c in claims:
@@ -221,7 +226,7 @@ class Paragraphs:
             view = claim_view(c, self.marker, self.terms)
             if not pool:
                 self.items.append(
-                    {"block": "mechanism", "text": c["text"], "html": view["html"], "pages": [c["page_pdf"]], "by_model": view["by_model"], "unit_ids": set(), "notes": view["notes"], "quotes": [view], "extra": []}
+                    {"block": "mechanism", "text": c["text"], "html": view["html"], "pages": [c["page_pdf"]], "by_model": view["by_model"], "prov": view["prov"], "unit_ids": set(), "notes": view["notes"], "quotes": [view], "extra": []}
                 )
                 continue
             words = content_stems(c["text"])
