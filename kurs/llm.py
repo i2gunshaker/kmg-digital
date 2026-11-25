@@ -194,12 +194,41 @@ def parse_json(text: str) -> Any:
 
 
 # ---------------------------------------------------------------- бэкенды
+def _b64(path: Path) -> tuple[str, str]:
+    import base64
+
+    media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}.get(path.suffix.lower(), "image/png")
+    return media, base64.b64encode(path.read_bytes()).decode("ascii")
+
+
+def _anthropic_content(user: str, images: list[Path] | None) -> Any:
+    if not images:
+        return user
+    blocks: list[dict[str, Any]] = []
+    for p in images:
+        media, data = _b64(p)
+        blocks.append({"type": "text", "text": f"Кадр {p.name}:"})
+        blocks.append({"type": "image", "source": {"type": "base64", "media_type": media, "data": data}})
+    return blocks + [{"type": "text", "text": user}]
+
+
+def _openai_content(user: str, images: list[Path] | None) -> Any:
+    if not images:
+        return user
+    parts: list[dict[str, Any]] = []
+    for p in images:
+        media, data = _b64(p)
+        parts.append({"type": "text", "text": f"Кадр {p.name}:"})
+        parts.append({"type": "image_url", "image_url": {"url": f"data:{media};base64,{data}"}})
+    return parts + [{"type": "text", "text": user}]
+
+
 def _anthropic_transport() -> Transport:
     import anthropic
 
     client = anthropic.Anthropic(max_retries=2, timeout=1200.0)
 
-    def call(model: str, system: list[str], user: str, schema: dict | None, effort: str, max_tokens: int) -> Reply:
+    def call(model: str, system: list[str], user: str, schema: dict | None, effort: str, max_tokens: int, images: list[Path] | None = None) -> Reply:
         out_cfg: dict[str, Any] = {"effort": effort}
         if schema is not None:
             out_cfg["format"] = {"type": "json_schema", "schema": schema}
@@ -215,7 +244,7 @@ def _anthropic_transport() -> Transport:
                 model=model,
                 max_tokens=max_tokens,
                 system=blocks,
-                messages=[{"role": "user", "content": user}],
+                messages=[{"role": "user", "content": _anthropic_content(user, images)}],
                 output_config=out_cfg,
                 **extra,
             ) as stream:
@@ -262,7 +291,7 @@ def _openai_transport() -> Transport:
 
     client = openai.OpenAI(max_retries=2, timeout=1200.0)
 
-    def call(model: str, system: list[str], user: str, schema: dict | None, effort: str, max_tokens: int) -> Reply:
+    def call(model: str, system: list[str], user: str, schema: dict | None, effort: str, max_tokens: int, images: list[Path] | None = None) -> Reply:
         fmt: dict[str, Any] = {"type": "json_object"}
         if schema is not None:
             fmt = {"type": "json_schema", "json_schema": {"name": "result", "strict": True, "schema": schema}}
@@ -271,7 +300,7 @@ def _openai_transport() -> Transport:
                 model=model,
                 messages=[
                     {"role": "system", "content": "\n\n".join(s for s in system if s)},
-                    {"role": "user", "content": user},
+                    {"role": "user", "content": _openai_content(user, images)},
                 ],
                 response_format=fmt,
                 max_completion_tokens=max_tokens,
@@ -378,18 +407,17 @@ class LLM:
             usd *= long["times"]
         return usd
 
-    def forecast(self, model: str, system: list[str], user: str, schema: dict, max_tokens: int) -> float:
-        """Цена вызова до вызова: вход по длине текста, выход по верхней границе обычного ответа."""
+    def forecast(self, model: str, system: list[str], user: str, schema: dict, max_tokens: int, images: int = 0) -> float:
+        """Цена вызова до вызова: вход по длине текста (и ~1600 токенов на кадр), выход по верхней границе обычного ответа."""
         chars = sum(map(len, system)) + len(user) + len(json.dumps(schema, ensure_ascii=False))
-        return self.cost(model, Usage(cache_write=int(chars / CHARS_PER_TOKEN), output=min(max_tokens, 12000)))
+        return self.cost(model, Usage(cache_write=int(chars / CHARS_PER_TOKEN) + 1600 * images, output=min(max_tokens, 12000)))
 
     # -- вызов
-    def _key(self, model: str, system: list[str], user: str, schema: dict, effort: str) -> str:
-        blob = json.dumps(
-            {"b": self.backend, "m": model, "s": system, "u": user, "j": schema, "e": effort},
-            ensure_ascii=False,
-            sort_keys=True,
-        )
+    def _key(self, model: str, system: list[str], user: str, schema: dict, effort: str, images: list[Path] | None = None) -> str:
+        rec: dict[str, Any] = {"b": self.backend, "m": model, "s": system, "u": user, "j": schema, "e": effort}
+        if images:  # без картинок ключ прежний: старый кэш остаётся в силе
+            rec["i"] = [hashlib.sha256(p.read_bytes()).hexdigest() for p in images]
+        blob = json.dumps(rec, ensure_ascii=False, sort_keys=True)
         return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
     def json(
@@ -402,12 +430,13 @@ class LLM:
         label: str,
         effort: str | None = None,
         max_tokens: int = 64000,
+        images: list[Path] | None = None,
     ) -> dict:
-        """Ответ модели по схеме. Одинаковый запрос берётся с диска и ничего не стоит."""
+        """Ответ модели по схеме. Одинаковый запрос берётся с диска и ничего не стоит. images — PNG/JPEG для модели со зрением."""
         schema = strict_schema(schema)
         model = self.model_for(role)
         effort = effort or (self.opts.get("effort") or {}).get(role, "medium")
-        key = self._key(model, system, user, schema, effort)
+        key = self._key(model, system, user, schema, effort, images)
         path = self.cache_dir / key[:2] / f"{key}.json"
         if path.exists():
             rec = json.loads(path.read_text(encoding="utf-8"))
@@ -420,7 +449,7 @@ class LLM:
             raise LLMError(f"{label}: модель {model} запрещена, разрешены только: {', '.join(allow)} (llm.allow в config.yaml)")
         if self.offline:
             raise OfflineMiss(f"{label}: ответа нет в кэше, а сетевые вызовы запрещены (KURS_LLM_OFFLINE=1)")
-        price = self.forecast(model, system, user, schema, max_tokens)
+        price = self.forecast(model, system, user, schema, max_tokens, len(images or []))
         with self._lock:
             if self._transport is None:
                 if price > 0 and self.wallet.run_limit <= 0:
@@ -445,9 +474,8 @@ class LLM:
             cost = 0.0
             t0 = time.monotonic()
             try:
-                reply = self._transport(
-                    model, system, user + note + text_schema, None if by_words else schema, effort, max_tokens
-                )
+                args = (model, system, user + note + text_schema, None if by_words else schema, effort, max_tokens)
+                reply = self._transport(*args, images=images) if images else self._transport(*args)
                 cost = self.cost(model, reply.usage)
             except SchemaTooLarge:
                 self._by_words.add(schema_id)
