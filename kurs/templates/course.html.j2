@@ -232,10 +232,10 @@
             <h3>Формулы</h3>
             {% for fm in s.formulas %}
             <div class="card formula">
-              <div class="math-tex" data-tex="{{ fm.tex }}" data-display="true">{{ fm.tex }}</div>
+              {% if fm.tex_rich %}<p class="formula-prose">{{ fm.tex_rich }}</p>{% else %}<div class="math-tex" data-tex="{{ fm.tex }}" data-display="true">{{ fm.tex }}</div>{% endif %}
               <p>{{ fm.meaning }} {{ src(fm.page, false) }}</p>
               {% for nt in fm.notes %}<p class="ed-note">Пометка к тексту книги: {{ nt }}</p>{% endfor %}
-              {% if fm.raw %}<details class="quotes"><summary>Как записано в файле главы</summary><div class="math-tex" data-tex="{{ fm.raw }}" data-display="true">{{ fm.raw }}</div></details>{% endif %}
+              {% if fm.raw_rich %}<details class="quotes"><summary>Как записано в файле главы</summary><p class="formula-prose">{{ fm.raw_rich }}</p></details>{% elif fm.raw %}<details class="quotes"><summary>Как записано в файле главы</summary><div class="math-tex" data-tex="{{ fm.raw }}" data-display="true">{{ fm.raw }}</div></details>{% endif %}
             </div>
             {% endfor %}
             {% if s.variables %}
@@ -463,7 +463,7 @@
           <h4>{{ s.order }}. {{ s.title }} <span class="src">стр. {{ s.pages_label }}</span></h4>
           <p>{{ s.main_text }}</p>
           {% for q in s.conditions %}{% if q.text %}<p><b>Условие.</b> {{ q.text }}</p>{% endif %}{% endfor %}
-          {% for fm in s.formulas %}<div class="math-tex" data-tex="{{ fm.tex }}" data-display="true">{{ fm.tex }}</div>{% endfor %}
+          {% for fm in s.formulas %}{% if fm.tex_rich %}<p>{{ fm.tex_rich }}</p>{% else %}<div class="math-tex" data-tex="{{ fm.tex }}" data-display="true">{{ fm.tex }}</div>{% endif %}{% endfor %}
           {% if s.misconception %}<p><b>Частая ошибка.</b> {{ s.misconception }}</p>{% endif %}
         </div>
         {% endfor %}

@@ -202,6 +202,10 @@ def _node_terms(node: dict, glossary: list[dict]) -> list[dict]:
     return [{"term": g["term"], "definition": g["definition"], "en": "" if g.get("en") in (None, "—") else g["en"]} for g in out]
 
 
+def _has_mixed_math(s: str) -> bool:
+    return bool(re.search(r"\\\(|\\\[", s or ""))
+
+
 def _node_formulas(node: dict, units: list[Unit], pages: list[int], ocr: OcrFix) -> list[dict]:
     if "formulas" in node:
         out = []
@@ -212,13 +216,34 @@ def _node_formulas(node: dict, units: list[Unit], pages: list[int], ocr: OcrFix)
                 continue
             meaning, notes = split_notes(f.get("meaning") or "")
             notes = notes + ocr.note(f["page_pdf"], f.get("latex") or "")
-            out.append({"page": f["page_pdf"], "tex": tex, "raw": raw if _tex_key(raw) != _tex_key(tex) else "", "meaning": rich(meaning), "notes": [plain_note(x) for x in notes]})
+            tex_mixed = _has_mixed_math(tex)
+            raw_diff = _tex_key(raw) != _tex_key(tex)
+            raw_mixed = raw_diff and _has_mixed_math(raw)
+            out.append({
+                "page": f["page_pdf"],
+                "tex": "" if tex_mixed else tex,
+                "tex_rich": rich(tex) if tex_mixed else "",
+                "raw": raw if (raw_diff and not raw_mixed) else "",
+                "raw_rich": rich(raw) if raw_mixed else "",
+                "meaning": rich(meaning),
+                "notes": [plain_note(x) for x in notes],
+            })
         return out
-    return [
-        {"page": u.page_pdf, "tex": ocr.tex(clean_tex(u.text)), "raw": "", "meaning": "", "notes": []}
-        for u in units
-        if u.kind == "formula" and not u.model_description and u.page_pdf in pages
-    ]
+    out = []
+    for u in units:
+        if u.kind == "formula" and not u.model_description and u.page_pdf in pages:
+            tex = ocr.tex(clean_tex(u.text))
+            mixed = _has_mixed_math(tex)
+            out.append({
+                "page": u.page_pdf,
+                "tex": "" if mixed else tex,
+                "tex_rich": rich(tex) if mixed else "",
+                "raw": "",
+                "raw_rich": "",
+                "meaning": "",
+                "notes": [],
+            })
+    return out
 
 
 def _tex_key(tex: str) -> str:

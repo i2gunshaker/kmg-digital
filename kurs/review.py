@@ -449,11 +449,14 @@ def vision_skeptic(llm, src: Source, remarks: list[dict], frames_by_id: dict[str
         return set()
     imgs: list[Path] = []
     view = []
+    kept_targets: list[str] = []
     for r in remarks:
         fr = frames_by_id.get(r["target"]) or {}
         p = pkg_dir / str(fr.get("file", ""))
-        if p.exists():
-            imgs.append(p)
+        if not p.exists():
+            continue
+        imgs.append(p)
+        kept_targets.append(r["target"])
         view.append({
             "target": r["target"],
             "frame": fr,
@@ -463,6 +466,8 @@ def vision_skeptic(llm, src: Source, remarks: list[dict], frames_by_id: dict[str
             "evidence": r.get("_evidence", ""),
             "page_pdf": r.get("page_pdf"),
         })
+    if not imgs:
+        return {r["target"] for r in remarks}
     system = [
         "Ты строгий визуальный проверяющий. Смотри на сами PNG-кадры и метаданные (shows, label, plaque). "
         "Оставь замечание (keep=true), только если на картинке реально видна физическая ошибка, неверная ось/направление глубины, "
@@ -470,8 +475,8 @@ def vision_skeptic(llm, src: Source, remarks: list[dict], frames_by_id: dict[str
         "Глава:\n" + _chapter_block(src),
     ]
     data = llm.json(
-        "senior", system, json.dumps(view, ensure_ascii=False), _verdict_schema([r["target"] for r in remarks]),
-        label="review-vision-skeptic", effort="high", max_tokens=12000, images=imgs or None,
+        "senior", system, json.dumps(view, ensure_ascii=False), _verdict_schema(kept_targets),
+        label="review-vision-skeptic", effort="high", max_tokens=12000, images=imgs,
     )
     return {v["target"] for v in data["verdicts"] if v["keep"]}
 
@@ -572,14 +577,16 @@ def review(cfg: Config, pkg_path: Path, out_path: Path, *, team: str | None = No
         survivors = set(objective_keep)
         try:
             survivors |= skeptic(llm, src, text_pool, items_by_id, frames_by_id)
-            survivors |= vision_skeptic(llm, src, vision_pool, frames_by_id, pkg_dir)
-            before = len(dedup)
-            remarks = [r for r in dedup if r["target"] in survivors]
-            log(f"второй проход: оставлено {len(remarks)} из {before}")
         except LLMError as e:
-            # без перепроверки оставляем только доказанное кодом: точность важнее полноты
-            log(f"второй проход недоступен ({str(e)[:120]}): оставляю только замечания кода")
-            remarks = [r for r in remarks if r["_source"] == "code"]
+            log(f"второй проход по тексту недоступен ({str(e)[:120]}): оставляю доказанное кодом")
+            survivors |= {r["target"] for r in text_pool if r.get("_source") == "code"}
+        try:
+            survivors |= vision_skeptic(llm, src, vision_pool, frames_by_id, pkg_dir)
+        except LLMError as e:
+            log(f"второй проход по кадрам недоступен ({str(e)[:120]}): оставляю доказанное кодом")
+        before = len(dedup)
+        remarks = [r for r in dedup if r["target"] in survivors]
+        log(f"второй проход: оставлено {len(remarks)} из {before}")
 
     final = [clean(r, set(src.pages)) for r in pick_one(remarks)]
     order = {str(x.get("id")): i for i, x in enumerate(items + frames)}

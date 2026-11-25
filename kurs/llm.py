@@ -226,7 +226,7 @@ def _openai_content(user: str, images: list[Path] | None) -> Any:
 def _anthropic_transport() -> Transport:
     import anthropic
 
-    client = anthropic.Anthropic(max_retries=2, timeout=1200.0)
+    client = anthropic.Anthropic(max_retries=6, timeout=1200.0)
 
     def call(model: str, system: list[str], user: str, schema: dict | None, effort: str, max_tokens: int, images: list[Path] | None = None) -> Reply:
         out_cfg: dict[str, Any] = {"effort": effort}
@@ -289,7 +289,7 @@ def _anthropic_transport() -> Transport:
 def _openai_transport() -> Transport:
     import openai
 
-    client = openai.OpenAI(max_retries=2, timeout=1200.0)
+    client = openai.OpenAI(max_retries=6, timeout=1200.0)
 
     def call(model: str, system: list[str], user: str, schema: dict | None, effort: str, max_tokens: int, images: list[Path] | None = None) -> Reply:
         fmt: dict[str, Any] = {"type": "json_object"}

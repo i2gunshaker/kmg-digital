@@ -92,7 +92,7 @@ def clean_tex(tex: str) -> str:
     if m:
         t = m.group(1)
     t = t.replace("$", " ").strip()
-    t = re.sub(r"^\\\[|\\\]$", "", t).strip()
+    t = re.sub(r"^\\\[|\\\]$|^\\\(|\\\)$", "", t).strip()
     return re.sub(r"[,;.]\s*$", "", t).strip()
 
 
