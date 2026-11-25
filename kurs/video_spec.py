@@ -7,7 +7,7 @@ from pathlib import Path
 
 import jsonschema
 
-from .config import ROOT, Config
+from .config import BUILD, ROOT, Config
 from .verify import Source, check_quantities_against_source
 
 
@@ -93,7 +93,7 @@ def _build_checklist(answers_override: dict[str, tuple[str, str]]) -> list[dict]
 
 def build_training_specs(cfg: Config, out_dir: Path | None = None) -> dict:
     """Создаёт и валидирует спецификации сцен, паспорта двух роликов и MENTOR_BRIEF.md."""
-    out_dir = out_dir or (ROOT / "specs")
+    out_dir = out_dir or (BUILD / "specs")
     out_dir.mkdir(parents=True, exist_ok=True)
     passport_schema = json.loads((cfg.schemas_dir / "passport.schema.json").read_text(encoding="utf-8"))
 
@@ -194,7 +194,7 @@ def build_training_specs(cfg: Config, out_dir: Path | None = None) -> dict:
             {"t_start": 50.2, "t_end": 56.0, "text": "Каку́ю втору́ю криву́ю вы́ доба́вите к сопротивле́нию на сква́жине Волв, что́бы отсе́ять пло́тный просло́й?", "claim_id": "latyshova.high_rt_not_always_oil#c6", "is_analogy": False, "on_screen": "Перенос: какой метод добавить?"},
         ],
         "sources": lat_sources,
-        "scene_spec": "specs/latyshova_shorts_scene.json",
+        "scene_spec": str(lat_scene_path.relative_to(ROOT)) if lat_scene_path.is_relative_to(ROOT) else str(lat_scene_path),
         "frames": [
             {"t": 1.5, "class": "B", "label": "симуляция"},
             {"t": 8.0, "class": "B", "label": "симуляция"},
@@ -340,7 +340,7 @@ def build_training_specs(cfg: Config, out_dir: Path | None = None) -> dict:
             {"t_start": 96.2, "t_end": 110.0, "text": "Как по вре́менному ря́ду криво́й восстановле́ния давле́ния алгорит́м узна́ет, что воро́нка упёрлась в непроница́емый сброс?", "claim_id": "basniev.elastic_diffusivity_funnel#c8", "is_analogy": False, "on_screen": "Перенос: как ГДИС видит границу?"},
         ],
         "sources": bas_sources,
-        "scene_spec": "specs/basniev_deepdive_scene.json",
+        "scene_spec": str(bas_scene_path.relative_to(ROOT)) if bas_scene_path.is_relative_to(ROOT) else str(bas_scene_path),
         "frames": [
             {"t": 1.5, "class": "B", "label": "схема"},
             {"t": 9.0, "class": "B", "label": "симуляция"},

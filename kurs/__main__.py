@@ -3,7 +3,7 @@
   python -m kurs units   <глава|путь.md>              — вырезать главу и разбить на единицы
   python -m kurs check   <глава> [layer.json] [cov]   — проверить слой и покрытие
   python -m kurs course  <глава> [--layer ...]        — собрать автономный офлайн-курс (file://)
-  python -m kurs specs   [--out specs]                — собрать и проверить спецификации роликов для ментора
+  python -m kurs specs   [--out build/specs]          — собрать и проверить спецификации роликов для ментора
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ def main(argv=None) -> int:
     p.add_argument("--out", help="выходная папка курса (по умолчанию build/<chapter>/course)")
 
     p = sub.add_parser("specs")
-    p.add_argument("--out", help="папка для спецификаций и паспортов (по умолчанию specs/)")
+    p.add_argument("--out", help="папка для спецификаций и паспортов (по умолчанию build/specs/)")
 
     args = ap.parse_args(argv)
     cfg = Config()
