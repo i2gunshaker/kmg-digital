@@ -310,12 +310,15 @@ def build_course(
     for ill in ill_doc.get("illustrations", []):
         ills_by_step.setdefault(ill["step_id"], []).append(ill)
 
+    tp = ch.build_dir / "tasks.json"
+    from_file = tasks_doc is None and tp.exists()
     if tasks_doc is None:
-        tp = ch.build_dir / "tasks.json"
-        tasks_doc = json.loads(tp.read_text(encoding="utf-8")) if tp.exists() else _demo_tasks_for_layer(layer)
+        tasks_doc = json.loads(tp.read_text(encoding="utf-8")) if from_file else _demo_tasks_for_layer(layer)
     task_schema = json.loads((cfg.schemas_dir / "task.schema.json").read_text(encoding="utf-8"))
     jsonschema.validate(tasks_doc, task_schema)
-    (ch.build_dir / "tasks.json").write_text(json.dumps(tasks_doc, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Готовый файл не переписываем: иначе генератор примет новую запись за ручную правку.
+    if not from_file:
+        tp.write_text(json.dumps(tasks_doc, ensure_ascii=False, indent=2), encoding="utf-8")
 
     routes_by_node = {}
     if routing_doc:

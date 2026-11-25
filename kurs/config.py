@@ -98,7 +98,7 @@ class Config:
         ).expanduser()
         self.schemas_dir = self.input_dir / self.raw["schemas_dir"]
         self.domain_dir = ROOT / self.raw["domain_pack"]
-        self.llm = dict(self.raw.get("llm", {}))
+        self.llm = self._llm_options(os.environ.get("KURS_LLM_PROFILE"))
         self.chapters: dict[str, Chapter] = {}
         for cid, c in (self.raw.get("chapters") or {}).items():
             lines = tuple(c["lines"]) if c.get("lines") else None
@@ -115,6 +115,26 @@ class Config:
                 language=c.get("language"),
                 extra={k: v for k, v in c.items() if k not in known},
             )
+
+    def _llm_options(self, profile: str | None) -> dict:
+        """Секция llm с подставленным набором моделей."""
+        opts = dict(self.raw.get("llm", {}))
+        profiles = opts.get("profiles") or {}
+        name = profile or opts.get("profile")
+        if not profiles:
+            return opts
+        if name not in profiles:
+            raise KeyError(f"нет набора моделей {name}; есть: {', '.join(profiles)}")
+        chosen = profiles[name]
+        return {
+            **opts,
+            **chosen,
+            "profile": name,
+            "models": {**(opts.get("models") or {}), **(chosen.get("models") or {})},
+        }
+
+    def use_profile(self, name: str) -> None:
+        self.llm = self._llm_options(name)
 
     def chapter(self, cid: str) -> Chapter:
         if cid in self.chapters:

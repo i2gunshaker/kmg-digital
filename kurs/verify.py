@@ -172,9 +172,26 @@ def _extract_cond(prefix: str) -> str | None:
     return None
 
 
+_SUP = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺", "0123456789-+")
+_POWER_RE = re.compile(r"(?<=\d)([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)")
+_TEX_SPACE_RE = re.compile(r"(?<=\d)\\[,;: !]\s*(?=\d{3}(?!\d))")
+_GROUP_RE = re.compile(r"(?<![\d.,])([1-9]\d{0,2})((?:[ \u00a0\u2009\u202f]\d{3})+)(?![\d]|[.,]\d{3})")
+_EN_GROUP_RE = re.compile(r"(?<![\d.,])([1-9]\d{0,2})((?:,\d{3})+)(?!\d)")
+
+
+def normalize_numbers(text: str) -> str:
+    """Приводит запись чисел к одному виду: «10 000», «10\\,000», «1,500» в английском тексте, степени «10⁻⁵»."""
+    s = _POWER_RE.sub(lambda m: "^{" + m.group(1).translate(_SUP) + "}", text or "")
+    s = _TEX_SPACE_RE.sub(" ", s)
+    s = _GROUP_RE.sub(lambda m: m.group(1) + re.sub(r"\s", "", m.group(2)), s)
+    if not re.search(r"[А-Яа-яЁё]", s):
+        s = _EN_GROUP_RE.sub(lambda m: m.group(1) + m.group(2).replace(",", ""), s)
+    return s
+
+
 def extract_quantities(text: str, strip_list_markers: bool = False) -> list[Quantity]:
     """Извлекает числа с сохранением знака, канонизированной единицы и неравенства."""
-    s = text or ""
+    s = normalize_numbers(text)
     if strip_list_markers:
         s = _LIST_MARKER_RE.sub("", s)
     out: list[Quantity] = []
@@ -265,6 +282,8 @@ def _texts_of_node(node: dict) -> list[tuple[str, str]]:
             out.append((f"layers.{k}", v.get("text", "")))
         elif isinstance(v, list):
             out += [(f"layers.{k}[{i}]", x.get("text", "")) for i, x in enumerate(v)]
+    for f in ("steps", "conditions"):
+        out += [(f"{f}[{i}]", p.get("text", "")) for i, p in enumerate(node.get(f) or [])]
     for i, w in enumerate(node.get("worked_examples") or []):
         out.append((f"worked_examples[{i}]", " ".join([w.get("condition", ""), *w.get("steps", []), w.get("result", "")])))
     dm = node.get("data_meaning") or {}

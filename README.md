@@ -50,6 +50,20 @@ read -s -p "API Key: " KEY && printf '\nANTHROPIC_API_KEY=%s\n' "$KEY" >> .env &
 .venv/bin/python -m kurs units all
 .venv/bin/python -m kurs units path/to/chapter.md
 
+# Проверить ключ и доступность моделей (бесплатно)
+.venv/bin/python -m kurs llm
+
+# Прогноз цены главы и остаток общего предела (бесплатно); наборы моделей — cheap, mid, max
+.venv/bin/python -m kurs cost path/to/chapter.md
+.venv/bin/python -m kurs cost all --profile mid
+
+# Построить слой, покрытие, маршрутизацию и задания
+# Без --max-usd платных вызовов нет: работают кэш build/.cache/llm, починка кодом, маршруты и задания по правилам
+# Готовые layer/routing/tasks второй раз не делаются (переделать — --redo)
+# Обрыв API не теряет работу: слой собирается без пропущенных запросов (missed_calls), повторный запуск доделывает их
+.venv/bin/python -m kurs gen latyshova_gl5_par17-20
+.venv/bin/python -m kurs gen path/to/chapter.md --max-usd 0.5
+
 # Проверить готовый слой и 100% покрытие по схемам, цитатам, числам и терминам
 .venv/bin/python -m kurs check latyshova_gl5_par17-20 path/to/layer.json path/to/coverage.json
 
@@ -65,6 +79,15 @@ read -s -p "API Key: " KEY && printf '\nANTHROPIC_API_KEY=%s\n' "$KEY" >> .env &
 - `python -m kurs rebuild <chapter> <node_id>` — пересборка курса/ролика после ручной правки факта в слое без повторного вызова LLM.
 - `python -m kurs review <package.json> --out <result.json>` — внешний модуль проверки учебных слоёв и кадров.
 - `python -m kurs video <passport.json>` — озвучка, нормализация `-16 LUFS`, субтитры `mlx-whisper` и рендер MP4 в Remotion.
+
+## Расход на LLM
+
+- Платные вызовы выключены, пока не указан `--max-usd` (или `KURS_LLM_BUDGET`). Предел один на все главы запуска.
+- Общий предел за всё время — `llm.total_usd` в `config.yaml`; он считается по `build/llm_usage.jsonl` и не даёт превысить бюджет повторными запусками.
+- Место под цену вызова бронируется до вызова, второй платный запуск рядом не стартует, модель без цены в `llm.prices` не вызывается.
+- Карточки сначала чинит код ([kurs/repair.py](kurs/repair.py)): цитаты, числа, термины, длина фраз. Модель возвращает только короткие правки оставшихся мест, а не карточку целиком.
+- Судья (`llm.judge`) сверяет карточки с источником по смыслу; правки вносит код, журнал — в `gen_report.json`. Если рядом есть PDF с текстовым слоем и установлен `pdftotext`, индексы формул сверяются по нему.
+- Без модели маршруты и задания строятся по правилам ([kurs/rules.py](kurs/rules.py)); в `gen_report.json` это отмечено полями `routing_by` и `tasks_by`.
 
 ## Проверки и тесты
 
@@ -84,6 +107,11 @@ node video/qa_course.mjs build/<chapter_id>/course/index.html
 │   ├── config.py                # Загрузка config.yaml и .env, поддержка произвольных .md (RU/EN)
 │   ├── units.py                 # Нарезка глав на единицы, фильтрация модельных описаний рисунков, детектор OCR
 │   ├── verify.py                # Проверка схем, дословных цитат, чисел (знак/единица/условие), терминов и покрытия
+│   ├── llm.py, cost.py          # Переходник к LLM: кэш, учёт расхода, пределы; прогноз цены главы
+│   ├── layer_gen.py, judge.py   # Генерация слоя и покрытия, исправление по проверке, смысловая сверка с главой
+│   ├── quotes.py, repair.py     # Привязка цитат к тексту и починка карточек кодом, без модели
+│   ├── pdfref.py                # Текстовый слой PDF как справка для чтения индексов
+│   ├── tasks_gen.py, rules.py   # Маршрутизация и задания: моделью или по правилам; prompts/ — тексты промптов
 │   ├── datasets.py              # Загрузка и проверка SHA-256 открытого среза Equinor Volve 15/9-F-1 B
 │   ├── illustrations.py         # Детерминированные SVG-иллюстрации классов A и B по styleguide.json
 │   ├── course.py                # Сборка автономного офлайн-курса (file://, inline JSON, Volve-виджет, задания)
