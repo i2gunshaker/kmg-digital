@@ -97,7 +97,8 @@ class Config:
             os.environ.get("KURS_INPUT_DIR", self.raw["input_dir"])
         ).expanduser()
         self.schemas_dir = self.input_dir / self.raw["schemas_dir"]
-        self.domain_dir = ROOT / self.raw["domain_pack"]
+        # Доменный пакет: config.yaml → KURS_DOMAIN_PACK (путь или имя папки в domain/) → `kurs run --domain`
+        self.domain_dir = self.domain_path(os.environ.get("KURS_DOMAIN_PACK") or self.raw["domain_pack"])
         self.llm = self._llm_options(os.environ.get("KURS_LLM_PROFILE"))
         self.chapters: dict[str, Chapter] = {}
         for cid, c in (self.raw.get("chapters") or {}).items():
@@ -132,6 +133,19 @@ class Config:
             "profile": name,
             "models": {**(opts.get("models") or {}), **(chosen.get("models") or {})},
         }
+
+    @staticmethod
+    def domain_path(name: str) -> Path:
+        """«drilling» → domain/drilling; путь — как есть (относительный — от корня репозитория)."""
+        p = Path(name).expanduser()
+        if not p.is_absolute():
+            p = ROOT / p if (ROOT / p).exists() or "/" in name else ROOT / "domain" / name
+        if not p.exists():
+            raise FileNotFoundError(f"нет доменного пакета {p}")
+        return p
+
+    def use_domain(self, name: str) -> None:
+        self.domain_dir = self.domain_path(name)
 
     def use_profile(self, name: str) -> None:
         self.llm = self._llm_options(name)

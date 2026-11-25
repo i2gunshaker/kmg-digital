@@ -8,6 +8,13 @@
   python -m kurs llm                                  — проверить ключ и модели без платных вызовов
   python -m kurs course  <глава> [--layer ...]        — собрать автономный офлайн-курс (file://)
   python -m kurs specs   [--out build/specs]          — собрать и проверить спецификации роликов для ментора
+  python -m kurs run     <путь.md|глава> [--max-usd N] [--video] — полный прогон одной командой
+  python -m kurs plan    <глава> [узел]                — что устарело после правки слоя (без сборки)
+  python -m kurs rebuild <глава> [узел] [--video]      — пересборка после правки факта, без вызовов модели
+  python -m kurs fuzz    <глава> [--limit N]           — фаззинг валидатора: сколько внесённых ошибок поймано
+  python -m kurs review  <package.json> -o <result.json> [--max-usd N] — модуль «Закладки» (= python -m kurs.review)
+  python -m kurs video   <глава> [--node id] [--format shorts|long] [--dry] — ролики из проверенного слоя
+  python -m kurs metrics [<глава> ...] [--manifest]    — build/metrics.csv и таблица для MANIFEST.md
 """
 from __future__ import annotations
 
@@ -174,6 +181,7 @@ def main(argv=None) -> int:
     p.add_argument("layer", nargs="?")
     p.add_argument("coverage", nargs="?")
     p.add_argument("--layer-only", action="store_true", help="не требовать coverage.json для одиночного слоя")
+    p.add_argument("--strict", action="store_true", help="смысловые замечания (отрицание, условие, допущение…) считать ошибками")
 
     p = sub.add_parser("gen")
     p.add_argument("chapter", nargs="+")
@@ -202,6 +210,48 @@ def main(argv=None) -> int:
 
     p = sub.add_parser("specs")
     p.add_argument("--out", help="папка для спецификаций и паспортов (по умолчанию build/specs/)")
+
+    p = sub.add_parser("run")
+    p.add_argument("chapter")
+    p.add_argument("--max-usd", type=float, help="сколько можно потратить; без него — только кэш и правила")
+    p.add_argument("--profile", help="набор моделей: cheap, mid, max")
+    p.add_argument("--video", action="store_true", help="собрать и ролики")
+    p.add_argument("--domain", help="доменный пакет: geology (по умолчанию), drilling или путь к папке")
+
+    p = sub.add_parser("plan")
+    p.add_argument("chapter")
+    p.add_argument("node", nargs="?")
+
+    p = sub.add_parser("rebuild")
+    p.add_argument("chapter")
+    p.add_argument("node", nargs="?")
+    p.add_argument("--video", action="store_true", help="пересобрать и устаревшие ролики")
+    p.add_argument("--force", action="store_true", help="заменять сломанные задания и в tasks.json, правленном вручную")
+
+    p = sub.add_parser("fuzz")
+    p.add_argument("chapter")
+    p.add_argument("--layer", help="путь к layer.json")
+    p.add_argument("--limit", type=int, default=400, help="сколько ошибок внести всего")
+
+    p = sub.add_parser("review")
+    p.add_argument("package")
+    p.add_argument("-o", "--out", required=True)
+    p.add_argument("--team")
+    p.add_argument("--max-usd", type=float, help="сколько можно потратить на модель; без него — только код и кэш")
+    p.add_argument("--no-llm", action="store_true")
+    p.add_argument("--no-vision", action="store_true")
+    p.add_argument("--chapter-file", help="путь к .md главы, если chapter_file в пакете не находится")
+
+    p = sub.add_parser("video")
+    p.add_argument("chapter")
+    p.add_argument("--node", help="узел для ролика (по умолчанию — по маршрутизации)")
+    p.add_argument("--format", choices=["shorts", "long"])
+    p.add_argument("--only", action="append", help="id ролика")
+    p.add_argument("--dry", action="store_true", help="только сценарий и паспорт, без синтеза и рендера")
+
+    p = sub.add_parser("metrics")
+    p.add_argument("chapter", nargs="*")
+    p.add_argument("--manifest", action="store_true", help="напечатать таблицу для MANIFEST.md")
 
     args = ap.parse_args(argv)
     cfg = Config()
@@ -250,9 +300,10 @@ def main(argv=None) -> int:
             else:
                 issues.append(Issue("warn", "coverage", "coverage.json не передан рядом с layer.json"))
 
-        issues += check_layer(cfg, ch, layer, coverage=cov_data)
+        strict = True if args.strict else None
+        issues += check_layer(cfg, ch, layer, coverage=cov_data, strict=strict)
         if cov_data is not None:
-            issues += check_coverage(cfg, ch, cov_data, layer)
+            issues += check_coverage(cfg, ch, cov_data, layer, strict=strict)
         print(report(issues))
         return 1 if any(i.level == "error" for i in issues) else 0
 
@@ -283,6 +334,61 @@ def main(argv=None) -> int:
             print("Ошибки приёмки курса:\n" + "\n".join(errs))
             return 1
         print(f"Курс собран и проверен: {built / 'index.html'}")
+        return 0
+
+    if args.cmd == "run":
+        from .pipeline import run
+
+        if args.domain:
+            cfg.use_domain(args.domain)
+        return run(cfg, args.chapter, max_usd=args.max_usd, profile=args.profile, video=args.video)
+
+    if args.cmd in ("plan", "rebuild"):
+        from .pipeline import plan, plan_text, rebuild
+
+        ch = cfg.chapter(args.chapter)
+        if args.cmd == "plan":
+            layer = json.loads((ch.build_dir / "layer.json").read_text(encoding="utf-8"))
+            print(plan_text(plan(cfg, ch, layer, args.node)))
+            return 0
+        return rebuild(cfg, ch, args.node, video=args.video, force=args.force)
+
+    if args.cmd == "fuzz":
+        from .fuzz import fuzz_chapter
+
+        ch = cfg.chapter(args.chapter)
+        rep, md = fuzz_chapter(cfg, ch, Path(args.layer) if args.layer else None, args.limit)
+        print(f"{ch.id}: внесено {rep['injected']}, поймано {rep['caught']} ({(rep['recall'] or 0):.0%}); "
+              f"фон {rep['baseline_flagged']} из {rep['claims']} утверждений → {md}")
+        for kind, st in rep["by_kind"].items():
+            print(f"  {kind}: {st['caught']}/{st['injected']}")
+        return 0
+
+    if args.cmd == "review":
+        from .review import main as review_main
+
+        argv2 = [args.package, "-o", args.out] + (["--team", args.team] if args.team else [])
+        argv2 += (["--max-usd", str(args.max_usd)] if args.max_usd is not None else []) + (["--no-llm"] if args.no_llm else [])
+        argv2 += (["--no-vision"] if args.no_vision else []) + (["--chapter-file", args.chapter_file] if args.chapter_file else [])
+        return review_main(argv2)
+
+    if args.cmd == "video":
+        from .video import render_videos
+
+        ch = cfg.chapter(args.chapter)
+        layer = json.loads((ch.build_dir / "layer.json").read_text(encoding="utf-8"))
+        res = render_videos(cfg, ch, layer, only=args.only, node_id=args.node, fmt=args.format, dry=args.dry)
+        bad = [r for r in res if r["errors"] or r["status"] == "failed"]
+        return 1 if bad or not res else 0
+
+    if args.cmd == "metrics":
+        from .metrics import chapter_metrics, manifest_section, write_metrics
+
+        ids = args.chapter or [c for c in cfg.chapters if (cfg.chapters[c].build_dir / "layer.json").exists()]
+        rows = [chapter_metrics(cfg, cfg.chapter(c)) for c in ids]
+        print(write_metrics(cfg, rows))
+        if args.manifest:
+            print(manifest_section(rows))
         return 0
 
     if args.cmd == "specs":

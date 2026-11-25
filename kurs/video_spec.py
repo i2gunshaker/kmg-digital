@@ -81,8 +81,8 @@ def _basniev_state_sample() -> dict:
     }
 
 
-def _build_checklist(answers_override: dict[str, tuple[str, str]]) -> list[dict]:
-    pc_path = ROOT / "domain/geology/physics_checklist.json"
+def _build_checklist(answers_override: dict[str, tuple[str, str]], pc_path: Path | None = None) -> list[dict]:
+    pc_path = pc_path or ROOT / "domain/geology/physics_checklist.json"
     items = json.loads(pc_path.read_text(encoding="utf-8"))
     out = []
     for it in items:
