@@ -30,9 +30,13 @@ if (!fs.existsSync(htmlPath)) {
 }
 
 const scriptDir = path.dirname(new URL(import.meta.url).pathname);
-const exe = findExecutable(path.join(scriptDir, "node_modules", ".remotion", "chrome-headless-shell"));
+const systemChrome = ["/usr/bin/google-chrome", "/usr/bin/chromium", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"];
+const exe =
+  process.env.CHROME_PATH ||
+  findExecutable(path.join(scriptDir, "node_modules", ".remotion", "chrome-headless-shell")) ||
+  systemChrome.find((p) => fs.existsSync(p));
 if (!exe) {
-  console.error("chrome-headless-shell not found. Run: cd video && npx remotion browser ensure");
+  console.error("Не найден Chrome. Выполните: cd video && npx remotion browser ensure");
   process.exit(2);
 }
 
@@ -75,38 +79,59 @@ try {
     await page.selectOption("#theme-select", vp.theme);
     await page.waitForTimeout(100);
 
-    // Проверка горизонтальной прокрутки и минимального размера шрифта
-    const layoutMetrics = await page.evaluate(() => {
-      const docEl = document.documentElement;
-      const bodyFont = parseFloat(getComputedStyle(document.body).fontSize);
+    // Каждая вкладка и каждый шаг: прокрутка, кегль, картинки, формулы
+    const bodyFont = await page.evaluate(() => parseFloat(getComputedStyle(document.body).fontSize));
+    const layoutMetrics = { scrollWidth: 0, innerWidth: vp.width, bodyFont };
+    const problems = await page.evaluate(async () => {
+      const out = [];
       const imgs = Array.from(document.querySelectorAll("img"));
-      const brokenImgs = imgs.filter((im) => !im.complete || im.naturalWidth === 0).map((im) => im.src);
-      return {
-        scrollWidth: docEl.scrollWidth,
-        innerWidth: window.innerWidth,
-        bodyFont,
-        brokenImgs,
+      await Promise.all(imgs.map((im) => im.decode().catch(() => out.push("картинка не загрузилась: " + im.getAttribute("src")))));
+      const katexErr = document.querySelectorAll(".katex-error");
+      katexErr.forEach((k) => out.push("формула не разобрана: " + (k.getAttribute("title") || k.textContent).slice(0, 160)));
+      if (document.querySelector('.math-tex:not(:has(.katex))')) out.push("есть формулы без отрисовки: " + document.querySelector('.math-tex:not(:has(.katex))').textContent.slice(0, 120));
+      const check = (where) => {
+        const de = document.documentElement;
+        if (de.scrollWidth > window.innerWidth) {
+          const wide = Array.from(document.querySelectorAll("main *")).find((e) => {
+            const r = e.getBoundingClientRect();
+            return r.width && r.right > window.innerWidth + 1 && !e.closest(".table-scroll, .math-tex");
+          });
+          out.push(where + ": горизонтальная прокрутка " + de.scrollWidth + " > " + window.innerWidth + (wide ? " из-за " + wide.tagName + "." + wide.className : ""));
+        }
+        const walker = document.createTreeWalker(document.querySelector("main"), NodeFilter.SHOW_TEXT);
+        let small = null;
+        while (walker.nextNode()) {
+          const el = walker.currentNode.parentElement;
+          if (!walker.currentNode.textContent.trim() || !el.offsetParent || el.closest(".katex, .sr-only")) continue;
+          if (parseFloat(getComputedStyle(el).fontSize) < 16) { small = el; break; }
+        }
+        if (small) out.push(where + ": кегль меньше 16 px у " + small.tagName + "." + small.className);
       };
+      const steps = Array.from(document.querySelectorAll(".step-section"));
+      const was = steps.map((x) => x.hidden);
+      for (const st of steps) {
+        steps.forEach((x) => { x.hidden = x !== st; });
+        st.querySelectorAll("details").forEach((d) => { d.open = true; });
+        check(st.id);
+        st.querySelectorAll("details").forEach((d) => { d.open = false; });
+      }
+      steps.forEach((x, i) => { x.hidden = was[i]; });
+      const first = document.querySelector('.tab-btn[data-tab="step"]');
+      for (const b of document.querySelectorAll(".tab-btn[data-tab]")) { b.click(); check("вкладка " + b.dataset.tab); }
+      first.click();
+      return out;
     });
-
-    if (layoutMetrics.scrollWidth > layoutMetrics.innerWidth) {
-      throw new Error(
-        `[${vp.name}] Горизонтальный скролл: scrollWidth=${layoutMetrics.scrollWidth} > innerWidth=${layoutMetrics.innerWidth}`
-      );
-    }
-    if (layoutMetrics.bodyFont < 16) {
-      throw new Error(`[${vp.name}] Шрифт меньше 16px: ${layoutMetrics.bodyFont}`);
-    }
-    if (layoutMetrics.brokenImgs.length > 0) {
-      throw new Error(`[${vp.name}] Не загрузились картинки: ${layoutMetrics.brokenImgs.join(", ")}`);
-    }
+    layoutMetrics.scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    if (bodyFont < 16) problems.push(`шрифт меньше 16 px: ${bodyFont}`);
+    if (problems.length) throw new Error(`[${vp.name}] ` + problems.slice(0, 12).join("; "));
 
     // Проверка интерактива на мобильном и десктопе: задания, карточки, карта, конспект, Volve
     if (vp.name === "desktop_1280") {
-      // Отвечаем на задания первого шага
+      // Отвечаем на все задания: открываем шаг, в котором стоит задание
       const taskCards = await page.locator(".task-card").all();
       for (const tc of taskCards) {
-        if (!(await tc.isVisible())) continue;
+        const stepId = await tc.evaluate((el) => el.closest(".step-section").id.replace(/^step-/, ""));
+        if (!(await tc.isVisible())) await page.evaluate((id) => document.querySelector(`.path-item[data-step="${id}"]`).click(), stepId);
         const radio = tc.locator('input[type="radio"]').first();
         const check = tc.locator('input[type="checkbox"]').first();
         const gap = tc.locator(".gap-input").first();
@@ -114,7 +139,7 @@ try {
         const moveUp = tc.locator('[data-move="up"]').nth(1);
         if (await radio.count()) await radio.check();
         else if (await check.count()) await check.check();
-        else if (await gap.count()) await gap.fill("неколлектор");
+        else if (await gap.count()) for (const g of await tc.locator(".gap-input").all()) await g.fill("неколлектор");
         else if (await calc.count()) await calc.fill("11,4");
         else if (await moveUp.count()) await moveUp.click();
         await tc.locator(".check-task-btn").click();
@@ -122,9 +147,11 @@ try {
         if (!fbVisible) throw new Error("Обратная связь задания не появилась");
       }
 
-      // Проверка Volve (если есть на видимом шаге)
+      // Проверка Volve: виджет стоит на одном из шагов
       const volveRadio = page.locator('input[name="volve-pick"][value="A"]').first();
-      if ((await volveRadio.count()) && (await volveRadio.isVisible())) {
+      if (await volveRadio.count()) {
+        const vs = await volveRadio.evaluate((el) => el.closest(".step-section").id.replace(/^step-/, ""));
+        await page.evaluate((id) => document.querySelector(`.path-item[data-step="${id}"]`).click(), vs);
         await volveRadio.check();
         await page.locator(".volve-check-btn").first().click();
         const fb = await page.locator(".volve-feedback").first().textContent();

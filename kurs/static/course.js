@@ -34,22 +34,22 @@
 
   function loadState() {
     if (!HAS_LS) {
-      updateSaveStatus("Только текущая сессия (локальное хранилище ограничено; доступен экспорт JSON)");
+      updateSaveStatus("прогресс живёт до закрытия вкладки, сохраните его в файл");
       return memoryState;
     }
     try {
       var raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        updateSaveStatus("Прогресс сохраняется локально");
+        updateSaveStatus("прогресс сохраняется в браузере");
         return memoryState;
       }
       var parsed = JSON.parse(raw);
       if (parsed && parsed.chapter === DATA.chapter) {
         memoryState = Object.assign(memoryState, parsed);
       }
-      updateSaveStatus("Прогресс сохранён локально");
+      updateSaveStatus("прогресс сохранён в браузере");
     } catch (e) {
-      updateSaveStatus("Ошибка чтения хранилища — работа в памяти");
+      updateSaveStatus("хранилище не читается, сохраните прогресс в файл");
     }
     return memoryState;
   }
@@ -59,9 +59,9 @@
     if (!HAS_LS) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(memoryState));
-      updateSaveStatus("Прогресс сохранён локально");
+      updateSaveStatus("прогресс сохранён в браузере");
     } catch (e) {
-      updateSaveStatus("Хранилище заполнено — используйте экспорт JSON");
+      updateSaveStatus("хранилище заполнено, сохраните прогресс в файл");
     }
   }
 
@@ -86,8 +86,29 @@
   }
   applyTheme(state.theme || "auto");
 
+  // ---------------- Термины ----------------
+  var pop = document.getElementById("term-pop");
+  function hideTerm() { if (pop) pop.hidden = true; }
+  function showTerm(el) {
+    if (!pop) return;
+    pop.textContent = "";
+    var b = document.createElement("b");
+    b.textContent = el.getAttribute("data-term") + ". ";
+    pop.appendChild(b);
+    pop.appendChild(document.createTextNode(el.getAttribute("data-def")));
+    pop.hidden = false;
+  }
+  document.querySelectorAll(".term").forEach(function (el) {
+    el.addEventListener("mouseenter", function () { showTerm(el); });
+    el.addEventListener("mouseleave", hideTerm);
+    el.addEventListener("focus", function () { showTerm(el); });
+    el.addEventListener("blur", hideTerm);
+    el.addEventListener("click", function () { showTerm(el); });
+  });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") hideTerm(); });
+
   // ---------------- Вкладки и шаги ----------------
-  var tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
+  var tabButtons = Array.from(document.querySelectorAll(".tab-btn[data-tab]"));
   var tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
   var stepSections = Array.from(document.querySelectorAll(".step-section"));
   var sidebarEl = document.getElementById("sidebar-nav");
@@ -108,6 +129,7 @@
     tabPanels.forEach(function (p) {
       p.hidden = p.id !== "tab-" + tabId;
     });
+    hideTerm();
   }
 
   tabButtons.forEach(function (btn) {
@@ -123,12 +145,16 @@
     var fill = document.getElementById("progress-fill");
     var label = document.getElementById("progress-label");
     if (fill) fill.style.width = pct + "%";
-    if (label) label.textContent = doneCount + " / " + total + " шагов";
-    document.querySelectorAll(".path-item-btn").forEach(function (b) {
+    if (label) label.textContent = "Пройдено " + doneCount + " из " + total;
+    document.querySelectorAll(".path-item").forEach(function (b) {
       var sid = b.getAttribute("data-step");
       b.classList.toggle("active", sid === state.lastStepId);
-      var mark = b.querySelector(".step-done-mark");
-      if (mark) mark.textContent = state.doneSteps[sid] ? "✓ пройден" : "";
+      var mark = b.querySelector(".path-done");
+      if (mark) mark.textContent = state.doneSteps[sid] ? "✓" : "";
+      b.setAttribute("aria-current", sid === state.lastStepId ? "step" : "false");
+    });
+    document.querySelectorAll("[data-mark-done]").forEach(function (b) {
+      b.textContent = state.doneSteps[b.getAttribute("data-mark-done")] ? "Пройден ✓" : "Отметить пройденным";
     });
   }
 
@@ -154,10 +180,18 @@
       if (drawerBtn) drawerBtn.setAttribute("aria-expanded", "false");
     }
     if (focusHeading) {
-      var h = document.querySelector("#step-" + stepId + " h2");
+      var sec = document.getElementById("step-" + stepId);
+      var h = sec && sec.querySelector("h2");
       if (h) {
         h.setAttribute("tabindex", "-1");
-        h.focus();
+        h.focus({ preventScroll: true });
+      }
+      var mainEl = document.getElementById("main-content");
+      if (mainEl) window.scrollTo(0, Math.max(0, mainEl.getBoundingClientRect().top + window.scrollY - 12));
+      var item = document.querySelector('.path-item.active');
+      if (item && sidebarEl) {
+        var top = item.offsetTop - sidebarEl.offsetTop;
+        if (top < sidebarEl.scrollTop || top > sidebarEl.scrollTop + sidebarEl.clientHeight - 60) sidebarEl.scrollTop = Math.max(0, top - 80);
       }
     }
   }
@@ -174,7 +208,6 @@
     btn.addEventListener("click", function () {
       var sid = btn.getAttribute("data-mark-done");
       state.doneSteps[sid] = !state.doneSteps[sid];
-      btn.textContent = state.doneSteps[sid] ? "Шаг пройден ✓" : "Отметить шаг пройденным";
       saveState();
       updateProgressUI();
     });
@@ -186,14 +219,14 @@
       var tex = el.getAttribute("data-tex") || el.textContent;
       var display = el.getAttribute("data-display") === "true";
       try {
-        window.katex.render(tex, el, { displayMode: display, throwOnError: false });
+        window.katex.render(tex, el, { displayMode: display, throwOnError: false, strict: "ignore" });
       } catch (e) {}
     });
   }
 
   // ---------------- Задания (5 типов) ----------------
   function normText(s) {
-    return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+    return String(s || "").trim().toLowerCase().replace(/ё/g, "е").replace(/(\d),(\d)/g, "$1.$2").replace(/[.;:!?]+$/, "").replace(/\s+/g, " ");
   }
 
   function parseNumeric(raw) {
@@ -313,13 +346,77 @@
       saveState();
       fb.className = "task-feedback " + (ok ? "ok" : "bad");
       var claimRef = (task.claim_ids && task.claim_ids[0]) ? task.claim_ids[0] : "";
+      var page = DATA.claimPages && DATA.claimPages[claimRef];
+      var correct = formatCorrectAnswer(task);
       fb.innerHTML =
-        "<strong>" + (ok ? "Верно." : "Неверно.") + "</strong> " +
-        "Правильный ответ: <span>" + escapeHtml(formatCorrectAnswer(task)) + "</span>. " +
-        escapeHtml(task.explanation) +
-        (claimRef ? ' <a href="#claim-' + escapeAttr(claimRef) + '" data-jump-claim="' + escapeAttr(claimRef) + '">К утверждению</a>' : "");
+        "<p><strong>" + (ok ? "Верно." : "Неверно.") + "</strong> " +
+        (ok ? "" : "Правильный ответ: " + escapeHtml(correct) + (/[.!?]$/.test(correct) ? " " : ". ")) +
+        escapeHtml(task.explanation || "") +
+        (claimRef && document.getElementById("claim-" + claimRef) ? ' <a href="#claim-' + escapeAttr(claimRef) + '" data-jump-claim="' + escapeAttr(claimRef) + '">Место в книге' + (page ? ", стр. " + page : "") + "</a>" : "") + "</p>";
       fb.hidden = false;
     });
+  });
+
+  // Переход к утверждению: раскрываем цитату и подсвечиваем
+  document.addEventListener("click", function (ev) {
+    var a = ev.target.closest && ev.target.closest("[data-jump-claim]");
+    if (!a) return;
+    ev.preventDefault();
+    var el = document.getElementById("claim-" + a.getAttribute("data-jump-claim"));
+    if (!el) return;
+    var step = el.closest(".step-section");
+    if (step && step.hidden) showStep(step.id.replace(/^step-/, ""), false);
+    for (var d = el.closest("details"); d; d = d.parentElement && d.parentElement.closest("details")) d.open = true;
+    var inner = el.querySelector("details");
+    if (inner) inner.open = true;
+    el.scrollIntoView({ block: "center" });
+    el.classList.add("hl-claim");
+    window.setTimeout(function () { el.classList.remove("hl-claim"); }, 2400);
+  });
+
+  // Кадры рисунка: ползунок или кнопки
+  document.querySelectorAll(".ill-card[data-frames]").forEach(function (fig) {
+    var frames = Array.from(fig.querySelectorAll(".ill-frame"));
+    var value = fig.querySelector(".frames-value");
+    function show(i, label) {
+      frames.forEach(function (f, k) { f.hidden = k !== i; });
+      if (value) value.textContent = label;
+    }
+    var range = fig.querySelector(".frame-range");
+    if (range) {
+      var labels = range.getAttribute("data-labels").split("|");
+      range.addEventListener("input", function () { show(Number(range.value), labels[Number(range.value)]); });
+    }
+    var btns = Array.from(fig.querySelectorAll(".frame-btn"));
+    btns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        btns.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        show(Number(b.getAttribute("data-frame-to")), b.getAttribute("data-label"));
+      });
+    });
+  });
+
+  // Карта связей
+  document.querySelectorAll(".arc-item").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var id = b.getAttribute("data-node");
+      var was = b.classList.contains("on");
+      var near = {};
+      document.querySelectorAll(".arcs path").forEach(function (p) {
+        var hit = !was && (p.getAttribute("data-from") === id || p.getAttribute("data-to") === id);
+        p.classList.toggle("on", hit);
+        p.classList.toggle("off", !was && !hit);
+        if (hit) { near[p.getAttribute("data-from")] = 1; near[p.getAttribute("data-to")] = 1; }
+      });
+      document.querySelectorAll(".arc-item").forEach(function (x) { x.classList.toggle("on", !was && (x === b || !!near[x.getAttribute("data-node")])); });
+    });
+  });
+
+  // Поиск по глоссарию
+  var gsearch = document.getElementById("glossary-search");
+  if (gsearch) gsearch.addEventListener("input", function () {
+    var q = normText(gsearch.value);
+    document.querySelectorAll("#glossary-list .term-row").forEach(function (r) { r.hidden = !!q && normText(r.textContent).indexOf(q) < 0; });
   });
 
   function escapeHtml(s) {
@@ -338,14 +435,16 @@
   function renderCard() {
     if (!DATA.cards.length || !cardTitleEl) return;
     var c = DATA.cards[cardIdx % DATA.cards.length];
-    var st = state.cards[c.node_id] || "новое";
+    var st = state.cards[c.id] || "новая";
     cardTitleEl.textContent = c.front;
-    cardBodyEl.textContent = "Узел " + (cardIdx % DATA.cards.length + 1) + " из " + DATA.cards.length + " · статус: " + st;
-    cardBackEl.textContent = c.back + " (стр. " + (c.pages || []).join(", ") + ")";
+    cardBodyEl.textContent = "Карточка " + (cardIdx % DATA.cards.length + 1) + " из " + DATA.cards.length + ", " + st;
+    cardBackEl.textContent = c.back + " Стр. " + c.pages + ".";
+    var flip = document.getElementById("flash-flip");
+    if (flip) flip.textContent = cardFlipped ? "Скрыть ответ" : "Показать ответ";
     cardBackEl.hidden = !cardFlipped;
     if (cardStatEl) {
-      var known = DATA.cards.filter(function (x) { return state.cards[x.node_id] === "знаю"; }).length;
-      cardStatEl.textContent = "Освоено карточек: " + known + " из " + DATA.cards.length;
+      var known = DATA.cards.filter(function (x) { return state.cards[x.id] === "знаю"; }).length;
+      cardStatEl.textContent = "Освоено: " + known + " из " + DATA.cards.length;
     }
   }
 
@@ -355,7 +454,7 @@
   if (flipBtn) flipBtn.addEventListener("click", function () { cardFlipped = !cardFlipped; renderCard(); });
   if (knowBtn) knowBtn.addEventListener("click", function () {
     var c = DATA.cards[cardIdx % DATA.cards.length];
-    state.cards[c.node_id] = "знаю";
+    state.cards[c.id] = "знаю";
     saveState();
     cardIdx = (cardIdx + 1) % DATA.cards.length;
     cardFlipped = false;
@@ -363,7 +462,7 @@
   });
   if (repBtn) repBtn.addEventListener("click", function () {
     var c = DATA.cards[cardIdx % DATA.cards.length];
-    state.cards[c.node_id] = "повторить";
+    state.cards[c.id] = "повторить";
     saveState();
     cardIdx = (cardIdx + 1) % DATA.cards.length;
     cardFlipped = false;
@@ -391,12 +490,13 @@
       var pts = iv.points || [];
       var idx = slider ? Math.min(pts.length - 1, Math.max(0, Number(slider.value) || 0)) : 0;
       var pt = pts[idx] || {};
-      if (depthLbl) depthLbl.textContent = (pt.depth_m != null ? pt.depth_m : "—") + " м";
-      if (mGr) mGr.textContent = pt.GR != null ? pt.GR + " API" : "—";
-      if (mRt) mRt.textContent = pt.RT != null ? pt.RT + " Ом·м" : "—";
-      if (mPhif) mPhif.textContent = pt.PHIF != null ? pt.PHIF : "—";
-      if (mSw) mSw.textContent = pt.SW != null ? pt.SW : "—";
-      if (mFlag) mFlag.textContent = pt.SAND_FLAG === 1 ? "1 (песчаник)" : "0 (неколлектор)";
+      var ru = function (v, unit) { return v == null ? "нет данных" : String(v).replace(".", ",") + (unit || ""); };
+      if (depthLbl) depthLbl.textContent = ru(pt.depth_m, " м");
+      if (mGr) mGr.textContent = ru(pt.GR, " API");
+      if (mRt) mRt.textContent = ru(pt.RT, " Ом·м");
+      if (mPhif) mPhif.textContent = ru(pt.PHIF);
+      if (mSw) mSw.textContent = ru(pt.SW);
+      if (mFlag) mFlag.textContent = pt.SAND_FLAG === 1 ? "1, да" : "0, нет";
     }
 
     if (ivSelect) ivSelect.addEventListener("change", updateReadout);
@@ -415,8 +515,8 @@
         var ok = picked.value === "A";
         verdictFb.className = "volve-feedback task-feedback " + (ok ? "ok" : "bad");
         verdictFb.textContent = ok
-          ? "Верно! Интервал A (3265–3270 м): PHIF=0.228 > 0.10, VSH=0.029 < 0.50, высокое RT=37.3 Ом·м и низкое SW=0.131."
-          : "Неверно. В B высокое RT (7.43 Ом·м), но PHIF=0.02 — плотный неколлектор. В C PHIF=0.157 (коллектор), но RT=0.57 Ом·м и SW=1.0 — вода. Правильный выбор — A.";
+          ? "Верно. В интервале A пористость 0,228, глинистость 0,029, сопротивление 37,3 Ом·м и водонасыщенность 0,131: коллектор с нефтью."
+          : "Неверно. В B сопротивление 7,43 Ом·м, но пористость 0,02: это плотный неколлектор. В C пористость 0,157, но сопротивление 0,57 Ом·м и водонасыщенность 1: вода. Нефть даст A.";
         verdictFb.hidden = false;
       });
     }
@@ -446,7 +546,7 @@
         try {
           var parsed = JSON.parse(String(reader.result || "{}"));
           if (parsed.chapter && parsed.chapter !== DATA.chapter) {
-            updateSaveStatus("Файл от другой главы: " + parsed.chapter);
+            updateSaveStatus("это файл другой главы");
             return;
           }
           state = Object.assign(memoryState, parsed);
@@ -454,9 +554,9 @@
           applyTheme(state.theme || "auto");
           showStep(state.lastStepId, false);
           renderCard();
-          updateSaveStatus("Прогресс импортирован");
+          updateSaveStatus("прогресс загружен из файла");
         } catch (e) {
-          updateSaveStatus("Некорректный JSON прогресса");
+          updateSaveStatus("файл прогресса не читается");
         }
       };
       reader.readAsText(f);

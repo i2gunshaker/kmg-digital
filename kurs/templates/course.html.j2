@@ -10,383 +10,376 @@
   <script defer src="./assets/Sortable.min.js"></script>
   <script defer src="./assets/course.js"></script>
 </head>
+{% macro src(page, model=true) -%}
+<span class="src" title="{{ 'Пересказ составлен моделью по этой странице' if model else 'Слова автора книги' }}">стр. {{ page }} · {{ 'модель' if model else 'автор' }}</span>
+{%- endmacro %}
+{% macro pages(list) -%}
+{% for p in list %}{{ p }}{% if not loop.last %}, {% endif %}{% endfor %}
+{%- endmacro %}
+{% macro quote(c) %}
+<div class="quote" id="claim-{{ c.id }}">
+  <p class="quote-claim"><span class="kind">{{ c.kind }}</span> {{ c.html }}</p>
+  <blockquote>{{ c.quote }} {{ src(c.page, false) }}</blockquote>
+</div>
+{% endmacro %}
+{% macro table(tb) %}
+<p><b>{{ tb.caption or 'Таблица' }}</b> {{ src(tb.page, false) }}</p>
+<div class="table-scroll wide" tabindex="0" role="region" aria-label="Таблица книги, стр. {{ tb.page }}"><table>
+  <thead><tr>{% for h in tb.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+  <tbody>{% for r in tb.rows %}<tr>{% for cell in r %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+</table></div>
+{% endmacro %}
+{% macro picture(file, phone, alt) -%}
+<picture>{% if phone %}<source media="(max-width: 560px)" srcset="./{{ phone }}">{% endif %}<img src="./{{ file }}" alt="{{ alt }}" width="560"></picture>
+{%- endmacro %}
+{% macro evidence(q) %}
+{% if q.extra %}
+<ul class="facts">
+  {% for c in q.extra %}
+  <li id="claim-{{ c.id }}">{{ c.html }} {{ src(c.page, c.by_model) }}
+    <details class="quotes"><summary>Цитата автора</summary><blockquote>{{ c.quote }} {{ src(c.page, false) }}</blockquote></details>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% if q.quotes %}
+<details class="quotes">
+  <summary>Цитаты автора: {{ q.quotes|length }}</summary>
+  {% for c in q.quotes %}{{ quote(c) }}{% endfor %}
+</details>
+{% endif %}
+{% for nt in q.notes %}<p class="ed-note">Пометка к тексту книги: {{ nt }}</p>{% endfor %}
+{% endmacro %}
+{% macro para(q) %}
+<div class="para">
+  {% if q.text %}<p>{{ q.html }} {{ src(pages(q.pages), q.by_model) }}</p>{% endif %}
+  {{ evidence(q) }}
+</div>
+{% endmacro %}
 <body>
   <a class="skip-link" href="#main-content">Перейти к содержанию</a>
-
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <div class="brand-sub">{{ chapter_id }} · <span id="progress-label">0 / {{ steps|length }} шагов</span></div>
         <h1 class="brand-title">{{ chapter_title }}</h1>
+        <p class="brand-sub"><span id="progress-label">Пройдено 0 из {{ steps|length }}</span> · около {{ total_minutes }} мин · <span id="save-status">прогресс</span></p>
       </div>
       <div class="controls">
-        <button type="button" class="btn btn-sm mobile-only" id="drawer-toggle" aria-expanded="false" aria-controls="sidebar-nav">Путь</button>
-        <label class="sr-only" for="theme-select" style="position:absolute;left:-9999px">Тема оформления</label>
-        <select id="theme-select" class="btn btn-sm" aria-label="Тема оформления">
-          <option value="auto">Тема: Авто</option>
+        <label class="sr-only" for="theme-select">Тема оформления</label>
+        <select id="theme-select" class="btn">
+          <option value="auto">Тема: авто</option>
           <option value="light">Светлая</option>
           <option value="dark">Тёмная</option>
         </select>
-        <button type="button" class="btn btn-sm" id="export-progress">Сохранить прогресс</button>
-        <label class="btn btn-sm" style="cursor:pointer">
-          Восстановить
-          <input type="file" id="import-progress" accept="application/json" hidden>
-        </label>
+        <button type="button" class="btn" id="export-progress" title="Сохранить прогресс в файл">Сохранить</button>
+        <label class="btn" title="Загрузить прогресс из файла">Загрузить<input type="file" id="import-progress" accept="application/json" hidden></label>
       </div>
     </div>
     <nav class="tabs-bar" aria-label="Разделы курса">
-      <button type="button" class="tab-btn" data-tab="step" aria-selected="true">Шаг</button>
-      <button type="button" class="tab-btn" data-tab="path" aria-selected="false">Путь ({{ steps|length }})</button>
-      <button type="button" class="tab-btn" data-tab="cards" aria-selected="false">Карточки ({{ cards|length }})</button>
+      <button type="button" class="tab-btn mobile-only" id="drawer-toggle" aria-expanded="false" aria-controls="sidebar-nav">Шаги</button>
+      <button type="button" class="tab-btn" data-tab="step" aria-selected="true">Урок</button>
+      <button type="button" class="tab-btn" data-tab="path" aria-selected="false">Путь</button>
       <button type="button" class="tab-btn" data-tab="map" aria-selected="false">Карта связей</button>
-      <button type="button" class="tab-btn" data-tab="summary" aria-selected="false">Конспект PDF</button>
-      <button type="button" class="tab-btn" data-tab="legend" aria-selected="false">Легенда ГИС</button>
+      <button type="button" class="tab-btn" data-tab="cards" aria-selected="false">Карточки</button>
+      <button type="button" class="tab-btn" data-tab="glossary" aria-selected="false">Глоссарий</button>
+      <button type="button" class="tab-btn" data-tab="summary" aria-selected="false">Конспект</button>
+      <button type="button" class="tab-btn" data-tab="legend" aria-selected="false">Легенда цветов</button>
     </nav>
     <div class="progress-line" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
   </header>
 
   <div class="layout">
     <aside class="sidebar" id="sidebar-nav" aria-label="Путь по главе">
-      <div class="path-group-title">Порядок для новичка · <span id="save-status">Прогресс</span></div>
+      {% for p in parts %}
+      <p class="part-title">Часть {{ p.n }}{% if p.title %}. {{ p.title }}{% endif %}</p>
       <ul class="path-list">
-        {% for s in steps %}
+        {% for s in p.steps %}
         <li>
-          <button type="button" class="path-item-btn" data-step="{{ s.id }}" data-goto-step="{{ s.id }}">
-            <span><strong>{{ s.order }}.</strong> {{ s.short_title }}</span>
-            <span class="path-meta">
-              <span>{{ s.difficulty_label }} · ~{{ s.minutes }} мин</span>
-              <span class="step-done-mark"></span>
-            </span>
+          <button type="button" class="path-item" data-step="{{ s.id }}" data-goto-step="{{ s.id }}">
+            <span class="path-num">{{ s.order }}</span>
+            <span class="path-name">{{ s.title }}</span>
+            <span class="path-done" aria-hidden="true"></span>
           </button>
         </li>
         {% endfor %}
       </ul>
+      {% endfor %}
     </aside>
 
     <main id="main-content" class="main">
-      <!-- ЭКРАН ТЕКУЩЕГО ШАГА -->
       <div id="tab-step" class="tab-panel">
         {% for s in steps %}
-        <article id="step-{{ s.id }}" class="panel step-section" {% if not loop.first %}hidden{% endif %}>
+        <article id="step-{{ s.id }}" class="panel step-section"{% if not loop.first %} hidden{% endif %}>
           <header class="step-head">
+            <p class="part-label">{{ s.part_label }}</p>
+            <h2>{{ s.title }}</h2>
+            <p class="book-line">В книге: {{ s.title_book }} · стр. {{ s.pages_label }}</p>
             <div class="chips">
-              <span class="chip accent">Шаг {{ s.order }} из {{ steps|length }} · ~{{ s.minutes }} мин</span>
-              <span class="chip">{{ s.difficulty_label }}</span>
-              <span class="chip">{{ s.route_format }}</span>
-              {% if s.threshold %}<span class="chip warn">Пороговая идея</span>{% endif %}
-              {% if s.pages %}<span class="chip">стр. {{ s.pages|join(', ') }}</span>{% endif %}
+              <span class="chip">Шаг {{ s.order }} из {{ steps|length }}</span>
+              <span class="chip">≈ {{ s.minutes }} мин</span>
+              {% if s.difficulty %}<span class="chip">трудность: {{ s.difficulty }}</span>{% endif %}
+              {% if s.threshold %}<span class="chip warn">пороговая идея</span>{% endif %}
             </div>
-            <h2>{{ s.short_title }}</h2>
-            <p class="muted"><strong>В книге:</strong> {{ s.book_title }}</p>
-            <nav class="step-toc" aria-label="Оглавление шага">
-              <a href="#sec-{{ s.id }}-core">Суть</a>
-              <a href="#sec-{{ s.id }}-work">Механизм</a>
-              {% if s.illustrations %}<a href="#sec-{{ s.id }}-ill">Иллюстрации</a>{% endif %}
-              {% if s.data_meaning %}<a href="#sec-{{ s.id }}-data">Для данных</a>{% endif %}
-              {% if s.tasks %}<a href="#sec-{{ s.id }}-tasks">Задания ({{ s.tasks|length }})</a>{% endif %}
-              {% if s.book_tasks %}<a href="#sec-{{ s.id }}-booktasks">Задачи книги</a>{% endif %}
-            </nav>
+            {% if s.prereq %}
+            <p class="prereq">Опирается на: {% for p in s.prereq %}<a href="#step-{{ p.id }}" data-goto-step="{{ p.id }}">{{ p.title }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</p>
+            {% endif %}
           </header>
 
-          <!-- 1. Суть -->
-          <section id="sec-{{ s.id }}-core" class="block">
-            <h3>Суть шага</h3>
-            <p>{{ s.main_text }}</p>
-            {% if s.why_here %}
-            <p class="muted"><strong>Почему здесь:</strong> {{ s.why_here }}</p>
-            {% endif %}
+          <section id="sec-{{ s.id }}-core" class="block core">
+            <h3>Суть</h3>
+            <p class="lead">{{ s.main_html }} {{ src(s.main_pages) }}</p>
+            {% if s.why_here %}<p class="muted"><b>Почему сейчас.</b> {{ s.why_here }}</p>{% endif %}
           </section>
 
-          <!-- 2. Как это работает + утверждения с источником -->
-          <section id="sec-{{ s.id }}-work" class="block">
-            <h3>Как это работает</h3>
-            {% if s.mechanism_html %}
-            <p>{{ s.mechanism_html|safe }}</p>
-            {% endif %}
-            {% for c in s.claims %}
-            <div class="claim-card" id="claim-{{ c.id }}">
-              <div class="claim-top">
-                <span class="chip">{{ c.kind_ru }}</span>
-                <span class="chip">стр. {{ c.page_pdf }} · {{ 'модель' if c.by_model else 'автор' }}</span>
-              </div>
-              <p>{{ c.text_html|safe }}</p>
-              <details class="quote-details">
-                <summary>Дословная цитата из книги (стр. {{ c.page_pdf }} · {{ c.id }})</summary>
-                <div class="quote-box">{{ c.quote }}</div>
-              </details>
-            </div>
-            {% endfor %}
-          </section>
-
-          <!-- 3. Иллюстрации (классы A и B) -->
-          {% if s.illustrations %}
-          <section id="sec-{{ s.id }}-ill" class="block">
-            <h3>Иллюстрации и модели</h3>
-            {% for ill in s.illustrations %}
-            <figure class="ill-card" style="margin:0">
-              <img src="./{{ ill.file }}" alt="{{ ill.alt }}">
-              <figcaption class="ill-cap">
-                <span class="chip">{{ ill.frame_class }} · {{ ill.label }}</span>
-                {{ ill.caption }}
-                {% if ill.source %} · <em>{{ ill.source }}</em>{% endif %}
-              </figcaption>
+          {% if s.videos %}
+          <section class="block">
+            <h3>Видео</h3>
+            {% for v in s.videos %}
+            <figure class="video-card{% if v.vertical %} vertical{% endif %}">
+              <video controls preload="metadata" src="./{{ v.file }}"{% if v.poster %} poster="./{{ v.poster }}"{% endif %} data-subtitles-id="{{ v.id }}"></video>
+              <figcaption>{{ v.title }}</figcaption>
             </figure>
             {% endfor %}
           </section>
           {% endif %}
 
-          <!-- 4. По шагам и линза неэффективности -->
-          {% if s.practice or s.now_practice or s.inefficiency_lens %}
+          {% if s.mechanism %}
+          <section id="sec-{{ s.id }}-work" class="block">
+            <h3>Как это работает</h3>
+            {% for q in s.mechanism %}{{ para(q) }}{% endfor %}
+          </section>
+          {% endif %}
+
+          {% if s.illustrations %}
+          <section id="sec-{{ s.id }}-ill" class="block">
+            <h3>{% if s.illustrations|selectattr('frames')|list %}Рисунок и модель{% else %}Рисунок{% endif %}</h3>
+            {% for ill in s.illustrations %}
+            <figure class="ill-card"{% if ill.frames %} data-frames="{{ ill.frames['items']|length }}"{% endif %}>
+              {% if ill.frames %}
+              {% for f in ill.frames['items'] %}
+              <a href="./{{ f.file }}" target="_blank" rel="noopener" class="ill-frame" data-frame="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>{{ picture(f.file, f.phone, ill.alt ~ ' ' ~ ill.frames.label ~ ': ' ~ f.label ~ '.') }}</a>
+              {% endfor %}
+              <div class="frames-ui">
+                <span class="frames-label">{{ ill.frames.label }}: <b class="frames-value" aria-live="polite">{{ ill.frames['items'][0].label }}</b></span>
+                {% if ill.frames.ui == 'buttons' %}
+                <div class="frames-btns" role="group" aria-label="{{ ill.frames.label }}">
+                  {% for f in ill.frames['items'] %}<button type="button" class="btn frame-btn" data-frame-to="{{ loop.index0 }}" data-label="{{ f.label }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">{{ f.label }}</button>{% endfor %}
+                </div>
+                {% else %}
+                <input type="range" class="frame-range" min="0" max="{{ ill.frames['items']|length - 1 }}" step="1" value="0" aria-label="{{ ill.frames.label }}" data-labels="{{ ill.frames['items']|map(attribute='label')|join('|') }}">
+                {% endif %}
+              </div>
+              {% else %}
+              <a href="./{{ ill.file }}" target="_blank" rel="noopener">{{ picture(ill.file, ill.phone, ill.alt) }}</a>
+              {% endif %}
+              <figcaption><span class="chip">{{ ill.label }}</span> {{ ill.caption }}{% if ill.source %} <span class="muted">Источник: {{ ill.source }}.</span>{% endif %}</figcaption>
+            </figure>
+            {% endfor %}
+          </section>
+          {% endif %}
+
+          {% if s.steps_list or s.practice or s.now_practice or s.lens %}
           <section class="block">
-            <h3>По шагам</h3>
-            {% if s.practice %}<p>{{ s.practice }}</p>{% endif %}
-            {% if s.now_practice %}
-            <div class="callout">
-              <strong>Как это делается сейчас</strong>
-              <p>{{ s.now_practice }}</p>
-            </div>
+            <h3>{% if s.steps_list %}По шагам{% else %}На практике{% endif %}</h3>
+            {% if s.steps_list %}
+            <ol class="steps">{% for q in s.steps_list %}<li>{{ para(q) }}</li>{% endfor %}</ol>
             {% endif %}
-            {% if s.inefficiency_lens %}
-            <div class="callout warn">
-              <strong>Где здесь ручной труд специалиста</strong>
-              <p><b>Вход:</b> {{ s.inefficiency_lens.inputs }}</p>
-              <p><b>Ручные шаги:</b> {{ s.inefficiency_lens.manual_steps }}</p>
-              <p><b>Точки суждения:</b> {{ s.inefficiency_lens.judgment_points }}</p>
-              <p><b>Время и типичные ошибки:</b> {{ s.inefficiency_lens.time }} — {{ s.inefficiency_lens.typical_errors }}</p>
-            </div>
+            {% if s.practice %}
+            {% if s.steps_list %}<h4>На практике</h4>{% endif %}
+            {% for q in s.practice %}{{ para(q) }}{% endfor %}
+            {% endif %}
+            {% if s.now_practice %}
+            <div class="callout"><p><b>Как это делают сейчас.</b> {{ s.now_practice }}</p></div>
+            {% endif %}
+            {% if s.lens %}
+            <details class="more">
+              <summary>Где здесь ручной труд специалиста</summary>
+              <dl class="lens">
+                <dt>Вход</dt><dd>{{ s.lens.inputs }}</dd>
+                <dt>Ручные шаги</dt><dd>{{ s.lens.manual_steps }}</dd>
+                <dt>Точки суждения</dt><dd>{{ s.lens.judgment_points }}</dd>
+                <dt>Время</dt><dd>{{ s.lens.time }}</dd>
+                <dt>Типичные ошибки</dt><dd>{{ s.lens.typical_errors }}</dd>
+              </dl>
+            </details>
             {% endif %}
           </section>
           {% endif %}
 
-          <!-- 5. Разбор примеров автора -->
-          {% if s.worked_examples %}
+          {% if s.examples %}
           <section class="block">
             <h3>Разбор примеров автора</h3>
-            {% for ex in s.worked_examples %}
-            <div class="claim-card">
-              <div class="claim-top">
-                <strong>Пример со стр. {{ ex.page_pdf }}</strong>
-                {% if ex.figure %}<span class="chip">{{ ex.figure }}</span>{% endif %}
-              </div>
-              <p><b>Условие:</b> {{ ex.condition }}</p>
-              <ol style="margin:0;padding-left:20px">
-                {% for st in ex.steps %}<li>{{ st }}</li>{% endfor %}
-              </ol>
-              <p><b>Итог:</b> {{ ex.result }}</p>
+            {% for ex in s.examples %}
+            <div class="card">
+              <p><b>Условие.</b> {{ ex.condition }} {{ src(ex.page) }}</p>
+              <ol class="steps">{% for st in ex.steps %}<li>{{ st }}</li>{% endfor %}</ol>
+              <p><b>Ответ.</b> {{ ex.result }}</p>
+              {% if ex.figure %}<p class="muted">Опора примера: {{ ex.figure }}{% if s.illustrations %}, рисунок выше{% endif %}.</p>{% endif %}
             </div>
             {% endfor %}
           </section>
           {% endif %}
 
-          <!-- 6. Цифры и условия + Глубже -->
-          {% if s.nuances or s.deeper %}
+          {% if s.conditions %}
           <section class="block">
-            <h3>Цифры и условия применимости</h3>
-            {% if s.nuances %}<p>{{ s.nuances }}</p>{% endif %}
-            {% for dp in s.deeper %}
-            <details class="quote-details">
-              <summary>Глубже ({{ 'модель' if dp.by_model else 'автор' }})</summary>
-              <div class="quote-box">{{ dp.text }}</div>
-            </details>
-            {% endfor %}
+            <h3>Цифры и условия</h3>
+            {% for q in s.conditions %}{{ para(q) }}{% endfor %}
           </section>
           {% endif %}
 
-          <!-- 7. Новые понятия -->
-          {% if s.glossary_terms %}
-          <section class="block">
-            <h3>Новые понятия</h3>
-            <div class="table-scroll">
-              <table>
-                <thead><tr><th>Термин</th><th>Определение</th><th>EN / обозначение</th></tr></thead>
-                <tbody>
-                  {% for gt in s.glossary_terms %}
-                  <tr><td><strong>{{ gt.term }}</strong></td><td>{{ gt.definition }}</td><td>{{ gt.en }}</td></tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </section>
-          {% endif %}
-
-          <!-- 8. Формулы -->
           {% if s.formulas %}
           <section class="block">
-            <h3>Формулы главы</h3>
+            <h3>Формулы</h3>
             {% for fm in s.formulas %}
-            <div class="claim-card">
-              <div class="claim-top"><span class="chip">стр. {{ fm.page_pdf }}</span></div>
-              <div class="math-tex" data-tex="{{ fm.tex }}" data-display="true">{{ fm.raw }}</div>
-              {% if fm.note %}<p class="muted">{{ fm.note }}</p>{% endif %}
+            <div class="card formula">
+              <div class="math-tex" data-tex="{{ fm.tex }}" data-display="true">{{ fm.tex }}</div>
+              <p>{{ fm.meaning }} {{ src(fm.page, false) }}</p>
+              {% for nt in fm.notes %}<p class="ed-note">Пометка к тексту книги: {{ nt }}</p>{% endfor %}
+              {% if fm.raw %}<details class="quotes"><summary>Как записано в файле главы</summary><div class="math-tex" data-tex="{{ fm.raw }}" data-display="true">{{ fm.raw }}</div></details>{% endif %}
             </div>
             {% endfor %}
+            {% if s.variables %}
+            <div class="table-scroll"><table>
+              <thead><tr><th>Обозначение</th><th>Что это</th><th>Единица</th></tr></thead>
+              <tbody>{% for v in s.variables %}<tr><td><span class="math-tex" data-tex="{{ v.tex }}">{{ v.tex }}</span></td><td>{{ v.meaning }}</td><td>{{ v.unit }}</td></tr>{% endfor %}</tbody>
+            </table></div>
+            {% endif %}
           </section>
           {% endif %}
 
-          <!-- 9. Таблицы книги -->
           {% if s.tables %}
           <section class="block">
             <h3>Таблицы книги</h3>
-            {% for tb in s.tables %}
-            <div class="claim-card">
-              <div class="claim-top"><strong>{{ tb.caption or 'Таблица со стр. ' ~ tb.page_pdf }}</strong><span class="chip">стр. {{ tb.page_pdf }}</span></div>
-              <div class="table-scroll">
-                <table>
-                  <thead><tr>{% for h in tb.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
-                  <tbody>
-                    {% for r in tb.rows %}<tr>{% for cell in r %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {% endfor %}
+            {% for tb in s.tables %}{{ table(tb) }}{% endfor %}
           </section>
           {% endif %}
 
-          <!-- 10. Частая ошибка -->
+          {% if s.terms %}
+          <section class="block">
+            <h3>Новые понятия</h3>
+            <dl class="terms">
+              {% for g in s.terms %}<dt>{{ g.term }}{% if g.en %} <span class="en">{{ g.en }}</span>{% endif %}</dt><dd>{{ g.definition }}</dd>{% endfor %}
+            </dl>
+          </section>
+          {% endif %}
+
           {% if s.misconception %}
           <section class="block">
             <h3>Частая ошибка</h3>
-            <div class="callout bad">
-              <strong>Заблуждение ({{ s.misconception.ref or 'типичное' }})</strong>
-              <p>{{ s.misconception.text }}</p>
-            </div>
+            <div class="callout bad"><p>{{ s.misconception }}</p></div>
           </section>
           {% endif %}
 
-          <!-- 11. Что это значит для данных + 12. ИТ-аналогия с границей -->
-          {% if s.data_meaning or s.it_analogy %}
+          {% if s.data_from or s.data_breaks or s.hypotheses or s.it_analogy %}
           <section id="sec-{{ s.id }}-data" class="block">
-            <h3>Что это значит для данных и ИТ</h3>
-            {% if s.data_meaning %}
-            <div class="callout ok">
-              <p><b>Из главы:</b> {{ s.data_meaning.from_chapter.text }}</p>
-              <p><b>Где правило ломается:</b> {{ s.data_meaning.breaks.text }}</p>
-              {% for hyp in s.data_meaning.hypotheses %}
-              <p><span class="chip warn">Гипотеза</span> {{ hyp.text }}</p>
-              {% endfor %}
-            </div>
-            {% endif %}
+            <h3>Что это значит для данных</h3>
+            {% if s.data_from %}<p><b>Из главы.</b> {{ s.data_from }}</p>{% endif %}
+            {% if s.data_breaks %}<p><b>Где правило ломается.</b> {{ s.data_breaks }}</p>{% endif %}
+            {% for h in s.hypotheses %}<p><span class="chip warn">гипотеза</span> {{ h }}</p>{% endfor %}
             {% if s.it_analogy %}
             <div class="callout">
-              <p><b>ИТ-аналогия:</b> {{ s.it_analogy.text }}</p>
-              <p><b>Где аналогия перестаёт работать:</b> {{ s.it_analogy.breaks_where }}</p>
+              <p><b>Аналогия из ИТ.</b> {{ s.it_analogy.text }}</p>
+              <p><b>Где она перестаёт работать.</b> {{ s.it_analogy.breaks_where }}</p>
             </div>
             {% endif %}
           </section>
           {% endif %}
 
-          <!-- Интерактив «Решение на данных» Volve -->
-          {% if s.show_volve and volve %}
+          {% if s.decision or (s.show_volve and volve) %}
           <section class="block">
-            <h3>Решение на реальных данных (Volve {{ volve.well }})</h3>
+            <h3>Решение на данных</h3>
+            {% if s.decision %}
+            <div class="card decision">
+              <p><b>Признаки:</b></p>
+              <ul class="facts">{% for f in s.decision.features %}<li>{{ f }}</li>{% endfor %}</ul>
+              <p><b>Правило.</b> {{ s.decision.rule }}</p>
+              <details class="more"><summary>Вывод и контрпример</summary>
+                <p><b>Вывод.</b> {{ s.decision.conclusion }}</p>
+                {% if s.decision.counterexample %}<p><b>Где правило ошибётся.</b> {{ s.decision.counterexample }}</p>{% endif %}
+              </details>
+            </div>
+            {% endif %}
+            {% if s.show_volve and volve %}
             <div class="volve-box">
-              <p>Сравните три 5-метровых интервала каротажа. Отметьте интервал, который одновременно проходит правило коллектора (<code>{{ volve.operator_rule.condition }}</code>) и даёт нефть.</p>
-              <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-                <label>Интервал:
+              <p><b>Реальная скважина Volve {{ volve.well }}.</b> Три интервала по 5 метров. Передвиньте ползунок глубины, сравните показания и выберите интервал, который даст нефть. Правило оператора для коллектора: <code>{{ volve.operator_rule.condition }}</code>.</p>
+              <div class="volve-controls">
+                <label>Интервал
                   <select class="input-text volve-interval">
-                    {% for iv in volve.intervals %}
-                    <option value="{{ iv.id }}">{{ iv.label }}</option>
-                    {% endfor %}
+                    {% for iv in volve.intervals %}<option value="{{ iv.id }}">{{ iv.id }}</option>{% endfor %}
                   </select>
                 </label>
-                <label style="flex:1 1 200px">Глубина в окне (<span class="volve-depth-val">3265.0 м</span>):
-                  <input type="range" class="volve-depth" min="0" max="49" value="0" style="width:100%">
+                <label class="grow"><span>Глубина: <b class="volve-depth-val">—</b></span>
+                  <input type="range" class="volve-depth" min="0" max="49" value="0">
                 </label>
               </div>
               <div class="volve-grid">
-                <div class="metric-tile"><span>GR (гамма)</span><b class="m-gr">—</b></div>
-                <div class="metric-tile"><span>RT (сопротивление)</span><b class="m-rt">—</b></div>
-                <div class="metric-tile"><span>PHIF (пористость)</span><b class="m-phif">—</b></div>
-                <div class="metric-tile"><span>SW (водонасыщ.)</span><b class="m-sw">—</b></div>
-                <div class="metric-tile"><span>SAND_FLAG</span><b class="m-flag">—</b></div>
+                <div class="metric-tile"><span>GR, гамма</span><b class="m-gr">—</b></div>
+                <div class="metric-tile"><span>RT, сопротивление</span><b class="m-rt">—</b></div>
+                <div class="metric-tile"><span>PHIF, пористость</span><b class="m-phif">—</b></div>
+                <div class="metric-tile"><span>SW, вода</span><b class="m-sw">—</b></div>
+                <div class="metric-tile"><span>признак песчаника</span><b class="m-flag">—</b></div>
               </div>
-              <fieldset style="border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:6px">
+              <fieldset class="opts">
                 <legend>Какой интервал даст приток нефти?</legend>
-                <label class="opt-row"><input type="radio" name="volve-pick" value="A"> Интервал A (3265–3270 м)</label>
-                <label class="opt-row"><input type="radio" name="volve-pick" value="B"> Интервал B (3305–3310 м)</label>
-                <label class="opt-row"><input type="radio" name="volve-pick" value="C"> Интервал C (3325–3330 м)</label>
+                <label class="opt-row"><input type="radio" name="volve-pick" value="A"> A, 3265–3270 м</label>
+                <label class="opt-row"><input type="radio" name="volve-pick" value="B"> B, 3305–3310 м</label>
+                <label class="opt-row"><input type="radio" name="volve-pick" value="C"> C, 3325–3330 м</label>
               </fieldset>
-              <button type="button" class="btn btn-primary volve-check-btn">Проверить решение на данных</button>
+              <div><button type="button" class="btn btn-primary volve-check-btn">Проверить</button></div>
               <div class="volve-feedback" aria-live="polite" hidden></div>
-              <p class="muted" style="font-size:0.82rem">{{ volve.license }}</p>
+              <p class="muted">{{ volve.license }}</p>
             </div>
+            {% endif %}
           </section>
           {% endif %}
 
-          <!-- 14. Задачи из книги + проверка решаемости -->
+          {% if s.deeper %}
+          <section class="block">
+            <details class="more"><summary>Глубже</summary>{% for q in s.deeper %}{{ para(q) }}{% endfor %}</details>
+          </section>
+          {% endif %}
+
           {% if s.book_tasks %}
           <section id="sec-{{ s.id }}-booktasks" class="block">
             <h3>Задачи из книги</h3>
             {% for bt in s.book_tasks %}
-            <div class="claim-card">
-              <div class="claim-top">
-                <strong>Задача {{ bt.number }}</strong>
-                <span class="chip">стр. {{ bt.page_pdf }}</span>
-                {% if bt.figure %}<span class="chip accent">Нужно для решения: {{ bt.figure }}</span>{% endif %}
-              </div>
-              <p>{{ bt.text }}</p>
-              {% if bt.errata_note %}
-              <p class="chip warn">Исправление распознавания: {{ bt.errata_note }}</p>
-              {% endif %}
-              {% for dep in bt.dependencies %}
-              <div class="quote-box"><strong>Подтянуто к задаче ({{ dep.ref }}):</strong> {{ dep.text }}</div>
-              {% endfor %}
+            <div class="card">
+              <p><b>Задача {{ bt.number }}.</b> {{ bt.html }} {{ src(bt.page, false) }}</p>
+              {% if bt.figure %}<p class="muted">Для решения нужен {{ bt.figure }}.</p>{% endif %}
+              {% if bt.errata_note %}<p class="ed-note">Исправление распознавания: {{ bt.errata_note }}</p>{% endif %}
+              {% for dep in bt.dependencies %}<div class="quote"><p><b>Подтянуто к задаче ({{ dep.ref }}){{ '.' if dep.table else ':' }}</b> {{ dep.html }}</p>{% if dep.table %}{{ table(dep.table) }}{% endif %}</div>{% endfor %}
             </div>
             {% endfor %}
           </section>
           {% endif %}
 
-          <!-- 15. Задания (5 типов) -->
           {% if s.tasks %}
           <section id="sec-{{ s.id }}-tasks" class="block">
-            <h3>Задания к шагу</h3>
+            <h3>Задания</h3>
             {% for t in s.tasks %}
             <div class="task-card" data-task-id="{{ t.id }}">
-              <div class="claim-top">
-                <span class="chip accent">{{ t.type_ru }}</span>
-                <span class="chip">Утверждение: {{ t.claim_ids|join(', ') }}</span>
-              </div>
-              <p><strong>{{ t.prompt }}</strong></p>
-
-              {% if t.type == 'single' %}
-              <fieldset style="border:0;margin:0;padding:0;display:grid;gap:6px">
-                <legend class="sr-only" style="position:absolute;left:-9999px">{{ t.prompt }}</legend>
-                {% for o in t.options %}
-                <label class="opt-row"><input type="radio" name="t-{{ t.id }}" value="{{ o.id }}"> <span>{{ o.text }}</span></label>
-                {% endfor %}
-              </fieldset>
-              {% elif t.type == 'multiple' %}
-              <fieldset style="border:0;margin:0;padding:0;display:grid;gap:6px">
-                <legend class="sr-only" style="position:absolute;left:-9999px">{{ t.prompt }}</legend>
-                {% for o in t.options %}
-                <label class="opt-row"><input type="checkbox" value="{{ o.id }}"> <span>{{ o.text }}</span></label>
-                {% endfor %}
+              <p class="task-meta"><span class="chip">{{ t.type_ru }}</span>{% if t.pages %} <span class="src">стр. {{ t.pages|join(', ') }}</span>{% endif %}</p>
+              <p class="task-prompt">{% for part in t.prompt_parts %}{{ part }}{% if not loop.last %}<input type="text" class="input-text gap-input" aria-label="Пропуск {{ loop.index }}" autocomplete="off">{% endif %}{% endfor %}</p>
+              {% if t.type in ('single', 'multiple') %}
+              <fieldset class="opts">
+                <legend class="sr-only">{{ t.prompt }}</legend>
+                {% for o in t.options %}<label class="opt-row"><input type="{{ 'radio' if t.type == 'single' else 'checkbox' }}" name="t-{{ t.id }}" value="{{ o.id }}"> <span>{{ o.text }}</span></label>{% endfor %}
               </fieldset>
               {% elif t.type == 'order' %}
               <ul class="order-list">
                 {% for o in t.options %}
                 <li class="order-item" data-opt-id="{{ o.id }}">
-                  <span class="drag-handle" aria-label="Перетащить">⋮⋮</span>
-                  <span style="flex:1 1 auto">{{ o.text }}</span>
-                  <span style="display:flex;gap:4px">
-                    <button type="button" class="btn btn-sm" data-move="up" aria-label="Выше">↑</button>
-                    <button type="button" class="btn btn-sm" data-move="down" aria-label="Ниже">↓</button>
-                  </span>
+                  <span class="drag-handle" aria-hidden="true">⋮⋮</span>
+                  <span class="order-text">{{ o.text }}</span>
+                  <span class="order-btns"><button type="button" class="btn" data-move="up" aria-label="Выше">↑</button><button type="button" class="btn" data-move="down" aria-label="Ниже">↓</button></span>
                 </li>
                 {% endfor %}
               </ul>
-              {% elif t.type == 'gap' %}
-              <div style="display:flex;flex-wrap:wrap;gap:8px">
-                <input type="text" class="input-text gap-input" aria-label="Ответ для пропуска">
-              </div>
+              {% elif t.type == 'gap' and not t.gaps %}
+              <div><input type="text" class="input-text gap-input" aria-label="Ответ" autocomplete="off"></div>
               {% elif t.type == 'calc' %}
-              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <input type="text" inputmode="decimal" class="input-text calc-input" placeholder="Число" aria-label="Числовой ответ">
-                {% if t.unit %}<span>{{ t.unit }}</span>{% endif %}
-              </div>
+              <div class="calc-row"><input type="text" inputmode="decimal" class="input-text calc-input" aria-label="Числовой ответ" autocomplete="off">{% if t.unit %} <span>{{ t.unit }}</span>{% endif %}</div>
               {% endif %}
-
               <div><button type="button" class="btn btn-primary check-task-btn">Проверить</button></div>
               <div class="task-feedback" aria-live="polite" hidden></div>
             </div>
@@ -394,46 +387,58 @@
           </section>
           {% endif %}
 
+          {% if s.notes %}
+          <section class="block">
+            <details class="more"><summary>Пометки к тексту книги: {{ s.notes|length }}</summary><ul class="facts">{% for nt in s.notes %}<li>{{ nt }}</li>{% endfor %}</ul></details>
+          </section>
+          {% endif %}
+
           <footer class="step-nav">
-            {% if not loop.first %}
-            <button type="button" class="btn" data-goto-step="{{ steps[loop.index0 - 1].id }}">← Назад</button>
-            {% else %}<span></span>{% endif %}
-            <button type="button" class="btn" data-mark-done="{{ s.id }}">Отметить шаг пройденным</button>
-            {% if not loop.last %}
-            <button type="button" class="btn btn-primary" data-goto-step="{{ steps[loop.index0 + 1].id }}">Дальше →</button>
-            {% else %}<span></span>{% endif %}
+            {% if not loop.first %}<button type="button" class="btn" data-goto-step="{{ steps[loop.index0 - 1].id }}">← Назад</button>{% endif %}
+            <button type="button" class="btn" data-mark-done="{{ s.id }}">Отметить пройденным</button>
+            {% if not loop.last %}<button type="button" class="btn btn-primary" data-goto-step="{{ steps[loop.index0 + 1].id }}">Дальше: {{ steps[loop.index0 + 1].title }} →</button>{% endif %}
           </footer>
         </article>
         {% endfor %}
       </div>
 
-      <!-- ВКЛАДКА ПУТЬ -->
       <section id="tab-path" class="tab-panel panel" hidden>
         <h2>Путь по главе</h2>
-        <p class="muted">Шаги расположены в порядке, нужном неспециалисту: ни один термин не используется раньше узла, где объяснён.</p>
-        <div style="display:grid;gap:10px">
-          {% for s in steps %}
-          <div class="claim-card">
-            <div class="claim-top">
-              <strong>{{ s.order }}. {{ s.short_title }}</strong>
-              <span class="chip">{{ s.difficulty_label }} · ~{{ s.minutes }} мин · {{ s.route_format }}</span>
-            </div>
+        <p class="muted">Шаги стоят в порядке для неспециалиста: термин объяснён раньше, чем понадобится.</p>
+        {% for p in parts %}
+        <h3>Часть {{ p.n }}{% if p.title %}. {{ p.title }}{% endif %}</h3>
+        <div class="path-cards">
+          {% for s in p.steps %}
+          <div class="card">
+            <p><a href="#step-{{ s.id }}" data-goto-step="{{ s.id }}"><b>{{ s.order }}. {{ s.title }}</b></a> <span class="src">стр. {{ s.pages_label }} · ≈ {{ s.minutes }} мин</span></p>
             <p>{{ s.main_text }}</p>
-            <div><button type="button" class="btn btn-sm btn-primary" data-goto-step="{{ s.id }}">Открыть шаг</button></div>
           </div>
           {% endfor %}
         </div>
+        {% endfor %}
       </section>
 
-      <!-- ВКЛАДКА КАРТОЧКИ -->
+      <section id="tab-map" class="tab-panel panel" hidden>
+        <h2>Карта связей</h2>
+        <p class="muted">Дуга соединяет шаг с теми, на которые он опирается. Выберите шаг, чтобы выделить его связи.</p>
+        <div class="arc-map" style="--row: {{ arc.row }}px; --gutter: {{ arc.gutter }}px">
+          <svg class="arcs" viewBox="0 0 {{ arc.gutter }} {{ arc.height }}" preserveAspectRatio="none" aria-hidden="true">
+            {% for a in arc.arcs %}<path d="{{ a.d }}" data-from="{{ a.from }}" data-to="{{ a.to }}" vector-effect="non-scaling-stroke"/>{% endfor %}
+          </svg>
+          <ol class="arc-list">
+            {% for s in steps %}<li><button type="button" class="arc-item" data-node="{{ s.id }}"><b>{{ s.order }}.</b> {{ s.title }}</button><button type="button" class="btn arc-open" data-goto-step="{{ s.id }}" aria-label="Открыть шаг {{ s.order }}">→</button></li>{% endfor %}
+          </ol>
+        </div>
+      </section>
+
       <section id="tab-cards" class="tab-panel panel" hidden>
         <h2>Карточки повторения</h2>
         <p id="flash-status" class="muted"></p>
-        <div class="claim-card" style="padding:18px">
-          <div class="muted" id="flash-body" style="font-size:0.86rem"></div>
-          <h3 id="flash-title" style="font-size:1.25rem"></h3>
+        <div class="flash">
+          <p class="muted" id="flash-body"></p>
+          <p class="flash-title" id="flash-title"></p>
           <div id="flash-back" class="callout ok" hidden></div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+          <div class="btn-row">
             <button type="button" class="btn" id="flash-flip">Показать ответ</button>
             <button type="button" class="btn btn-primary" id="flash-know">Знаю</button>
             <button type="button" class="btn" id="flash-repeat">Повторить</button>
@@ -441,70 +446,49 @@
         </div>
       </section>
 
-      <!-- ВКЛАДКА КАРТА СВЯЗЕЙ -->
-      <section id="tab-map" class="tab-panel panel" hidden>
-        <h2>Карта связей главы</h2>
-        <p class="muted">Стрелки показывают порядок «изучить раньше → можно изучать дальше» (предпосылки) и переходы к данным.</p>
-        {% if map_svg %}
-        <div class="ill-card">{{ map_svg|safe }}</div>
-        {% endif %}
-        <div style="display:grid;gap:8px">
-          {% for s in steps %}
-          <div class="claim-card">
-            <strong><a href="#step-{{ s.id }}" data-goto-step="{{ s.id }}">{{ s.order }}. {{ s.short_title }}</a></strong>
-            {% if s.prereq_titles %}<p class="muted">Опирается на: {{ s.prereq_titles|join(', ') }}</p>{% endif %}
-          </div>
-          {% endfor %}
-        </div>
+      <section id="tab-glossary" class="tab-panel panel" hidden>
+        <h2>Глоссарий главы</h2>
+        <label class="search">Найти термин <input type="search" class="input-text" id="glossary-search" autocomplete="off"></label>
+        <dl class="terms" id="glossary-list">
+          {% for s in steps %}{% for g in s.terms %}<div class="term-row"><dt>{{ g.term }}{% if g.en %} <span class="en">{{ g.en }}</span>{% endif %}</dt><dd>{{ g.definition }} <a href="#step-{{ s.id }}" data-goto-step="{{ s.id }}">шаг {{ s.order }}</a></dd></div>{% endfor %}{% endfor %}
+        </dl>
       </section>
 
-      <!-- ВКЛАДКА КОНСПЕКТ PDF -->
       <section id="tab-summary" class="tab-panel panel" hidden>
-        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center" class="no-print">
-          <h2>Конспект главы</h2>
-          <button type="button" class="btn btn-primary" id="print-summary">Печать / Сохранить в PDF</button>
+        <div class="summary-head no-print"><h2>Конспект главы</h2><button type="button" class="btn btn-primary" id="print-summary">Печать или PDF</button></div>
+        {% for p in parts %}
+        <h3>Часть {{ p.n }}{% if p.title %}. {{ p.title }}{% endif %}</h3>
+        {% for s in p.steps %}
+        <div class="summary-card">
+          <h4>{{ s.order }}. {{ s.title }} <span class="src">стр. {{ s.pages_label }}</span></h4>
+          <p>{{ s.main_text }}</p>
+          {% for q in s.conditions %}{% if q.text %}<p><b>Условие.</b> {{ q.text }}</p>{% endif %}{% endfor %}
+          {% for fm in s.formulas %}<div class="math-tex" data-tex="{{ fm.tex }}" data-display="true">{{ fm.tex }}</div>{% endfor %}
+          {% if s.misconception %}<p><b>Частая ошибка.</b> {{ s.misconception }}</p>{% endif %}
         </div>
-        {% for s in steps %}
-        <div class="summary-card claim-card">
-          <h3>{{ s.order }}. {{ s.short_title }} (стр. {{ s.pages|join(', ') }})</h3>
-          <p><b>Суть:</b> {{ s.main_text }}</p>
-          {% if s.data_meaning %}<p><b>Для данных:</b> {{ s.data_meaning.from_chapter.text }}</p>{% endif %}
-          {% if s.misconception %}<p><b>Частая ошибка:</b> {{ s.misconception.text }}</p>{% endif %}
-        </div>
+        {% endfor %}
         {% endfor %}
       </section>
 
-      <!-- ВКЛАДКА ЛЕГЕНДА ГИС -->
       <section id="tab-legend" class="tab-panel panel" hidden>
-        <h2>Единая легенда цветов</h2>
-        <p class="muted">{{ styleguide._comment }}</p>
+        <h2>Легенда цветов</h2>
+        <p class="muted">Одни и те же цвета у пород, флюидов и кривых во всех рисунках и роликах. Цвет всегда продублирован подписью или формой линии.</p>
         <h3>Породы и флюиды</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px">
-          {% for key, item in styleguide.lithology.items() %}
-          <div class="claim-card" style="grid-template-columns:28px 1fr;align-items:center;padding:8px">
-            <span style="width:28px;height:28px;border-radius:6px;background:{{ item.color }};display:inline-block"></span>
-            <span><b>{{ item.ru }}</b><br><small class="muted">{{ key }} {{ item.color }}</small></span>
-          </div>
-          {% endfor %}
-          {% for key, item in styleguide.fluids.items() %}
-          <div class="claim-card" style="grid-template-columns:28px 1fr;align-items:center;padding:8px">
-            <span style="width:28px;height:28px;border-radius:6px;background:{{ item.color }};display:inline-block"></span>
-            <span><b>{{ item.ru }}</b><br><small class="muted">{{ key }} {{ item.color }}</small></span>
-          </div>
-          {% endfor %}
+        <div class="legend-grid">
+          {% for group in (styleguide.lithology, styleguide.fluids) %}{% for key, item in group.items() %}<div class="legend-item"><span class="swatch" style="background:{{ item.color }}"></span>{{ item.ru }}</div>{% endfor %}{% endfor %}
         </div>
-        <h3>Каротажные кривые</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px">
-          {% for key, item in styleguide.curves.items() %}
-          <div class="claim-card" style="grid-template-columns:28px 1fr;align-items:center;padding:8px">
-            <span style="width:28px;height:8px;border-radius:4px;background:{{ item.color }};display:inline-block"></span>
-            <span><b>{{ item.ru }}</b><br><small class="muted">{{ key }} {{ item.color }}</small></span>
-          </div>
-          {% endfor %}
+        <h3>Кривые</h3>
+        <div class="legend-grid">
+          {% for key, item in styleguide.curves.items() %}<div class="legend-item"><span class="swatch line" style="background:{{ item.color }}"></span>{{ item.ru }}</div>{% endfor %}
+        </div>
+        <h3>Происхождение рисунка</h3>
+        <div class="legend-grid">
+          {% for key, color in styleguide.provenance.items() %}<div class="legend-item"><span class="swatch" style="background:{{ color }}"></span>{{ key }}</div>{% endfor %}
         </div>
       </section>
     </main>
   </div>
+  <div id="term-pop" class="term-pop" role="status" hidden></div>
   <script id="course-data" type="application/json">{{ payload | tojson }}</script>
 </body>
 </html>

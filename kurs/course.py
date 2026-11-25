@@ -8,11 +8,24 @@ from pathlib import Path
 
 import jinja2
 import jsonschema
-from markupsafe import escape
 
 from .config import ROOT, Chapter, Config
+from .course_view import (
+    DIFF_NAMES,
+    Paragraphs,
+    TermMarker,
+    arc_map,
+    chapter_parts,
+    clean_tex,
+    plain_note,
+    reading_minutes,
+    rich,
+    split_notes,
+    step_number,
+    term_pattern,
+)
 from .datasets import load_volve_slice
-from .illustrations import build_illustrations, load_styleguide
+from .illustrations import build_illustrations, load_styleguide, phone_file, volve_node_id
 from .units import Unit, build_units, cut_chapter, load_units
 
 _TYPE_RU = {
@@ -21,23 +34,6 @@ _TYPE_RU = {
     "order": "Порядок",
     "gap": "Пропуск",
     "calc": "Расчёт",
-}
-
-_KIND_RU = {
-    "observation": "Наблюдение",
-    "inference": "Вывод",
-    "assumption": "Допущение",
-}
-
-_DIFF_NAMES = {
-    "М": "Механизм",
-    "В": "Время",
-    "И": "Измерение",
-    "Ф": "Формализм",
-    "П": "Пространство",
-    "Пр": "Процедура",
-    "Н": "Неопределённость",
-    "Р": "Распознавание",
 }
 
 
@@ -76,6 +72,24 @@ def _load_errata(domain_dir: Path, chapter_id: str) -> dict[str, dict]:
     return by_key
 
 
+class OcrFix:
+    """Исправления распознавания для показа: индексы формул и пометки из domain/<домен>/errata. Цитаты не меняются."""
+
+    def __init__(self, domain_dir: Path, chapter_id: str) -> None:
+        p = domain_dir / "errata" / f"{chapter_id}.json"
+        data = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+        self.subs = [(re.compile(x["find"]), x["to"]) for x in data.get("tex_subs", [])]
+        self.notes = data.get("formula_notes", [])
+
+    def tex(self, text: str) -> str:
+        for pat, to in self.subs:
+            text = pat.sub(lambda m, to=to: to, text or "")
+        return text
+
+    def note(self, page: int, tex: str) -> list[str]:
+        return [x["note"] for x in self.notes if x["page_pdf"] == page and x["contains"] in (tex or "")]
+
+
 def _parse_markdown_table(text: str) -> dict | None:
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     caption = ""
@@ -95,18 +109,15 @@ def _parse_markdown_table(text: str) -> dict | None:
         cells = [c.strip() for c in l.strip("|").split("|")]
         while len(cells) < len(headers):
             cells.append("")
-        rows.append(cells[: len(headers)])
+        cells = cells[: len(headers)]
+        # строка таблицы, разрезанная границей страницы: «порового про-» / «странства…»
+        if rows and rows[-1][0].endswith("-") and cells[0][:1].islower() and not any(cells[1:]):
+            rows[-1][0] = rows[-1][0][:-1] + cells[0]
+            continue
+        rows.append(cells)
     if not rows:
         return None
     return {"caption": caption, "headers": headers, "rows": rows}
-
-
-def _highlight_terms(text: str, terms: list[str]) -> str:
-    safe = str(escape(text))
-    for t in sorted({x.strip() for x in terms if len(x.strip()) >= 4}, key=len, reverse=True):
-        pat = re.compile(rf"(?<![А-Яа-яЁёA-Za-z])({re.escape(t)})(?![А-Яа-яЁёA-Za-z])", re.I)
-        safe = pat.sub(r'<mark class="term-hl">\1</mark>', safe, count=1)
-    return safe
 
 
 def _copy_local_assets(out_dir: Path) -> None:
@@ -138,137 +149,31 @@ def _copy_local_assets(out_dir: Path) -> None:
         shutil.copy2(wf, fonts_out / wf.name)
 
 
-def _demo_tasks_for_layer(layer: dict) -> dict:
-    """Формирует демонстрационный набор заданий всех 5 типов по утверждениям слоя, если tasks.json не передан."""
-    nodes = layer.get("nodes", [])
-    n0 = nodes[0]
-    cid0 = n0["claims"][0]["id"]
-    sid0 = n0["id"]
-    tasks = [
-        {
-            "id": f"{sid0}.t1",
-            "type": "single",
-            "step_id": sid0,
-            "claim_ids": [cid0],
-            "prompt": f"Какой основной вывод следует из шага «{n0['title']}»?",
-            "options": [
-                {"id": "a", "text": n0["claims"][0]["text"], "misconception": None},
-                {"id": "b", "text": "Достаточно одного визуального признака на кривой без расчётов.", "misconception": "misc.log_is_rock"},
-                {"id": "c", "text": "Тип породы и флюида не влияет на отклик приборов.", "misconception": "misc.high_res_oil"},
-            ],
-            "answer": "a",
-            "explanation": f"Утверждение {cid0} (стр. {n0['claims'][0]['page_pdf']}) фиксирует необходимость количественной интерпретации.",
-            "kind": "understanding",
-        },
-        {
-            "id": f"{sid0}.t2",
-            "type": "multiple",
-            "step_id": sid0,
-            "claim_ids": [cid0],
-            "prompt": "Какие сведения необходимы для выделения коллектора в сложном разрезе?",
-            "options": [
-                {"id": "a", "text": "Количественная интерпретация геофизических данных", "misconception": None},
-                {"id": "b", "text": "Геологические сведения о характере разреза", "misconception": None},
-                {"id": "c", "text": "Только один параметр без учёта типа породы", "misconception": "misc.high_res_oil"},
-            ],
-            "answer": ["a", "b"],
-            "explanation": "По тексту шага нужны одновременно количественная интерпретация и геологические сведения.",
-            "kind": "recall",
-        },
-        {
-            "id": f"{sid0}.t3",
-            "type": "order",
-            "step_id": sid0,
-            "claim_ids": [cid0],
-            "prompt": "Расположите этапы работы интерпретатора от данных к выводу:",
-            "options": [
-                {"id": "s2", "text": "Сопоставление откликов с геологической моделью"},
-                {"id": "s1", "text": "Сбор комплекса геофизических кривых"},
-                {"id": "s3", "text": "Выделение коллектора и оценка насыщения"},
-            ],
-            "answer": ["s1", "s2", "s3"],
-            "explanation": "Сначала получают измерения комплекса, затем интерпретируют с геологией и выделяют коллектор.",
-            "kind": "understanding",
-        },
-        {
-            "id": f"{sid0}.t4",
-            "type": "gap",
-            "step_id": sid0,
-            "claim_ids": [cid0],
-            "prompt": "По данным Volve 15/9-F-1 B интервал B имеет высокое сопротивление, но это плотный ____ (неколлектор / коллектор).",
-            "answer": ["неколлектор"],
-            "explanation": "При PHIF=0.02 и SAND_FLAG=0 высокое сопротивление создаёт плотная порода, а не нефть.",
-            "kind": "data",
-        },
-        {
-            "id": f"{sid0}.t5",
-            "type": "calc",
-            "step_id": sid0,
-            "claim_ids": [cid0],
-            "prompt": "По данным Volve 15/9-F-1 B: в интервале A медиана PHIF = 0.228, а в интервале B равна 0.020. Во сколько раз пористость в A выше, чем в B?",
-            "answer": 11.4,
-            "tolerance": 0.3,
-            "unit": "раз",
-            "explanation": "0.228 / 0.020 = 11.4 — поровое пространство в плотном прослое B почти отсутствует.",
-            "kind": "data",
-        },
-    ]
-    return {"chapter": layer["chapter"], "tasks": tasks}
-
-
-def _build_map_svg(steps: list[dict]) -> str:
-    if not steps:
-        return ""
-    w = max(620, len(steps) * 190 + 40)
-    h = 180
-    pos = {}
-    lines = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="100%" role="img" aria-label="Карта связей шагов">',
-        '  <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#4DC4BF"/></marker></defs>',
-    ]
-    for i, s in enumerate(steps):
-        x = 24 + i * 185
-        y = 55 if i % 2 == 0 else 80
-        pos[s["id"]] = (x + 80, y + 26)
-    for s in steps:
-        x2, y2 = pos[s["id"]]
-        for pid in s.get("prereq_ids", []):
-            if pid in pos:
-                x1, y1 = pos[pid]
-                lines.append(f'  <line x1="{x1 + 78}" y1="{y1}" x2="{x2 - 80}" y2="{y2}" stroke="#4DC4BF" stroke-width="2" marker-end="url(#arr)"/>')
-    for s in steps:
-        cx, cy = pos[s["id"]]
-        x, y = cx - 80, cy - 26
-        lbl = s["short_title"][:24] + ("…" if len(s["short_title"]) > 24 else "")
-        lines.append(
-            f'  <a href="#step-{escape(s["id"])}" data-goto-step="{escape(s["id"])}">'
-            f'<rect x="{x}" y="{y}" width="160" height="52" rx="8" fill="#1A2129" stroke="#4DC4BF" stroke-width="1.5"/>'
-            f'<text x="{cx}" y="{y + 22}" text-anchor="middle" fill="#ECEFF4" font-size="11.5" font-weight="700">{s["order"]}. {escape(lbl)}</text>'
-            f'<text x="{cx}" y="{y + 40}" text-anchor="middle" fill="#9BA7B4" font-size="10">{escape(s["difficulty_label"])}</text>'
-            f'</a>'
-        )
-    lines.append("</svg>")
-    return "\n".join(lines)
-
-
 def _resolve_task_dependencies(
     bt: dict,
     units: list[Unit],
     errata: dict[str, dict],
 ) -> list[dict]:
     deps: list[dict] = []
+    seen: set[str] = set()
+
+    def add(ref: str, u: Unit, text: str | None = None) -> None:
+        if ref not in seen:
+            seen.add(ref)
+            deps.append({"ref": ref, "text": text or errata.get(u.id, {}).get("corrected_text") or u.text, "unit": u})
+
     search_blob = f"{bt.get('text', '')} {bt.get('figure') or ''}"
     # Ссылки на рис. N
     for fig_num in re.findall(r"рис\.?\s*(\d+(?:\.\d+)?)", search_blob, re.I):
         for u in units:
             if u.kind == "figure" and not u.model_description and re.search(rf"рис\.?\s*{re.escape(fig_num)}\b", u.text, re.I):
-                deps.append({"ref": f"рис. {fig_num}, стр. {u.page_pdf}", "text": u.text})
+                add(f"рис. {fig_num}, стр. {u.page_pdf}", u)
                 break
     # Ссылки на табл. N
     for tbl_num in re.findall(r"табл\.?\s*(\d+(?:\.\d+)?)", search_blob, re.I):
         for u in units:
             if u.kind == "table" and re.search(rf"таблица\s*{re.escape(tbl_num)}\b", u.text, re.I):
-                deps.append({"ref": f"табл. {tbl_num}, стр. {u.page_pdf}", "text": u.text[:400]})
+                add(f"табл. {tbl_num}, стр. {u.page_pdf}", u)
                 break
     # Ссылка на предыдущую задачу (напр., задача 101 -> задача 100)
     if re.search(r"предыдущ\w+\s+задач", search_blob, re.I) and str(bt.get("number", "")).isdigit():
@@ -276,9 +181,111 @@ def _resolve_task_dependencies(
         for u in units:
             if u.kind == "task" and u.task_number == prev_num:
                 txt = errata.get(f"task:{prev_num}", {}).get("corrected_text") or u.text
-                deps.append({"ref": f"задача {prev_num}, стр. {u.page_pdf}", "text": txt})
+                add(f"задача {prev_num}, стр. {u.page_pdf}", u, txt)
                 break
     return deps
+
+
+def _node_terms(node: dict, glossary: list[dict]) -> list[dict]:
+    """Термины шага с определениями: из карточки, затем из глоссария домена. Без определения термин не показываем."""
+    own = {g["term"].lower(): g for g in node.get("glossary") or [] if g.get("definition")}
+    out = list(own.values())
+    for t in node.get("terms_introduced") or []:
+        if t.lower() in own:
+            continue
+        pat = term_pattern(t)
+        hit = next((g for g in glossary if g["term"].lower() == t.lower()), None)
+        hit = hit or next((g for g in glossary if pat and pat.search(g["term"]) and len(g["term"].split()) <= len(t.split()) + 1), None)
+        if hit:
+            out.append({"term": t, "definition": hit["definition"], "en": hit["en"]})
+    return [{"term": g["term"], "definition": g["definition"], "en": "" if g.get("en") in (None, "—") else g["en"]} for g in out]
+
+
+def _node_formulas(node: dict, units: list[Unit], pages: list[int], ocr: OcrFix) -> list[dict]:
+    if "formulas" in node:
+        out = []
+        for f in node["formulas"] or []:
+            raw = clean_tex(f.get("latex") or "")
+            tex = ocr.tex(clean_tex(f.get("latex_fixed") or "") or raw)
+            if not tex:
+                continue
+            meaning, notes = split_notes(f.get("meaning") or "")
+            notes = notes + ocr.note(f["page_pdf"], f.get("latex") or "")
+            out.append({"page": f["page_pdf"], "tex": tex, "raw": raw if _tex_key(raw) != _tex_key(tex) else "", "meaning": rich(meaning), "notes": [plain_note(x) for x in notes]})
+        return out
+    return [
+        {"page": u.page_pdf, "tex": ocr.tex(clean_tex(u.text)), "raw": "", "meaning": "", "notes": []}
+        for u in units
+        if u.kind == "formula" and not u.model_description and u.page_pdf in pages
+    ]
+
+
+def _tex_key(tex: str) -> str:
+    return re.sub(r"\\(?:quad|qquad|,|;|!| )|\s|\([\d.,]+\)$", "", tex)
+
+
+def _node_tables(node: dict, units: list[Unit], pages: list[int], ocr: OcrFix) -> list[dict]:
+    own = set(node.get("unit_ids") or [])
+    out = []
+    for u in units:
+        if u.kind != "table" or u.model_description or (u.id not in own if own else u.page_pdf not in pages):
+            continue
+        tb = _table_view(u, ocr)
+        if tb:
+            out.append(tb)
+    return out
+
+
+def _table_view(u: Unit, ocr: OcrFix) -> dict | None:
+    parsed = _parse_markdown_table(ocr.tex(u.text))
+    if not parsed:
+        return None
+    return {
+        "page": u.page_pdf,
+        "caption": rich(parsed["caption"]),
+        "headers": [rich(x) for x in parsed["headers"]],
+        "rows": [[rich(x) for x in r] for r in parsed["rows"]],
+    }
+
+
+def _dependency_view(d: dict, ocr: OcrFix) -> dict:
+    table = _table_view(d["unit"], ocr) if d["unit"].kind == "table" else None
+    return {"ref": d["ref"], "html": "" if table else rich(ocr.tex(d["text"])), "table": table}
+
+
+def _load_videos(ch: Chapter, out_dir: Path) -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
+    """Готовые ролики главы (build/<глава>/videos.json) → ролики по шагам и субтитры для офлайн-плеера."""
+    p = ch.build_dir / "videos.json"
+    if not p.exists():
+        return {}, {}
+    by_node: dict[str, list[dict]] = {}
+    subs: dict[str, list[dict]] = {}
+    for v in json.loads(p.read_text(encoding="utf-8")).get("videos", []):
+        src = ch.build_dir / v["file"]
+        if not src.exists():
+            continue
+        dst = out_dir / "assets" / "video" / src.name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        poster = ""
+        if v.get("poster") and (ch.build_dir / v["poster"]).exists():
+            shutil.copy2(ch.build_dir / v["poster"], dst.parent / Path(v["poster"]).name)
+            poster = f"assets/video/{Path(v['poster']).name}"
+        subs[v["id"]] = v.get("cues") or []
+        for nid in v.get("node_ids") or [v.get("node_id")]:
+            by_node.setdefault(nid, []).append({"id": v["id"], "title": v["title"], "file": f"assets/video/{src.name}", "poster": poster, "vertical": bool(v.get("vertical"))})
+    return by_node, subs
+
+
+def _task_view(t: dict, claim_pages: dict[str, int]) -> dict:
+    pages = sorted({claim_pages[c] for c in t.get("claim_ids", []) if c in claim_pages})
+    parts = [rich(t["prompt"])]
+    gaps = 0
+    if t["type"] == "gap":
+        chunks = re.split(r"\{\{\d+\}\}|_{3,}", t["prompt"])
+        gaps = len(chunks) - 1
+        parts = [rich(c) for c in chunks]
+    return {**t, "type_ru": _TYPE_RU.get(t["type"], t["type"]), "pages": pages, "prompt_parts": parts, "gaps": gaps}
 
 
 def build_course(
@@ -297,187 +304,214 @@ def build_course(
     units = load_units(ch)
     sg = load_styleguide(cfg)
     glossary = _load_glossary(cfg.domain_dir)
-    glossary_map = {g["term"].lower(): g for g in glossary}
     errata = _load_errata(cfg.domain_dir, ch.id)
+    ocr = OcrFix(cfg.domain_dir, ch.id)
     volve = load_volve_slice(cfg.domain_dir)
 
-    out_dir = out_dir or (ch.build_dir / "course")
+    default_out = ch.build_dir / "course"
+    out_dir = out_dir or default_out
+    json_dir = ch.build_dir if out_dir == default_out else out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     _copy_local_assets(out_dir)
 
-    ill_doc = build_illustrations(cfg, ch, layer, out_dir)
+    if routing_doc is None and (ch.build_dir / "routing.json").exists():
+        routing_doc = json.loads((ch.build_dir / "routing.json").read_text(encoding="utf-8"))
+    interactive = frozenset(
+        r["node_id"] for r in (routing_doc or {}).get("routes", []) if "интерактив" in (r.get("format"), r.get("secondary_format"))
+    )
+    ill_doc = build_illustrations(cfg, ch, layer, out_dir, json_dir=json_dir, interactive=interactive)
     ills_by_step: dict[str, list[dict]] = {}
-    for ill in ill_doc.get("illustrations", []):
-        ills_by_step.setdefault(ill["step_id"], []).append(ill)
+    for ill in ill_doc["illustrations"]:
+        phone = phone_file(ill["file"])
+        view = {**ill, "frames": ill_doc["frames"].get(ill["id"]), "phone": phone if (out_dir / phone).exists() else None}
+        ills_by_step.setdefault(ill["step_id"], []).append(view)
+    volve_id = volve_node_id(layer) if volve else None
+    videos_by_node, subtitles = _load_videos(ch, out_dir)
 
-    tp = ch.build_dir / "tasks.json"
-    from_file = tasks_doc is None and tp.exists()
-    if tasks_doc is None:
-        tasks_doc = json.loads(tp.read_text(encoding="utf-8")) if from_file else _demo_tasks_for_layer(layer)
-    task_schema = json.loads((cfg.schemas_dir / "task.schema.json").read_text(encoding="utf-8"))
-    jsonschema.validate(tasks_doc, task_schema)
-    # Готовый файл не переписываем: иначе генератор примет новую запись за ручную правку.
-    if not from_file:
-        tp.write_text(json.dumps(tasks_doc, ensure_ascii=False, indent=2), encoding="utf-8")
+    if tasks_doc is None and (ch.build_dir / "tasks.json").exists():
+        tasks_doc = json.loads((ch.build_dir / "tasks.json").read_text(encoding="utf-8"))
+    nodes = sorted(layer.get("nodes", []), key=lambda x: x.get("order", 0))
+    node_ids = {n["id"] for n in nodes}
+    tasks = [t for t in (tasks_doc or {}).get("tasks", []) if t["step_id"] in node_ids]
+    if tasks:
+        schema = json.loads((cfg.schemas_dir / "task.schema.json").read_text(encoding="utf-8"))
+        jsonschema.validate(tasks_doc, schema)
+        # Готовый файл главы не переписываем: иначе генератор примет новую запись за ручную правку.
+        if json_dir != ch.build_dir or not (json_dir / "tasks.json").exists():
+            (json_dir / "tasks.json").write_text(json.dumps(tasks_doc, ensure_ascii=False, indent=2), encoding="utf-8")
+    routes = {r["node_id"]: r for r in (routing_doc or {}).get("routes", [])}
 
-    routes_by_node = {}
-    if routing_doc:
-        for r in routing_doc.get("routes", []):
-            routes_by_node[r["node_id"]] = r
-
+    claim_pages = {c["id"]: c["page_pdf"] for n in nodes for c in n.get("claims", [])}
     tasks_by_step: dict[str, list[dict]] = {}
     tasks_by_id: dict[str, dict] = {}
-    for t in tasks_doc.get("tasks", []):
-        t_view = {**t, "type_ru": _TYPE_RU.get(t["type"], t["type"])}
-        tasks_by_step.setdefault(t["step_id"], []).append(t_view)
-        tasks_by_id[t["id"]] = t_view
+    for t in tasks:
+        tasks_by_step.setdefault(t["step_id"], []).append(_task_view(t, claim_pages))
+        tasks_by_id[t["id"]] = t
 
-    nodes = sorted(layer.get("nodes", []), key=lambda x: x.get("order", 0))
     title_by_id = {n["id"]: n["title"] for n in nodes}
-
+    marker = TermMarker()
     steps: list[dict] = []
     cards: list[dict] = []
-    has_explicit_decision = any(n.get("decision_on_data") for n in nodes)
 
     for idx, n in enumerate(nodes):
         nid = n["id"]
-        node_pages = sorted({*n.get("pages", []), *(c["page_pdf"] for c in n.get("claims", []))})
-        terms_intro = n.get("terms_introduced", [])
-        all_terms = [*terms_intro, *n.get("terms_used", [])]
-        claims_view = []
-        for c in n.get("claims", []):
-            claims_view.append(
-                {
-                    **c,
-                    "kind_ru": _KIND_RU.get(c["kind"], c["kind"]),
-                    "text_html": _highlight_terms(c["text"], all_terms),
-                }
-            )
-        # Таблицы и формулы из единиц на страницах узла
-        tables = []
-        formulas = []
-        for u in units:
-            if u.model_description or u.page_pdf not in node_pages:
-                continue
-            if u.kind == "table":
-                parsed = _parse_markdown_table(u.text)
-                if parsed:
-                    tables.append({"page_pdf": u.page_pdf, **parsed})
-            elif u.kind == "formula":
-                tex = u.text.strip().strip("$").strip()
-                if tex.startswith(r"\[") and tex.endswith(r"\]"):
-                    tex = tex[2:-2].strip()
-                formulas.append({"page_pdf": u.page_pdf, "tex": tex, "raw": u.text, "note": ""})
+        layers = n.get("layers", {})
+        pages = sorted({*n.get("pages", []), *(c["page_pdf"] for c in n.get("claims", []))})
+        terms = _node_terms(n, glossary)
+        main = layers.get("main") or {}
+        main_text, main_notes = split_notes(main.get("text", ""))
+        main_html = marker.html(main_text or main.get("text", ""), terms)
 
-        # Глоссарий терминов шага
-        gterms = []
-        for t in terms_intro:
-            hit = glossary_map.get(t.lower()) or next((v for k, v in glossary_map.items() if t.lower() in k or k in t.lower()), None)
-            if hit:
-                gterms.append(hit)
-            else:
-                gterms.append({"term": t, "definition": "Термин вводится в тексте данного шага.", "en": "—"})
+        paras = Paragraphs(n, marker, terms)
+        paras.add_layer("mechanism", layers.get("mechanism"), pages)
+        for st in n.get("steps") or []:
+            paras.add("steps", step_number(st.get("text", "")), st.get("pages") or pages, bool(st.get("by_model", True)), st.get("unit_ids") or ())
+        paras.add_layer("practice", layers.get("practice"), pages)
+        for cnd in n.get("conditions") or []:
+            paras.add("conditions", cnd.get("text", ""), cnd.get("pages") or pages, bool(cnd.get("by_model", True)), cnd.get("unit_ids") or ())
+        paras.add_layer("nuances", layers.get("nuances"), pages)
+        for dp in layers.get("deeper") or []:
+            paras.add("deeper", dp.get("text", ""), dp.get("pages") or pages, bool(dp.get("by_model", True)), dp.get("unit_ids") or ())
+        paras.attach(n.get("claims", []))
 
-        # Задачи книги + errata + решаемость
         bt_views = []
         for bt in n.get("book_tasks") or []:
-            num = str(bt.get("number", ""))
-            err = errata.get(f"task:{num}")
-            text = err["corrected_text"] if err else bt["text"]
-            bt_fixed = {**bt, "text": text}
+            err = errata.get(f"task:{bt.get('number', '')}")
+            fixed = {**bt, "text": err["corrected_text"] if err else bt["text"]}
             bt_views.append(
                 {
-                    **bt_fixed,
+                    "number": bt.get("number", ""),
+                    "page": bt["page_pdf"],
+                    "figure": bt.get("figure"),
+                    "html": rich(ocr.tex(re.sub(rf"^\s*{re.escape(str(bt.get('number', '')))}\.\s*", "", fixed["text"]))),
                     "errata_note": err["reason"] if err else None,
-                    "dependencies": _resolve_task_dependencies(bt_fixed, units, errata),
+                    "dependencies": [_dependency_view(d, ocr) for d in _resolve_task_dependencies(fixed, units, errata)],
                 }
             )
 
         diff = n.get("difficulty") or {}
-        d_prim = diff.get("primary", "И")
-        d_sec = diff.get("secondary")
-        diff_label = _DIFF_NAMES.get(d_prim, d_prim) + (f" · {_DIFF_NAMES.get(d_sec, d_sec)}" if d_sec else "")
-
-        prereq_ids = [l["target"] for l in n.get("links", []) if l["type"] == "prerequisite"]
-        route = routes_by_node.get(nid, {})
-        layers = n.get("layers", {})
-        short_title = (layers.get("topic") or {}).get("text") or n["title"]
-        if len(short_title.split()) > 8:
-            short_title = n["title"]
-
-        show_volve = bool(n.get("decision_on_data")) or (not has_explicit_decision and idx == len(nodes) - 1)
+        names = [DIFF_NAMES.get(d, d) for d in (diff.get("primary"), diff.get("secondary")) if d]
+        why, why_notes = split_notes((n.get("why_here") or {}).get("text", ""))
+        dm = n.get("data_meaning")
+        dec = n.get("decision_on_data")
+        lens = n.get("inefficiency_lens")
+        scan_notes = [f"стр. {q['page']}: {plain_note(q['what'])}" for q in n.get("needs_scan") or []]
+        seen: set[str] = set()
+        notes = [x for x in scan_notes if not (x in seen or seen.add(x))] + [plain_note(x) for x in (*why_notes, *(main_notes if main_text else []))]
+        prereq = [l["target"] for l in n.get("links", []) if l["type"] == "prerequisite" and l["target"] in title_by_id]
+        step_tasks = tasks_by_step.get(nid, [])
+        mech, steps_l = paras.block("mechanism"), paras.block("steps")
         steps.append(
             {
                 "id": nid,
                 "order": n.get("order", idx + 1),
-                "short_title": short_title,
-                "book_title": n["title"],
-                "difficulty_label": diff_label,
-                "route_format": route.get("format", "текст + задания"),
+                "title": n["title"],
+                "title_book": n.get("title_book") or ch.title,
+                "difficulty": ", ".join(names),
+                "route": (routes.get(nid) or {}).get("format", ""),
                 "threshold": bool(n.get("threshold")),
-                "pages": node_pages,
-                "minutes": max(4, 3 + len(claims_view) + len(bt_views)),
-                "main_text": (layers.get("main") or {}).get("text", ""),
-                "why_here": (n.get("why_here") or {}).get("text", ""),
-                "mechanism_html": _highlight_terms((layers.get("mechanism") or {}).get("text", ""), all_terms),
-                "practice": (layers.get("practice") or {}).get("text", ""),
-                "nuances": (layers.get("nuances") or {}).get("text", ""),
-                "deeper": layers.get("deeper") or [],
+                "pages": pages,
+                "pages_label": _pages_label(pages),
+                "minutes": reading_minutes([main.get("text"), *(q["text"] for q in paras.items)], len(step_tasks)),
+                "main_html": main_html,
+                "main_text": main_text or main.get("text", ""),
+                "main_pages": _pages_label(main.get("pages") or pages),
+                "why_here": why,
+                "mechanism": mech,
+                "steps_list": steps_l,
+                "practice": paras.block("practice"),
+                "conditions": paras.block("conditions") + paras.block("nuances"),
+                "deeper": paras.block("deeper"),
                 "now_practice": (n.get("now_practice") or {}).get("text") if n.get("now_practice") else None,
-                "inefficiency_lens": n.get("inefficiency_lens"),
-                "worked_examples": n.get("worked_examples") or [],
-                "claims": claims_view,
-                "glossary_terms": gterms,
-                "formulas": formulas,
-                "tables": tables,
-                "misconception": n.get("misconception"),
-                "data_meaning": n.get("data_meaning"),
+                "lens": lens,
+                "examples": [
+                    {"page": w["page_pdf"], "condition": rich(w["condition"]), "steps": [rich(x) for x in w["steps"]], "result": rich(w["result"]), "figure": w.get("figure")}
+                    for w in n.get("worked_examples") or []
+                ],
+                "terms": terms,
+                "formulas": _node_formulas(n, units, pages, ocr),
+                "variables": [{"tex": ocr.tex(clean_tex(v["symbol"])), "meaning": re.sub(r"(?<=\w)_(?=\w)", "", v["meaning"]), "unit": v.get("unit") or ""} for v in n.get("variables") or []],
+                "tables": _node_tables(n, units, pages, ocr),
+                "misconception": rich(split_notes(n["misconception"]["text"])[0] or n["misconception"]["text"]) if n.get("misconception") else None,
+                "data_from": rich(((dm or {}).get("from_chapter") or {}).get("text", "")),
+                "data_breaks": rich(((dm or {}).get("breaks") or {}).get("text", "")),
+                "hypotheses": [rich(h["text"] if isinstance(h, dict) else h) for h in (dm or {}).get("hypotheses") or []],
                 "it_analogy": n.get("it_analogy"),
+                "decision": {
+                    "features": dec.get("features") or [],
+                    "rule": rich(split_notes(dec.get("rule", ""))[0]),
+                    "conclusion": rich(split_notes(dec.get("conclusion", ""))[0]),
+                    "counterexample": rich(split_notes(dec.get("counterexample") or "")[0]),
+                }
+                if dec
+                else None,
                 "book_tasks": bt_views,
                 "illustrations": ills_by_step.get(nid, []),
-                "tasks": tasks_by_step.get(nid, []),
-                "prereq_ids": prereq_ids,
-                "prereq_titles": [title_by_id.get(p, p) for p in prereq_ids],
-                "show_volve": show_volve,
+                "videos": videos_by_node.get(nid, []),
+                "tasks": step_tasks,
+                "prereq_ids": prereq,
+                "prereq": [{"id": p, "title": title_by_id[p]} for p in prereq],
+                "notes": notes,
+                "show_volve": nid == volve_id,
             }
         )
-        cards.append(
-            {
-                "node_id": nid,
-                "front": short_title,
-                "back": (layers.get("main") or {}).get("text", ""),
-                "pages": node_pages,
-            }
-        )
+        cards.append({"id": nid, "front": n["title"], "back": main_text or main.get("text", ""), "pages": _pages_label(pages)})
 
+    for s, n in zip(steps, nodes):
+        for g in s["terms"]:
+            cards.append({"id": f"term:{g['term']}", "front": g["term"], "back": g["definition"], "pages": s["pages_label"]})
+
+    parts = chapter_parts(nodes, units)
+    step_by_id = {s["id"]: s for s in steps}
+    for p in parts:
+        p["steps"] = [step_by_id[i] for i in p["ids"]]
+        for s in p["steps"]:
+            s["part_label"] = f"Часть {p['n']}" + (f". {p['title']}" if p["title"] else "")
     payload = {
         "chapter": ch.id,
-        "steps": [{"id": s["id"], "short_title": s["short_title"]} for s in steps],
+        "steps": [{"id": s["id"], "title": s["title"]} for s in steps],
         "tasksById": tasks_by_id,
+        "claimPages": claim_pages,
         "cards": cards,
-        "volve": volve,
-        "subtitles": {},
+        "volve": volve if volve_id else None,
+        "subtitles": subtitles,
     }
-
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(ROOT / "kurs" / "templates")),
         autoescape=True,
         undefined=jinja2.StrictUndefined,
+        trim_blocks=True,
+        lstrip_blocks=True,
     )
-    tpl = env.get_template("course.html.j2")
-    rendered = tpl.render(
+    rendered = env.get_template("course.html.j2").render(
         lang=ch.language or "ru",
         chapter_id=ch.id,
         chapter_title=ch.title,
         steps=steps,
+        parts=parts,
         cards=cards,
         volve=volve,
         styleguide=sg,
-        map_svg=_build_map_svg(steps),
+        arc=arc_map(steps),
         payload=payload,
+        total_minutes=sum(s["minutes"] for s in steps),
     )
     (out_dir / "index.html").write_text(rendered, encoding="utf-8")
     return out_dir
+
+
+def _pages_label(pages: list[int]) -> str:
+    """90, 91, 92, 97 → «90–92, 97»."""
+    ps = sorted(set(pages))
+    out: list[str] = []
+    k = 0
+    while k < len(ps):
+        j = k
+        while j + 1 < len(ps) and ps[j + 1] == ps[j] + 1:
+            j += 1
+        out.append(str(ps[k]) if j == k else f"{ps[k]}–{ps[j]}")
+        k = j + 1
+    return ", ".join(out)
 
 
 def verify_course_dir(cfg: Config, ch: Chapter, out_dir: Path) -> list[str]:
@@ -508,8 +542,9 @@ def verify_course_dir(cfg: Config, ch: Chapter, out_dir: Path) -> list[str]:
             errors.append(f"Отсутствует локальный ассет: {rel}")
 
     # Схемы иллюстраций и заданий
+    json_dir = ch.build_dir if out_dir == ch.build_dir / "course" else out_dir
     for fname, sname in (("illustrations.json", "illustration.schema.json"), ("tasks.json", "task.schema.json")):
-        fp = ch.build_dir / fname
+        fp = json_dir / fname
         if fp.exists():
             schema = json.loads((cfg.schemas_dir / sname).read_text(encoding="utf-8"))
             jsonschema.validate(json.loads(fp.read_text(encoding="utf-8")), schema)
