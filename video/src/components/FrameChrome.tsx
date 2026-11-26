@@ -34,6 +34,14 @@ export const getCurrentState = (t: number, segments: TimingSegment[], frames: Pa
   return {seg, inPause, pauseProgress, activeLabel};
 };
 
+/** Подпись на экране: кусок реплики не длиннее 7 слов (стандарт подачи) по времени слов из синтеза; без кусков — вся реплика. */
+export const captionAt = (seg: TimingSegment | null | undefined, t: number): string => {
+  if (!seg) return '';
+  const caps = seg.captions || [];
+  const cap = caps.length ? [...caps].reverse().find((c) => c.start <= t) || caps[0] : null;
+  return cap ? cap.text : seg.spoken_ref.replace(/\+/g, '').replace(/́/g, '');
+};
+
 export const FrameChrome: React.FC<{
   props: VideoProps;
   scaleText: string;
@@ -60,7 +68,7 @@ export const FrameChrome: React.FC<{
   const bottomSafe = isPortrait ? 270 : 54;
 
   const captionText = (seg?.on_screen || props.passport.node_card.title || '').trim();
-  const subText = seg ? seg.spoken_ref.replace(/\+/g, '') : '';
+  const subText = captionAt(seg, t);
   const totalDur = Math.max(1, props.timings.total_duration_sec || props.scene.duration_sec);
   const progressPct = Math.min(100, Math.max(0, (t / totalDur) * 100));
 

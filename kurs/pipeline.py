@@ -28,11 +28,11 @@ def _read(p: Path) -> dict | None:
 
 
 def config_hash(cfg: Config, ch: Chapter | None = None) -> str:
-    """Хэш того, что влияет на сборку: config.yaml, промпты, доменный пакет и рисунки главы (visual.json)."""
+    """Хэш того, что влияет на сборку: config.yaml, промпты, доменный пакет, шаблоны и скрипты курса, рисунки главы (visual.json)."""
     from .config import ROOT
 
     parts = [(ROOT / "config.yaml").read_bytes()]
-    for d in (ROOT / "kurs" / "prompts", cfg.domain_dir):
+    for d in (ROOT / "kurs" / "prompts", cfg.domain_dir, ROOT / "kurs" / "templates", ROOT / "kurs" / "static"):
         if d.exists():
             parts += [p.read_bytes() for p in sorted(d.rglob("*")) if p.is_file()]
     if ch is not None and (ch.build_dir / "visual.json").exists():
@@ -54,6 +54,7 @@ def snapshot(cfg: Config, ch: Chapter, layer: dict) -> dict:
         "chapter": ch.id,
         "built_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "config_hash": config_hash(cfg, ch),
+        "videos_hash": _h(videos),  # ролик заменён тем же id (другой голос, новые подписи) — курс тоже пересобирается
         "layer_hash": _h(layer),
         "nodes": nodes,
         "claims": claims,
@@ -102,8 +103,9 @@ def plan(cfg: Config, ch: Chapter, layer: dict, only_node: str | None = None) ->
         "touched_nodes": sorted(touched_nodes),
         "stale_tasks": stale_tasks,
         "stale_videos": stale_videos,
-        "course": bool(touched_nodes) or old.get("config_hash") != new["config_hash"],
+        "course": bool(touched_nodes) or old.get("config_hash") != new["config_hash"] or old.get("videos_hash") != new["videos_hash"],
         "config_changed": old.get("config_hash") != new["config_hash"],
+        "videos_changed": old.get("videos_hash") != new["videos_hash"],
     }
 
 
@@ -117,7 +119,8 @@ def plan_text(p: dict) -> str:
         lines.append(f"  ~ узел {n}")
     lines.append(f"  задания к пересмотру: {', '.join(p['stale_tasks']) or 'нет'}")
     lines.append(f"  ролики к пересборке: {', '.join(p['stale_videos']) or 'нет'}")
-    lines.append(f"  курс: {'пересобрать' if p['course'] else 'без изменений'}" + (" (изменились настройки, доменный пакет или рисунки)" if p["config_changed"] else ""))
+    lines.append(f"  курс: {'пересобрать' if p['course'] else 'без изменений'}" + (" (изменились настройки, доменный пакет или рисунки)" if p["config_changed"] else "")
+                 + (" (заменены ролики)" if p.get("videos_changed") else ""))
     return "\n".join(lines)
 
 

@@ -54,6 +54,10 @@ def test_register_puts_video_on_its_step(tmp_path):
     # повторная регистрация заменяет запись, а не дублирует
     vl.register(None, ch, d, kind="node", layer=LAYER)
     assert len(json.loads((ch.build_dir / "videos.json").read_text(encoding="utf-8"))["videos"]) == 1
+    # новый MP4 под тем же id меняет запись — rebuild увидит и пересоберёт курс
+    mp4 = next(d.glob("*.mp4"))
+    mp4.write_bytes(mp4.read_bytes() + b"\0")
+    assert vl.register(None, ch, d, kind="node", layer=LAYER)["mp4_sha256"] != e["mp4_sha256"]
 
 
 def test_training_passport_gets_new_number(tmp_path):
