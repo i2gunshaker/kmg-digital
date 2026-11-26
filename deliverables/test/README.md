@@ -22,3 +22,7 @@
 Доменный пакет бурения — `domain/drilling/` (глоссарий, ударения и произношение, физический чек-лист, заблуждения, мосты к данным/ИТ, стайлгайд), собран до заморозки за 3 мин (строка в `manual_edits.csv` от 25.11). Отчёт о покрытии шаблонами — `courses/<глава>/template_coverage.md`.
 
 Ручные правки на тесте — `manual_edits.csv` (5 строк, 17 чел.-мин); метрики — `metrics.csv`.
+
+## Модуль проверки на тестовом пакете `test_asquith`
+
+`python -m kurs.review package.json -o build/review/test_asquith_answer.json --max-usd 0.4` — замороженный модуль, 6 мин 18 с. Ответ: `review/test_asquith_answer.json` (копия здесь), 20 замечаний, у всех есть `fix` и `page_pdf` по меткам md. Ручных правок ответа нет.
