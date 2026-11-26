@@ -14,7 +14,7 @@ from typing import Any
 import yaml
 
 from .config import Chapter, Config
-from .illustrations import auto_spec, load_styleguide, reviewed_specs
+from .illustrations import animated, auto_spec, load_styleguide, needs_frames, reviewed_specs
 from .layer_gen import S, arr, load_errata, obj, prompt, write_generated
 from .llm import LLM, LLMError
 from .tasks_gen import note_source
@@ -296,19 +296,32 @@ def shape(raw: dict, n: dict, units: dict[str, Unit]) -> tuple[dict | None, list
 
 # ---------------------------------------------------------------- оркестровка
 def interactive_nodes(routing: dict | None) -> frozenset[str]:
-    return frozenset(r["node_id"] for r in (routing or {}).get("routes", []) if "интерактив" in (r.get("format"), r.get("secondary_format")))
+    """Шаги, которым нужен рисунок с кадрами: интерактив и ролик."""
+    return frozenset(needs_frames(routing))
 
 
 def generate_visuals(
-    cfg: Config, ch: Chapter, llm: LLM, layer: dict, units: list[Unit], *, routing: dict | None = None, everything: bool = False, force: bool = False, log=print
+    cfg: Config, ch: Chapter, llm: LLM, layer: dict, units: list[Unit], *, routing: dict | None = None, everything: bool = False,
+    retry_rejected: bool = False, force: bool = False, log=print
 ) -> dict:
-    """visual.json главы. everything — заново и те шаги, у которых уже есть проверенное описание."""
+    """visual.json главы. everything — заново и те шаги, у которых уже есть проверенное описание.
+
+    retry_rejected — по готовому visual.json: принятые рисунки остаются, отклонённые шаги идут к модели
+    сразу с замечаниями прошлой проверки (иначе одинаковый запрос вернул бы из кэша тот же брак).
+    """
     sg = load_styleguide(cfg)
     by_id = {u.id: u for u in units}
     errata = load_errata(cfg, ch)
     inter = interactive_nodes(routing)
-    ready = {} if everything else reviewed_specs(cfg, ch)
+    need = needs_frames(routing)
+    # проверенная статичная схема не закрывает шаг, которому маршрут велит кадры: к ней рисуется ещё и анимированный
+    ready = {} if everything else {k: v for k, v in reviewed_specs(cfg, ch).items() if k not in need or animated(v, need[k])}
     nodes = {n["id"]: n for n in layer["nodes"] if n["id"] not in ready}
+    vp = ch.build_dir / "visual.json"
+    prev = json.loads(vp.read_text(encoding="utf-8")) if retry_rejected and vp.exists() else None
+    kept: dict[str, dict] = {k: v for k, v in (prev or {}).get("nodes", {}).items() if k in nodes}
+    if prev is not None:
+        nodes = {k: n for k, n in nodes.items() if k not in kept}
     role = str(cfg.llm.get("visual", "fast"))
     judge = str(cfg.llm.get("visual_judge", "senior"))
     effort, j_effort = str(cfg.llm.get("visual_effort", "medium")), str((cfg.llm.get("judge_effort") or ["high"])[0])
@@ -320,6 +333,9 @@ def generate_visuals(
     bad: dict[str, tuple[dict | None, list[str]]] = {}  # шаг → последний ответ и замечания
     notes: dict[str, Any] = {"first_try": 0, "fixed": 0, "judged": False, "judged_bad": 0}
     error = ""
+    for k, why in ((prev or {}).get("rejected") or {}).items():
+        if k in nodes:
+            bad[k] = (None, list(why))
 
     def accept(raws: list[dict], want: set[str]) -> int:
         """Разбирает ответ: годные — в specs, остальные — в bad."""
@@ -413,6 +429,9 @@ def generate_visuals(
     if error:
         log(f"  рисунки: часть без модели: {error[:140]}")
 
+    specs = {**kept, **specs}
+    order = [n["id"] for n in layer["nodes"]]
+    nodes = {k: next(n for n in layer["nodes"] if n["id"] == k) for k in order if k in nodes or k in kept}
     rich = sum(specs[k]["template"] in RICH for k in specs)
     doc = {
         "chapter": ch.id,

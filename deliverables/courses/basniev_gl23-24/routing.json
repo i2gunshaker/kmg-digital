@@ -1,0 +1,320 @@
+{
+ "chapter": "basniev_gl23-24",
+ "routes": [
+  {
+   "node_id": "basniev.elastic_regime_energy",
+   "format": "длинное видео",
+   "secondary_format": "шортс",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 2,
+    "counterintuitive": 2,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М: процесс отдачи флюида на разрезе. Сработали невидимое сжатие, скачок масштаба от пор к объёму пласта и контринтуитивность малых коэффициентов при большом вкладе, сумма 9."
+  },
+  {
+   "node_id": "basniev.elastic_regime_kinds_speed",
+   "format": "длинное видео",
+   "secondary_format": "шортс",
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М: два вида режима и перераспределение давления во времени. Сработали изменение во времени и причинно-следственная связь с проницаемостью и вязкостью, сумма 6."
+  },
+  {
+   "node_id": "basniev.elastic_reserve_capacity",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф: смысл коэффициента упругоёмкости через ползунки. Видео не нужно, сумма 4, достаточно интерактива."
+  },
+  {
+   "node_id": "basniev.depletion_and_model_intro",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф: равенство отбора и убыли запаса. Вывод уравнения в видео не идёт, сумма 2."
+  },
+  {
+   "node_id": "basniev.model_state_equations",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Ф с признаком Н: допущения модели и их последствия для постоянства проницаемости. Сумма 2, нужен выбор сценария."
+  },
+  {
+   "node_id": "basniev.nonlinear_terms_neglect",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Ф с признаком Н: когда отброшенный член мал и можно ли его игнорировать. Сумма 3, важен диапазон применимости."
+  },
+  {
+   "node_id": "basniev.pressure_diffusivity_equation",
+   "format": "шортс",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 2,
+    "invisible": 2,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф: физический смысл пьезопроводности как диффузии давления. Сработали время, невидимое давление и причина-следствие, сумма 7."
+  },
+  {
+   "node_id": "basniev.gallery_const_pressure_solution",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф: решение через автомодельную переменную и erf, наглядно на ползунке времени. Сумма 3, видео избыточно."
+  },
+  {
+   "node_id": "basniev.gallery_rate_pressure_profile",
+   "format": "шортс",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 2,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М с признаком Ф: убывание дебита и рост накопленной добычи во времени. Сработали время и причина-следствие, сумма 5."
+  },
+  {
+   "node_id": "basniev.gallery_const_rate_flux",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф: сначала скорость фильтрации, потом давление. Сумма 3, достаточно интерактива."
+  },
+  {
+   "node_id": "basniev.gallery_pressure_cavitation",
+   "format": "интерактив",
+   "secondary_format": "шортс",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 2,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Ф с признаком Н: отрицательное давление как сигнал жёсткости граничного условия. Контринтуитивность и причина-следствие дают сумму 6, выбор сценария важнее видео."
+  },
+  {
+   "node_id": "basniev.radial_point_source_setup",
+   "format": "длинное видео",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 2,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М: скважина нулевого радиуса в бесконечном пласте на разрезе. Сработали скачок масштаба и невидимое распределение давления, сумма 6."
+  },
+  {
+   "node_id": "basniev.radial_ei_main_formula",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф: смысл основной формулы через Ei на поле давления. Сумма 4, интерактив достаточен."
+  },
+  {
+   "node_id": "basniev.ei_log_approximation_rule",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Ф с признаком Н: граница применимости логарифмического вида по аргументу. Сумма 2, важны условия и погрешность."
+  },
+  {
+   "node_id": "basniev.radial_flux_fourier_numbers",
+   "format": "интерактив",
+   "secondary_format": "шортс",
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф с признаком М: экспоненциальное падение расхода и безразмерное время. Сумма 6, ползунок по числу Фурье нужнее ролика."
+  },
+  {
+   "node_id": "basniev.accuracy_and_well_profile",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 1,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н с признаком П: погрешность формулы и профиль у скважины. Сумма 4, решение на сценариях точности."
+  },
+  {
+   "node_id": "basniev.pssc_method_rate_gallery",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М с признаком Ф: движение границы возмущённой зоны по балансу запаса. Сработали время и причина-следствие, сумма 7."
+  },
+  {
+   "node_id": "basniev.pssc_gallery_pressure",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н с признаком Ф: погрешность около 11% при постоянном давлении. Сумма 3, важна цена приближения."
+  },
+  {
+   "node_id": "basniev.pssc_radial_rate_setup",
+   "format": "интерактив",
+   "secondary_format": "шортс",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф с признаком М: логарифм и связь дебита с депрессией через формулу Дюпюи. Сумма 4, интерактив с ползунками."
+  },
+  {
+   "node_id": "basniev.pssc_radial_balance_error",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Ф с признаком Н: радиус R(t) и погрешность депрессии от f_0. Сумма 2, нужен выбор сценария точности."
+  },
+  {
+   "node_id": "basniev.pssc_radial_pressure_limits",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н с признаком Ф: погрешность около 5% и грубое распределение давления. Сумма 1, видео не нужно."
+  }
+ ]
+}

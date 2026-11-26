@@ -342,5 +342,59 @@ def test_reviewed_spec_wins_over_generated(env, monkeypatch):
     assert specs["d.trap"]["title"] == "Проверено" and "d.filtrate" in specs
 
 
+def test_static_reviewed_spec_gets_animated_companion_when_route_needs_frames(env, monkeypatch):
+    """Статичная проверенная схема не закрывает шаг, который маршрут отправил в ролик: модель рисует к нему кадры, в курс идут обе."""
+    cfg, ch, units, layer, routing, tmp, by = env
+    domain = tmp / "domain"
+    (domain / "visual").mkdir(parents=True)
+    for name in ("styleguide.json", "physics_checklist.json"):
+        (domain / name).write_text((Path(ROOT) / "domain/geology" / name).read_text(encoding="utf-8"), encoding="utf-8")
+    (domain / "visual" / f"{ch.id}.json").write_text(
+        json.dumps({"nodes": {"d.trap": spec("section", TRAP, title="Проверено"), "d.porosity": spec("bars", BARS, title="Проверено")}}, ensure_ascii=False), encoding="utf-8"
+    )
+    monkeypatch.setattr(type(cfg), "domain_dir", property(lambda self: domain), raising=False)
+    routing = {"routes": [{"node_id": "d.trap", "format": "длинное видео", "secondary_format": "текст"}, {"node_id": "d.porosity", "format": "текст", "secondary_format": None}]}
+    asked: list[str] = []
+
+    def script(kind, user, n):
+        asked.append(user)
+        return {"issues": []} if kind == "judge" else {"specs": []}
+
+    transport, _ = fake(script)
+    generate_visuals(cfg, ch, llm_for(cfg, tmp, transport), layer, units, routing=routing, log=lambda *_: None)
+    assert any('id="d.trap"' in u and 'interactive>' in u.split('id="d.trap"', 1)[1].split("\n", 1)[0] for u in asked)
+    assert not any('id="d.porosity"' in u for u in asked)  # маршрут кадров не требует — проверенная схема закрывает шаг
+
+    ch.build_dir.mkdir(parents=True, exist_ok=True)
+    (ch.build_dir / "routing.json").write_text(json.dumps(routing, ensure_ascii=False), encoding="utf-8")
+    moving = spec("layers", LAYERS, title="Модель", frames=[{"label": "1", "params": {}}, {"label": "2", "params": {}}])
+    (ch.build_dir / "visual.json").write_text(json.dumps({"nodes": {"d.trap": moving, "d.porosity": spec("layers", LAYERS, title="Модель", frames=moving["frames"])}}, ensure_ascii=False), encoding="utf-8")
+    specs = load_visual_specs(cfg, ch)
+    assert [sp["title"] for sp in specs["d.trap"]] == ["Проверено", "Модель"]
+    assert specs["d.porosity"]["title"] == "Проверено"
+
+
+def test_retry_rejected_keeps_accepted_and_sends_reasons(env):
+    """Повтор: принятые рисунки не трогаются, отклонённый шаг уходит к модели вместе с замечанием прошлой проверки."""
+    cfg, ch, units, layer, routing, tmp, by = env
+    ch.build_dir.mkdir(parents=True, exist_ok=True)
+    keep = spec("layers", LAYERS, title="Принят раньше")
+    prev = {"chapter": ch.id, "nodes": {"d.filtrate": keep}, "rejected": {"d.porosity": ["в подписи число 40, которого нет в тексте"]}}
+    (ch.build_dir / "visual.json").write_text(json.dumps(prev, ensure_ascii=False), encoding="utf-8")
+    asked: list[str] = []
+
+    def script(kind, user, n):
+        asked.append(user)
+        return {"issues": []} if kind == "judge" else {"specs": []}
+
+    transport, _ = fake(script)
+    layer = {**layer, "nodes": [n for n in layer["nodes"] if n["id"] in ("d.filtrate", "d.porosity")]}
+    rep = generate_visuals(cfg, ch, llm_for(cfg, tmp, transport), layer, units, routing=routing, retry_rejected=True, log=lambda *_: None)
+    assert asked and not any('id="d.filtrate"' in u for u in asked)
+    assert 'id="d.porosity"' in asked[0] and "число 40" in asked[0]
+    doc = json.loads((ch.build_dir / "visual.json").read_text(encoding="utf-8"))
+    assert doc["nodes"]["d.filtrate"]["title"] == "Принят раньше" and "d.porosity" in doc["rejected"] and rep["accepted"] == 1
+
+
 def test_rich_templates_are_drawn_not_boxed():
     assert RICH == {"curves", "layers", "section", "reef", "plan", "pores"}

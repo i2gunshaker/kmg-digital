@@ -27,14 +27,16 @@ def _read(p: Path) -> dict | None:
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
-def config_hash(cfg: Config) -> str:
-    """Хэш того, что влияет на сборку: config.yaml, промпты, доменный пакет."""
+def config_hash(cfg: Config, ch: Chapter | None = None) -> str:
+    """Хэш того, что влияет на сборку: config.yaml, промпты, доменный пакет и рисунки главы (visual.json)."""
     from .config import ROOT
 
     parts = [(ROOT / "config.yaml").read_bytes()]
     for d in (ROOT / "kurs" / "prompts", cfg.domain_dir):
         if d.exists():
             parts += [p.read_bytes() for p in sorted(d.rglob("*")) if p.is_file()]
+    if ch is not None and (ch.build_dir / "visual.json").exists():
+        parts.append((ch.build_dir / "visual.json").read_bytes())
     return "sha256:" + hashlib.sha256(b"\0".join(parts)).hexdigest()[:16]
 
 
@@ -51,7 +53,7 @@ def snapshot(cfg: Config, ch: Chapter, layer: dict) -> dict:
     return {
         "chapter": ch.id,
         "built_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        "config_hash": config_hash(cfg),
+        "config_hash": config_hash(cfg, ch),
         "layer_hash": _h(layer),
         "nodes": nodes,
         "claims": claims,
@@ -115,7 +117,7 @@ def plan_text(p: dict) -> str:
         lines.append(f"  ~ узел {n}")
     lines.append(f"  задания к пересмотру: {', '.join(p['stale_tasks']) or 'нет'}")
     lines.append(f"  ролики к пересборке: {', '.join(p['stale_videos']) or 'нет'}")
-    lines.append(f"  курс: {'пересобрать' if p['course'] else 'без изменений'}" + (" (изменились настройки или доменный пакет)" if p["config_changed"] else ""))
+    lines.append(f"  курс: {'пересобрать' if p['course'] else 'без изменений'}" + (" (изменились настройки, доменный пакет или рисунки)" if p["config_changed"] else ""))
     return "\n".join(lines)
 
 

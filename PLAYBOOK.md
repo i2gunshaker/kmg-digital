@@ -5,7 +5,7 @@
 ## 0. Подготовка (до 10:00)
 
 ```bash
-git checkout avervill && git pull origin avervill
+git checkout main && git pull origin main
 .venv/bin/pip install -r requirements.txt          # в т.ч. faster-whisper для проверки звука вне Mac
 cd video && npm install && cd ..                    # Playwright: проверка курса и кадры роликов
 export KURS_INPUT_DIR="<папка с материалами>"
@@ -89,3 +89,10 @@ python <путь>/score_review.py build/review/blind.json <спрятанный_
 .venv/bin/python -m kurs metrics --manifest --official metrics.csv   # build/metrics.csv, таблица для MANIFEST.md и metrics.csv по шаблону организаторов
 git tag -a freeze-<дата> -m "Заморозка: <что проверено>"
 ```
+
+## 6. План Б при сбое на тесте
+
+- Ошибка `429` / обрыв API → повторный запуск доделывает только пропущенные запросы из `build/.cache/llm`.
+- ElevenLabs недоступен или нет кредитов → `--backend silero` (или `--backend edge_tts`).
+- Сбой Remotion → сдавать курс с детерминированными SVG-иллюстрациями без видео (или `kurs rebuild` только курса).
+- Нет локального ASR (`mlx-whisper` / `faster-whisper`) → перенести `build/videos/<id>` и пересобрать/проверить на Mac.

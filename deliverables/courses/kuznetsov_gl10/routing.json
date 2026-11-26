@@ -1,0 +1,260 @@
+{
+ "chapter": "kuznetsov_gl10",
+ "routes": [
+  {
+   "node_id": "kuznetsov.rif_definition",
+   "format": "длинное видео",
+   "secondary_format": "шортс",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Механизм М: риф растёт быстрее осадков, что видно только в динамике разреза. Сумма критериев 6, видео оправдано."
+  },
+  {
+   "node_id": "kuznetsov.organic_builds_types",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Пространственный тип П и распознавание Р. Сумма критериев 2, видео не нужно, важнее статичная схема с выбором типа."
+  },
+  {
+   "node_id": "kuznetsov.reef_lithology",
+   "format": "карточки",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Распознавание Р по набору известняков. Видео не нужно, достаточно карточек с признаками."
+  },
+  {
+   "node_id": "kuznetsov.reef_facies_zones",
+   "format": "интерактив",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 2,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Пространственная зональность П со скачком масштаба. Сумма критериев 5, видео ниже порога, нужна интерактивная схема."
+  },
+  {
+   "node_id": "kuznetsov.reef_porosity",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Пустоты внутри скелетов П и М невидимы на разрезе. Сумма критериев 5, видео не даёт перевеса над интерактивной схемой."
+  },
+  {
+   "node_id": "kuznetsov.reinbow_reservoir",
+   "format": "карточки",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Разбор конкретного объекта с распознаванием Р и П. Сумма критериев 1, нужны карточки и сравнение зон."
+  },
+  {
+   "node_id": "kuznetsov.reservoir_edge_shift",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 2,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Контринтуитивный сдвиг коллекторов к краю и невидимая трещиноватость. Сумма критериев 6, видео оправдано."
+  },
+  {
+   "node_id": "kuznetsov.tengiz_karachaganak",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 1,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Неопределённость Н: средние значения скрывают разброс скважин. Сумма критериев 4, нужен интерактив с диапазоном."
+  },
+  {
+   "node_id": "kuznetsov.asymmetric_reservoirs",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "time-evolution",
+   "why": "Смещение зоны улучшенных свойств со временем, геологическая эволюция В. Сумма критериев 6, видео оправдано."
+  },
+  {
+   "node_id": "kuznetsov.vertical_heterogeneity",
+   "format": "длинное видео",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "time-evolution",
+   "why": "Неоднородность разреза формируется во времени по палеогеографии В и М. Сумма критериев 7, видео сильно оправдано."
+  },
+  {
+   "node_id": "kuznetsov.layered_lenses",
+   "format": "интерактив",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Пространственное размещение пачек и линз П. Сумма критериев 4, интерактивный разрез лучше видео."
+  },
+  {
+   "node_id": "kuznetsov.reef_filtration",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Невидимое движение флюидов по морфологии рифа, причина и следствие М. Сумма критериев 6, видео оправдано."
+  },
+  {
+   "node_id": "kuznetsov.trap_basics",
+   "format": "интерактив",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Замкнутый объём ловушки П с логикой превышения рифа. Сумма критериев 5, видео ниже порога."
+  },
+  {
+   "node_id": "kuznetsov.trap_types",
+   "format": "карточки",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Распознавание Р четырёх типов ловушек по признакам. Сумма критериев 2, нужны карточки и квиз."
+  },
+  {
+   "node_id": "kuznetsov.deposit_height",
+   "format": "интерактив",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Высота залежи зависит от типа экрана, неопределённость Н и формула Ф. Сумма критериев 4, нужен интерактив со сценариями."
+  },
+  {
+   "node_id": "kuznetsov.seismic_three_groups",
+   "format": "практикум на данных",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "wellbore-log-sync",
+   "why": "Сейсмический сигнал И и решение по данным Р. Сумма критериев 5, после синхрона нужен практикум."
+  },
+  {
+   "node_id": "kuznetsov.exploration_grid",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Процедура Пр выбора сетки скважин и риск Н. Сумма критериев 3, видео не нужно, важен практикум."
+  }
+ ]
+}

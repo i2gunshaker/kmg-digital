@@ -77,6 +77,10 @@ python -m kurs run path/to/chapter.md --max-usd 0.6 --video --vision [--domain d
 - **Приёмка рисунков зрением:** 82 рисунка в 4 главах, $0,11; подтверждённых ошибок нет.
 - 62 визуальные спецификации в `domain/geology/visual/*.json` и errata по PDF в `domain/geology/errata/`. Пакет `domain/drilling/` собран за ~3 мин машинной генерации и требует короткой вычитки специалистом.
 
+## Артефакты в репозитории (deliverables/)
+
+В `deliverables/` лежат три готовых курса (`latyshova_gl5_par17-20`, `basniev_gl23-24`, `kuznetsov_gl10`) и два ролика: шортс 9:16 `latyshova_shorts_high_rt` и разбор 16:9 `basniev_deepdive_elastic_funnel`. Ролики лежат с паспортами, субтитрами и сценами. Состав, параметры звука и видео, команды воспроизведения и выбор роликов описаны в [deliverables/README.md](deliverables/README.md). Курсы в этой папке собраны на прогоне Claude Haiku 5.5 26.11 около 02:30: 0 ошибок проверки, покрытие 100%, рисунки вшиты в HTML/SVG. Файлы `domain/geology/visual/*.json` сохраняют исходные ключи узлов слоя Opus/Sonnet из `08131a0`. Поэтому `test_visual_specs_match_layer_nodes` падает только при локальном `build/` со слоем Haiku, а в чистом клоне все тесты зелёные.
+
 ## Метрики и журнал правок
 
 - `metrics.csv` — по шаблону организаторов: `python -m kurs metrics --official metrics.csv` (токены и деньги из журнала вызовов, минуты людей из `manual_edits.csv`, минуты ментора из `mentor_minutes.csv`). Файл в корне собран из журнала; деньги по главе — сумма всех её прогонов. `mentor_minutes.csv` пока не заведён, поэтому минуты ментора — 0, а не оценка; секунды видео обучающих роликов не учтены, пока их MP4 не импортированы в курс (`kurs video <id> --import`).

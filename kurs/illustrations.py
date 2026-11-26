@@ -185,8 +185,39 @@ def generated_specs(ch: Chapter) -> dict[str, dict | list]:
 
 
 def load_visual_specs(cfg: Config, ch: Chapter) -> dict[str, dict | list]:
-    """Описания рисунков главы: собранные конвейером, поверх них проверенные человеком."""
-    return {**generated_specs(ch), **reviewed_specs(cfg, ch)}
+    """Описания рисунков главы: собранные конвейером, поверх них проверенные человеком.
+
+    Если у шага есть и то и другое, конвейер рисовал его потому, что проверенная схема статична,
+    а маршрут требует кадров (ролик или интерактив): тогда идут обе, проверенная первой.
+    """
+    made, human = generated_specs(ch), reviewed_specs(cfg, ch)
+    out: dict[str, dict | list] = {**made, **human}
+    rp = ch.build_dir / "routing.json"
+    need = needs_frames(json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else None)
+    for k in made.keys() & human.keys() & need.keys():
+        if not animated(human[k], need[k]) and animated(made[k], need[k]):
+            out[k] = _as_list(human[k]) + _as_list(made[k])
+    return out
+
+
+def needs_frames(routing: dict | None) -> dict[str, str]:
+    """Шаги, рисунку которых нужны кадры: «video» — отправлен в ролик, «interactive» — в интерактив."""
+    out: dict[str, str] = {}
+    for r in (routing or {}).get("routes", []):
+        fmt = r.get("format") or ""
+        if "видео" in fmt or "шортс" in fmt:
+            out[r["node_id"]] = "video"
+        elif "интерактив" in (fmt, r.get("secondary_format")):
+            out[r["node_id"]] = "interactive"
+    return out
+
+
+def animated(spec: dict | list | None, kind: str) -> bool:
+    """Есть ли у шага рисунок с кадрами; интерактиву хватает и раскрытия по частям."""
+    items = _as_list(spec)
+    if kind == "video":
+        return any(len(sp.get("frames") or []) > 1 for sp in items)
+    return any(len(with_reveal(sp).get("frames") or []) > 1 for sp in items)
 
 
 _FIG = re.compile(r"рис(?:\.|унок)?\s*(\d+(?:\.\d+)?)", re.I)

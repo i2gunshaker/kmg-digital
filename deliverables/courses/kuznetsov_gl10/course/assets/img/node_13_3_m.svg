@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 542" width="400" height="542" role="img" aria-label="Как над рифом возникает ловушка" font-family="'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif">
+<title>Как над рифом возникает ловушка</title>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="#4DC4BF"/></marker><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="#ECEFF4"/></marker><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#95A5A6" stroke-width="2"/></pattern><pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" fill="#0F1419"/><circle cx="8" cy="8" r="1.1" fill="#0F1419"/></pattern><pattern id="dash" width="14" height="8" patternUnits="userSpaceOnUse"><line x1="1" y1="4" x2="9" y2="4" stroke="#0F1419" stroke-width="1.4"/></pattern><pattern id="brick" width="24" height="14" patternUnits="userSpaceOnUse"><path d="M0 0H24M0 7H24M6 0V7M18 7V14" stroke="#0F1419" stroke-width="1.1" fill="none"/></pattern></defs>
+<rect width="400" height="542" rx="10" fill="#0F1419"/>
+<rect x="18.0" y="14.0" width="75.9" height="28.0" rx="14" fill="#8E44AD" fill-opacity="1.0" stroke="none" stroke-width="1.2"/>
+<text x="55.9" y="33.0" font-size="16" fill="#FFFFFF" text-anchor="middle" font-weight="700">схема</text>
+<text x="18.0" y="70.0" font-size="19" fill="#ECEFF4" text-anchor="start" font-weight="700">Как над рифом возникает ловушка</text>
+<g transform="translate(0 87.0)">
+<rect x="18.0" y="14.0" width="364.0" height="63.5" rx="10" fill="#1A2129" fill-opacity="1.0" stroke="#4DC4BF" stroke-width="2"/>
+<circle cx="50.0" cy="45.8" r="17.0" fill="#4DC4BF" fill-opacity="1.0" stroke="none" stroke-width="1.2"/>
+<text x="50.0" y="51.8" font-size="18" fill="#0F1419" text-anchor="middle" font-weight="700">1</text>
+<text x="82.0" y="39.0" font-size="17" fill="#ECEFF4" text-anchor="start">Уровень моря растёт — риф</text>
+<text x="82.0" y="60.8" font-size="17" fill="#ECEFF4" text-anchor="start">растёт</text>
+<line x1="200.0" y1="79.5" x2="200.0" y2="97.5" stroke="#4DC4BF" stroke-width="2.2" marker-end="url(#ar)"/>
+<rect x="18.0" y="101.5" width="364.0" height="63.5" rx="10" fill="#1A2129" fill-opacity="1.0" stroke="#4DC4BF" stroke-width="2"/>
+<circle cx="50.0" cy="133.3" r="17.0" fill="#4DC4BF" fill-opacity="1.0" stroke="none" stroke-width="1.2"/>
+<text x="50.0" y="139.3" font-size="18" fill="#0F1419" text-anchor="middle" font-weight="700">2</text>
+<text x="82.0" y="126.5" font-size="17" fill="#ECEFF4" text-anchor="start">Уровень моря падает — рост</text>
+<text x="82.0" y="148.3" font-size="17" fill="#ECEFF4" text-anchor="start">рифа прекращается</text>
+</g>
+<text x="18.0" y="517.6" font-size="16" fill="#AEB9C5" text-anchor="start">по тексту главы, стр. 216–218</text>
+</svg>

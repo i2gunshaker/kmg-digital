@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 529" width="560" height="529" role="img" aria-label="Крупный риф внутри слоистый" font-family="'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif">
+<title>Крупный риф внутри слоистый</title>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="#4DC4BF"/></marker><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="#ECEFF4"/></marker><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#95A5A6" stroke-width="2"/></pattern><pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" fill="#0F1419"/><circle cx="8" cy="8" r="1.1" fill="#0F1419"/></pattern><pattern id="dash" width="14" height="8" patternUnits="userSpaceOnUse"><line x1="1" y1="4" x2="9" y2="4" stroke="#0F1419" stroke-width="1.4"/></pattern><pattern id="brick" width="24" height="14" patternUnits="userSpaceOnUse"><path d="M0 0H24M0 7H24M6 0V7M18 7V14" stroke="#0F1419" stroke-width="1.1" fill="none"/></pattern></defs>
+<rect width="560" height="529" rx="10" fill="#0F1419"/>
+<rect x="18.0" y="14.0" width="75.9" height="28.0" rx="14" fill="#8E44AD" fill-opacity="1.0" stroke="none" stroke-width="1.2"/>
+<text x="55.9" y="33.0" font-size="16" fill="#FFFFFF" text-anchor="middle" font-weight="700">схема</text>
+<text x="105.9" y="33.0" font-size="16" fill="#AEB9C5" text-anchor="start">не в масштабе</text>
+<text x="18.0" y="70.0" font-size="19" fill="#ECEFF4" text-anchor="start" font-weight="700">Крупный риф внутри слоистый</text>
+<g transform="translate(0 87.0)">
+<line x1="28.0" y1="12.0" x2="28.0" y2="342.0" stroke="#AEB9C5" stroke-width="1.6" marker-end="url(#aw)"/>
+<text x="20.0" y="177.0" font-size="16" fill="#AEB9C5" text-anchor="middle" transform="rotate(-90 20.0 177.0)">глубина</text>
+<rect x="46.0" y="12.0" width="496.0" height="159.3" rx="0" fill="#33404C" fill-opacity="0.8" stroke="none" stroke-width="1.2"/>
+<line x1="46.0" y1="12.0" x2="542.0" y2="12.0" stroke="#0F1419" stroke-width="1.2"/>
+<rect x="46.0" y="171.3" width="496.0" height="51.2" rx="0" fill="#A98FD1" fill-opacity="0.55" stroke="none" stroke-width="1.2"/>
+<rect x="46.0" y="171.3" width="496.0" height="51.2" fill="url(#brick)" fill-opacity="0.35"/>
+<line x1="46.0" y1="171.3" x2="542.0" y2="171.3" stroke="#0F1419" stroke-width="1.2"/>
+<rect x="46.0" y="222.5" width="496.0" height="56.9" rx="0" fill="#7FB3D5" fill-opacity="0.55" stroke="none" stroke-width="1.2"/>
+<rect x="46.0" y="222.5" width="496.0" height="56.9" fill="url(#brick)" fill-opacity="0.35"/>
+<line x1="46.0" y1="222.5" x2="542.0" y2="222.5" stroke="#0F1419" stroke-width="1.2"/>
+<rect x="46.0" y="279.4" width="496.0" height="62.6" rx="0" fill="#F0A35E" fill-opacity="0.55" stroke="none" stroke-width="1.2"/>
+<rect x="46.0" y="279.4" width="496.0" height="62.6" fill="url(#brick)" fill-opacity="0.35"/>
+<line x1="46.0" y1="279.4" x2="542.0" y2="279.4" stroke="#0F1419" stroke-width="1.2"/>
+<text x="534.0" y="97.7" font-size="16" fill="#ECEFF4" text-anchor="end" font-weight="700" stroke="#0F1419" stroke-width="4" paint-order="stroke" stroke-linejoin="round">суша: выветривание и карст</text>
+<text x="534.0" y="202.9" font-size="16" fill="#ECEFF4" text-anchor="end" font-weight="700" stroke="#0F1419" stroke-width="4" paint-order="stroke" stroke-linejoin="round">зона выщелачивания и карста</text>
+<text x="534.0" y="257.0" font-size="16" fill="#ECEFF4" text-anchor="end" font-weight="700" stroke="#0F1419" stroke-width="4" paint-order="stroke" stroke-linejoin="round">отмель: обломки и оолиты</text>
+<text x="534.0" y="316.7" font-size="16" fill="#ECEFF4" text-anchor="end" font-weight="700" stroke="#0F1419" stroke-width="4" paint-order="stroke" stroke-linejoin="round">плато: глубоководные осадки</text>
+</g>
+<text x="18.0" y="461.0" font-size="16" fill="#ECEFF4" text-anchor="start">Порядок этапов условный. Для биогермов и небольших рифов</text>
+<text x="18.0" y="481.5" font-size="16" fill="#ECEFF4" text-anchor="start">массивная модель годится в первом приближении.</text>
+<text x="18.0" y="505.0" font-size="16" fill="#AEB9C5" text-anchor="start">по тексту главы, стр. 209–214</text>
+</svg>

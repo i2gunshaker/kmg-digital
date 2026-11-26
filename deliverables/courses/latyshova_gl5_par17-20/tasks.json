@@ -1,0 +1,930 @@
+{
+ "chapter": "latyshova_gl5_par17-20",
+ "tasks": [
+  {
+   "id": "latyshova.t01",
+   "type": "single",
+   "step_id": "latyshova.zadachi_gis_razreza",
+   "claim_ids": [
+    "latyshova.zadachi_gis_razreza#c2"
+   ],
+   "prompt": "Как выделяют простейшие коллекторы с межзерновой пористостью?",
+   "answer": "b",
+   "explanation": "Простые коллекторы выделяют качественно, а сложные требуют количественной интерпретации.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "прямым измерением проницаемости в скважине",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "качественной интерпретацией по литологическому разрезу",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "по одной кавернограмме без других методов",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "только количественной интерпретацией через параметр насыщения",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t02",
+   "type": "gap",
+   "step_id": "latyshova.zadachi_gis_razreza",
+   "claim_ids": [
+    "latyshova.zadachi_gis_razreza#c6"
+   ],
+   "prompt": "Тип промывочной жидкости сильно влияет на {{1}} геофизической информации.",
+   "answer": [
+    "достоверность"
+   ],
+   "explanation": "Текст прямо говорит, что тип жидкости сильно влияет на достоверность данных.",
+   "kind": "recall"
+  },
+  {
+   "id": "latyshova.t03",
+   "type": "multiple",
+   "step_id": "latyshova.glinistyy_rastvor_vskrytie",
+   "claim_ids": [
+    "latyshova.glinistyy_rastvor_vskrytie#c5",
+    "latyshova.glinistyy_rastvor_vskrytie#c6"
+   ],
+   "prompt": "Какие утверждения о водоотдаче глинистого раствора верны?",
+   "answer": [
+    "a",
+    "c"
+   ],
+   "explanation": "Водоотдача — основной показатель качества, и низкая водоотдача лучше для изучения разреза.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Чем ниже водоотдача, тем лучше раствор",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Высокая водоотдача делает разрез лучше изученным",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "При оптимальной водоотдаче условия изучения разреза наиболее благоприятны",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Водоотдача не влияет на качество раствора",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t04",
+   "type": "single",
+   "step_id": "latyshova.repressiya_tehvoda_nefiltr",
+   "claim_ids": [
+    "latyshova.repressiya_tehvoda_nefiltr#c4"
+   ],
+   "prompt": "Что верно о нефильтрующемся растворе?",
+   "answer": "d",
+   "explanation": "Нефильтрующийся раствор почти не проникает в пласт, но ограничивает набор методов.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Его удельное сопротивление близко к нулю",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Он глубоко проникает в пласт вместе с фильтратом",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Он позволяет использовать все методы электрометрии",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Он почти не проникает в коллекторы",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t05",
+   "type": "calc",
+   "step_id": "latyshova.repressiya_tehvoda_nefiltr",
+   "claim_ids": [
+    "latyshova.repressiya_tehvoda_nefiltr#c1"
+   ],
+   "prompt": "Давление в скважине 25.0 МПа, пластовое давление 24.6 МПа. Чему равна репрессия Δp в МПа?",
+   "answer": 0.4,
+   "explanation": "Репрессия равна давлению в скважине минус пластовое давление.",
+   "kind": "data",
+   "tolerance": 0.01,
+   "unit": "МПа",
+   "expression": "25.0-24.6"
+  },
+  {
+   "id": "latyshova.t06",
+   "type": "multiple",
+   "step_id": "latyshova.tipy_razreza_kollektorov",
+   "claim_ids": [
+    "latyshova.tipy_razreza_kollektorov#c1",
+    "latyshova.tipy_razreza_kollektorov#c2"
+   ],
+   "prompt": "Какие из перечисленных являются основными типами разреза?",
+   "answer": [
+    "a",
+    "b",
+    "d"
+   ],
+   "explanation": "Основные типы разреза: терригенный, карбонатный и гидрохимический, а кавернозно-трещинный относится к коллекторам.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "терригенный",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "карбонатный",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "кавернозно-трещинный",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "гидрохимический",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t07",
+   "type": "single",
+   "step_id": "latyshova.tipy_razreza_kollektorov",
+   "claim_ids": [
+    "latyshova.tipy_razreza_kollektorov#c2"
+   ],
+   "prompt": "Какой тип коллектора преобладает в терригенном разрезе?",
+   "answer": "a",
+   "explanation": "В терригенном разрезе преобладают межзерновые коллекторы.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "межзерновой",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "карстовый",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "трещинный",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "кавернозно-трещинный",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t08",
+   "type": "gap",
+   "step_id": "latyshova.metody_sp_mikrozondy",
+   "claim_ids": [
+    "latyshova.metody_sp_mikrozondy#c6"
+   ],
+   "prompt": "С ростом минерализации раствора эффективность методов СП и {{1}} резко снижается.",
+   "answer": [
+    "микрозондов"
+   ],
+   "explanation": "Текст называет методы СП и микрозондов как теряющие эффективность при росте минерализации.",
+   "kind": "recall"
+  },
+  {
+   "id": "latyshova.t09",
+   "type": "single",
+   "step_id": "latyshova.metody_sp_mikrozondy",
+   "claim_ids": [
+    "latyshova.metody_sp_mikrozondy#c3"
+   ],
+   "prompt": "По какому признаку метод СП дифференцирует терригенный разрез?",
+   "answer": "b",
+   "explanation": "Метод СП относится к методам глинистости и дифференцирует разрез по относительной глинистости.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "по пористости kп напрямую",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "по относительной глинистости ηгл",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "по объёмной глинистости kгл",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "по проницаемости kпр",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t10",
+   "type": "multiple",
+   "step_id": "latyshova.parametr_nasysheniya_produktivnost",
+   "claim_ids": [
+    "latyshova.parametr_nasysheniya_produktivnost#c2",
+    "latyshova.parametr_nasysheniya_produktivnost#c3"
+   ],
+   "prompt": "Какие утверждения о признаке нефте- или газосодержащей породы верны?",
+   "answer": [
+    "a",
+    "d"
+   ],
+   "explanation": "Pн больше 1 задаёт признак, а для его оценки нужны методы сопротивления и пористости.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Порода нефте- или газосодержащая, если Pн = ρн/ρвп больше 1",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Высокое сопротивление само по себе доказывает нефть",
+     "misconception": "misc.high_res_oil"
+    },
+    {
+     "id": "c",
+     "text": "Pн меньше 1 означает наличие нефти",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Нужны методы сопротивления и методы пористости",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t11",
+   "type": "order",
+   "step_id": "latyshova.litologicheskaya_kolonka",
+   "claim_ids": [
+    "latyshova.litologicheskaya_kolonka#c1",
+    "latyshova.litologicheskaya_kolonka#c4"
+   ],
+   "prompt": "Расставьте шаги построения литологии разреза по порядку.",
+   "answer": [
+    "b",
+    "a",
+    "c",
+    "d"
+   ],
+   "explanation": "Сначала границы пластов, затем литология по признакам, затем условная колонка и её уточнение.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Оценить литологию интервала по сумме признаков разных методов",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Определить границы и толщины пластов по диаграммам отдельных методов",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "При неизвестном составе построить условную колонку по физическим признакам",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Уточнить колонку по петрофизике образцов или боковым грунтоносом",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t12",
+   "type": "single",
+   "step_id": "latyshova.vydelenie_kollektora_priznaki",
+   "claim_ids": [
+    "latyshova.vydelenie_kollektora_priznaki#c1"
+   ],
+   "prompt": "Какой прямой признак коллектора дают при качественном глинистом растворе с малой водоотдачей?",
+   "answer": "c",
+   "explanation": "Сужение диаметра вызвано глинистой коркой и относится к прямым признакам коллектора.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "увеличение диаметра из-за разбухания глин",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "отсутствие зоны проникновения",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "сужение диаметра ствола из-за глинистой корки",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "высокие показания микрозондов независимо от их величины",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t13",
+   "type": "single",
+   "step_id": "latyshova.vydelenie_kollektora_priznaki",
+   "claim_ids": [
+    "latyshova.vydelenie_kollektora_priznaki#c6"
+   ],
+   "prompt": "Что обычно происходит с признаками коллекторов на микрозондах при бурении на технической воде?",
+   "answer": "b",
+   "explanation": "При бурении на технической воде признаки коллекторов на микрозондах обычно отсутствуют.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "совпадают с радиальным градиентом",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "обычно отсутствуют",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "переходят в отрицательные аномалии СП",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "становятся более чёткими",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t14",
+   "type": "single",
+   "step_id": "latyshova.radialny_gradient_dinamika",
+   "claim_ids": [
+    "latyshova.radialny_gradient_dinamika#c3"
+   ],
+   "prompt": "Микрозонд показывает сопротивление выше, чем у БК-3. Какое проникновение фильтрата это даёт?",
+   "answer": "a",
+   "explanation": "Микрозонд с сопротивлением выше, чем у БК-3, соответствует повышающему проникновению.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "повышающее",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "полную замену пластового флюида",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "понижающее",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "нулевой радиальный градиент",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t15",
+   "type": "multiple",
+   "step_id": "latyshova.radialny_gradient_dinamika",
+   "claim_ids": [
+    "latyshova.radialny_gradient_dinamika#c5",
+    "latyshova.radialny_gradient_dinamika#c6",
+    "latyshova.radialny_gradient_dinamika#c7"
+   ],
+   "prompt": "Какие утверждения о динамических методах верны?",
+   "answer": [
+    "b",
+    "d"
+   ],
+   "explanation": "Метод повторных замеров сохраняет условия, а метод двух растворов их меняет.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Динамические методы применяют при наличии радиального градиента",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Метод повторных замеров повторяет один метод при неизменных условиях",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Метод повторных замеров меняет раствор в скважине",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Метод двух растворов меняет условия и сравнивает результаты",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t16",
+   "type": "gap",
+   "step_id": "latyshova.kriterii_kpr_rentabelnost",
+   "claim_ids": [
+    "latyshova.kriterii_kpr_rentabelnost#c5"
+   ],
+   "prompt": "Для нефтеносных коллекторов критическое значение проницаемости лежит в пределах (1-10) · 10³ {{1}}.",
+   "answer": [
+    "мкм²"
+   ],
+   "explanation": "Критическая проницаемость для нефтяных коллекторов измеряется в мкм².",
+   "kind": "recall"
+  },
+  {
+   "id": "latyshova.t17",
+   "type": "single",
+   "step_id": "latyshova.kriterii_kpr_rentabelnost",
+   "claim_ids": [
+    "latyshova.kriterii_kpr_rentabelnost#c3"
+   ],
+   "prompt": "От чего зависит нижний предел рентабельного дебита района?",
+   "answer": "b",
+   "explanation": "Рентабельный дебит определяется геологией, экономикой района и себестоимостью продукции.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "только от пористости коллектора",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "от геологии, экономики района и себестоимости продукции",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "только от глубины залегания пласта",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "только от вязкости нефти",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t18",
+   "type": "order",
+   "step_id": "latyshova.kpr_shagi_pereschet",
+   "claim_ids": [
+    "latyshova.kpr_shagi_pereschet#c1",
+    "latyshova.kpr_shagi_pereschet#c3"
+   ],
+   "prompt": "Расставьте шаги расчёта критической проницаемости по порядку.",
+   "answer": [
+    "a",
+    "c",
+    "d",
+    "b"
+   ],
+   "explanation": "Сначала оценивают предел дебита, затем задают Q, находят η и по η вычисляют kпр*.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Оценить геологию и экономику района для предела дебита",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Вычислить kпр* по η, вязкости и радиусам скважины и контура",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Задать минимальный рентабельный дебит Q",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Найти η делением Q на депрессию и толщину",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t19",
+   "type": "single",
+   "step_id": "latyshova.kpr_shagi_pereschet",
+   "claim_ids": [
+    "latyshova.kpr_shagi_pereschet#c5"
+   ],
+   "prompt": "Что верно о радиусах в формуле критической проницаемости?",
+   "answer": "d",
+   "explanation": "В формулу критической проницаемости входит логарифм отношения радиусов контура и скважины.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "радиусы в формулу не входят",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "вместо радиусов берут глубину пласта",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "радиусы сокращаются при логарифмировании",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "радиусы скважины и контура питания входят в формулу",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t20",
+   "type": "calc",
+   "step_id": "latyshova.kpr_shagi_pereschet",
+   "claim_ids": [
+    "latyshova.kpr_shagi_pereschet#c1",
+    "latyshova.kpr_shagi_pereschet#c2"
+   ],
+   "prompt": "Минимальный рентабельный дебит нефти 60 м³/сут, депрессия 1000 Па, эффективная толщина 3 м. Чему равен коэффициент продуктивности η?",
+   "answer": 0.02,
+   "explanation": "η равен дебиту, делённому на депрессию и эффективную толщину.",
+   "kind": "data",
+   "tolerance": 0.0001,
+   "unit": "м³/Па·сут·м",
+   "expression": "60/(1000*3)"
+  },
+  {
+   "id": "latyshova.t21",
+   "type": "gap",
+   "step_id": "latyshova.porog_na_diagrammah",
+   "claim_ids": [
+    "latyshova.porog_na_diagrammah#c7"
+   ],
+   "prompt": "Для однозначного выделения эффективной мощности целесообразно применять {{1}} при ИСФ более 1 %.",
+   "answer": [
+    "ЯМР"
+   ],
+   "explanation": "Текст рекомендует метод ЯМР для однозначного выделения эффективной мощности при ИСФ более 1 %.",
+   "kind": "recall"
+  },
+  {
+   "id": "latyshova.t22",
+   "type": "order",
+   "step_id": "latyshova.porog_na_diagrammah",
+   "claim_ids": [
+    "latyshova.porog_na_diagrammah#c2",
+    "latyshova.porog_na_diagrammah#c3"
+   ],
+   "prompt": "Расставьте шаги получения порога на диаграмме по порядку.",
+   "answer": [
+    "d",
+    "a",
+    "c",
+    "b"
+   ],
+   "explanation": "Сначала выбирают семейство методов, затем по корреляциям находят пороги и откладывают их на диаграммах.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "По корреляции находят kн* или ηгл*, соответствующие критическому kпр*",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Откладывают пороговые значения на диаграммах и получают уровень порога",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "По величине kп находят пороговые значения диаграмм по известным связям",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Выбирают метод пористости или глинистости для эффективной толщины",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t23",
+   "type": "calc",
+   "step_id": "latyshova.harakter_nasysh_normalizaciya",
+   "claim_ids": [
+    "latyshova.harakter_nasysh_normalizaciya#c1",
+    "latyshova.harakter_nasysh_normalizaciya#c8"
+   ],
+   "prompt": "Сопротивление неизменённой части пласта 20 Ом·м, сопротивление того же пласта при водонасыщении 4 Ом·м. Чему равен Pн?",
+   "answer": 5.0,
+   "explanation": "Pн равен сопротивлению неизменённой части пласта, делённому на сопротивление водонасыщенного пласта.",
+   "kind": "data",
+   "tolerance": 0.01,
+   "unit": "безразмерно",
+   "expression": "20/4"
+  },
+  {
+   "id": "latyshova.t24",
+   "type": "single",
+   "step_id": "latyshova.harakter_nasysh_normalizaciya",
+   "claim_ids": [
+    "latyshova.harakter_nasysh_normalizaciya#c8"
+   ],
+   "prompt": "Что означает Pн больше 1 для пласта?",
+   "answer": "a",
+   "explanation": "Pн больше 1 означает, что пласт сопротивляется сильнее, чем при полном водонасыщении.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "сопротивление пласта выше сопротивления того же пласта при водонасыщении",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "высокое сопротивление однозначно доказывает нефть",
+     "misconception": "misc.high_res_oil"
+    },
+    {
+     "id": "c",
+     "text": "пласт полностью водоносный",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "сопротивление пласта ниже сопротивления пластовой воды",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t25",
+   "type": "multiple",
+   "step_id": "latyshova.diagramma_pn_kn_fig69",
+   "claim_ids": [
+    "latyshova.diagramma_pn_kn_fig69#c3",
+    "latyshova.diagramma_pn_kn_fig69#c6"
+   ],
+   "prompt": "Какие утверждения о рис. 69 верны?",
+   "answer": [
+    "a",
+    "b",
+    "c"
+   ],
+   "explanation": "Кривая 1 отвечает предельно нефтегазонасыщенным коллекторам, кривая 2 водоносным, а положение точки задаёт характер насыщения.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Кривая 1 относится к предельно нефтегазонасыщенным коллекторам",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Характер насыщения определяется положением точки ρп и kп",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Кривая 2 относится к полностью водоносным",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Кривая 1 относится к полностью водоносным",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t26",
+   "type": "calc",
+   "step_id": "latyshova.diagramma_pn_kn_fig69",
+   "claim_ids": [
+    "latyshova.diagramma_pn_kn_fig69#c6"
+   ],
+   "prompt": "Относительное водонасыщение kв равно 0.6, связанная вода kв.св равна 0.2. Чему равно относительное водонасыщение kв*?",
+   "answer": 0.5,
+   "explanation": "kв* равно разности kв и kв.св, делённой на единицу минус kв.св.",
+   "kind": "data",
+   "tolerance": 0.001,
+   "unit": "доля",
+   "expression": "(0.6-0.2)/(1-0.2)"
+  },
+  {
+   "id": "latyshova.t27",
+   "type": "single",
+   "step_id": "latyshova.krit_pn_kn_petrofizika",
+   "claim_ids": [
+    "latyshova.krit_pn_kn_petrofizika#c3"
+   ],
+   "prompt": "Для подсчёта запасов чаще используют какую пару критических значений?",
+   "answer": "a",
+   "explanation": "Для подсчёта запасов берут вторую пару, Pн,кр и kв,кр, которая отделяет промышленный приток.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Pн,кр и kв,кр",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "статистические пороги по опробованию",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Pн* и kв*",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "только Pн**",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t28",
+   "type": "single",
+   "step_id": "latyshova.primery_tablica_22",
+   "claim_ids": [
+    "latyshova.primery_tablica_22#c4"
+   ],
+   "prompt": "По примеру автора при αСП = 1 и Pн = 35 коллектор даёт какой результат испытания?",
+   "answer": "d",
+   "explanation": "При αСП = 1 и Pн = 35 автор относит коллектор к чистой нефти.",
+   "kind": "data",
+   "options": [
+    {
+     "id": "a",
+     "text": "воду с признаками нефти",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "нефть с водой",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "чистую воду",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "чистую нефть",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t29",
+   "type": "single",
+   "step_id": "latyshova.eff_tolshina_vnk",
+   "claim_ids": [
+    "latyshova.eff_tolshina_vnk#c2"
+   ],
+   "prompt": "Как проводят ВНК без переходной зоны?",
+   "answer": "c",
+   "explanation": "Без переходной зоны контакт совпадает с подошвой пласта высокого сопротивления.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "по середине переходной зоны",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "по линейному графику сопротивления",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "по подошве пласта высокого сопротивления",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "по кровле пласта низкого сопротивления",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "latyshova.t30",
+   "type": "gap",
+   "step_id": "latyshova.tonkoslojistyj_kollektor",
+   "claim_ids": [
+    "latyshova.tonkoslojistyj_kollektor#c2"
+   ],
+   "prompt": "В тонкослоистой пачке отдельные прослои неколлектора не выделяются даже {{1}} методами.",
+   "answer": [
+    "микроэлектрическими"
+   ],
+   "explanation": "Текст говорит, что прослои не выделяются даже микроэлектрическими методами, поэтому нужен расчёт по пачке.",
+   "kind": "recall"
+  },
+  {
+   "id": "latyshova.t31",
+   "type": "multiple",
+   "step_id": "latyshova.karbonat_osobennosti_razreza",
+   "claim_ids": [
+    "latyshova.karbonat_osobennosti_razreza#c1",
+    "latyshova.karbonat_osobennosti_razreza#c4"
+   ],
+   "prompt": "Какие утверждения о карбонатном разрезе верны?",
+   "answer": [
+    "b",
+    "c"
+   ],
+   "explanation": "Низкая пористость и соизмеримость сопротивлений отличают карбонатный разрез.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "СП и ГМ в карбонатах работают так же, как в терригенных",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Сопротивления продуктивного коллектора и неколлектора соизмеримы",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "В карбонатах пористость преимущественно низкая",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Фильтрат в карбонатах проникает мельче, чем в терригенных",
+     "misconception": null
+    }
+   ]
+  }
+ ]
+}

@@ -203,6 +203,19 @@ def test_plan_finds_stale_tasks_and_videos(env):
     assert plan(cfg, ch, layer, only_node=n1["id"])["stale_tasks"] == []
 
 
+def test_plan_rebuilds_course_when_chapter_visuals_change(env):
+    """Перерисовали рисунки главы (kurs gen --only visual) — rebuild пересобирает курс, хотя слой не менялся."""
+    from kurs.pipeline import plan, write_manifest
+
+    cfg, ch, units, _ = env
+    layer = make_layer(ch, units)
+    (ch.build_dir / "visual.json").write_text(json.dumps({"nodes": {}}), encoding="utf-8")
+    write_manifest(cfg, ch, layer)
+    assert not plan(cfg, ch, layer)["course"]
+    (ch.build_dir / "visual.json").write_text(json.dumps({"nodes": {layer["nodes"][0]["id"]: {"template": "flow"}}}), encoding="utf-8")
+    assert plan(cfg, ch, layer)["course"]
+
+
 # ---------------------------------------------------------------- 6. задания: дистракторы из искажений шага
 def test_single_task_options_are_caught_distortions(env):
     from kurs.rules import distractors, single_task, transfer_task

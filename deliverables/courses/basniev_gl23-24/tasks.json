@@ -1,0 +1,790 @@
+{
+ "chapter": "basniev_gl23-24",
+ "tasks": [
+  {
+   "id": "basniev.t01",
+   "type": "single",
+   "step_id": "basniev.elastic_regime_energy",
+   "claim_ids": [
+    "basniev.elastic_regime_energy#c1"
+   ],
+   "prompt": "Какая форма энергии служит основной движущей силой притока в неустановившихся процессах?",
+   "answer": "d",
+   "explanation": "Автор называет упругую деформацию жидкостей и скелета основной формой энергии неустановившихся процессов.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Давление газовой шапки над нефтью",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Сила тяжести нефти над водоносным горизонтом",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Напор воды из области питания",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Упругая деформация жидкостей и скелета пласта",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t02",
+   "type": "gap",
+   "step_id": "basniev.elastic_regime_energy",
+   "claim_ids": [
+    "basniev.elastic_regime_energy#c1"
+   ],
+   "prompt": "Основной формой энергии, двигающей приток в неустановившихся процессах, является упругая {{1}} жидкостей и скелета.",
+   "answer": [
+    "деформация"
+   ],
+   "explanation": "Автор называет упругую деформацию основной формой энергии неустановившихся процессов.",
+   "kind": "recall"
+  },
+  {
+   "id": "basniev.t03",
+   "type": "single",
+   "step_id": "basniev.elastic_regime_kinds_speed",
+   "claim_ids": [
+    "basniev.elastic_regime_kinds_speed#c9",
+    "basniev.elastic_regime_kinds_speed#c7"
+   ],
+   "prompt": "Как меняется скорость перераспределения давления в пласте при росте вязкости жидкости?",
+   "answer": "d",
+   "explanation": "Процесс идёт медленнее при большей вязкости, потому что растут силы сопротивления фильтрации.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Ускоряется, так как вязкая жидкость сильнее сжимается",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Растёт пропорционально корню из времени",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Не меняется, если проницаемость остаётся прежней",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Замедляется, так как растут силы сопротивления фильтрации",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t04",
+   "type": "multiple",
+   "step_id": "basniev.elastic_regime_kinds_speed",
+   "claim_ids": [
+    "basniev.elastic_regime_kinds_speed#c1",
+    "basniev.elastic_regime_kinds_speed#c2",
+    "basniev.elastic_regime_kinds_speed#c4"
+   ],
+   "prompt": "Какие утверждения о режимах упругого режима верны?",
+   "answer": [
+    "c",
+    "d"
+   ],
+   "explanation": "Упруговодонапорный режим питается водой, а замкнуто-упругий действует в залежи, закрытой ловушкой, до давления насыщения.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Упруговодонапорный режим возможен только в залежи, закрытой сбросом",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Замкнуто-упругий режим действует и после падения давления ниже давления насыщения",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Замкнуто-упругий режим действует в залежи, закрытой ловушкой со всех сторон",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Упруговодонапорный режим поддерживается напором воды из области питания",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t05",
+   "type": "single",
+   "step_id": "basniev.elastic_reserve_capacity",
+   "claim_ids": [
+    "basniev.elastic_reserve_capacity#c7",
+    "basniev.elastic_reserve_capacity#c6"
+   ],
+   "prompt": "Чему равен коэффициент упругоёмкости пласта β* через пористость m, βж и βс?",
+   "answer": "c",
+   "explanation": "Коэффициент упругоёмкости равен сумме произведения m на βж и βс.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "m + βж + βс",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "m·βж·βс",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "m·βж + βс",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "βж/m + βс",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t06",
+   "type": "gap",
+   "step_id": "basniev.elastic_reserve_capacity",
+   "claim_ids": [
+    "basniev.elastic_reserve_capacity#c6"
+   ],
+   "prompt": "Коэффициент упругоёмкости β* численно равен изменению {{1}} на единицу объёма на единицу давления.",
+   "answer": [
+    "запаса"
+   ],
+   "explanation": "Коэффициент упругоёмкости показывает изменение упругого запаса на единицу объёма и давления.",
+   "kind": "understanding"
+  },
+  {
+   "id": "basniev.t07",
+   "type": "gap",
+   "step_id": "basniev.model_state_equations",
+   "claim_ids": [
+    "basniev.model_state_equations#c3"
+   ],
+   "prompt": "В модели проницаемость и вязкость принимаются {{1}}.",
+   "answer": [
+    "постоянными"
+   ],
+   "explanation": "Автор принимает проницаемость и вязкость постоянными, хотя на практике проницаемость может меняться.",
+   "kind": "recall"
+  },
+  {
+   "id": "basniev.t08",
+   "type": "multiple",
+   "step_id": "basniev.nonlinear_terms_neglect",
+   "claim_ids": [
+    "basniev.nonlinear_terms_neglect#c1",
+    "basniev.nonlinear_terms_neglect#c2",
+    "basniev.nonlinear_terms_neglect#c3"
+   ],
+   "prompt": "Какие утверждения о допущениях при упрощении произведения mρ верны?",
+   "answer": [
+    "a",
+    "b",
+    "d"
+   ],
+   "explanation": "Квадратичный член мал, а коэффициенты сжатия нефти и вод лежат в указанных автором пределах.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Для пластовых вод коэффициент от 2,7·10^-10 до 5·10^-10 Па^-1",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Для нефти коэффициент объёмного сжатия жидкости от 7·10^-10 до 30·10^-10 Па^-1",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Проницаемость и вязкость меняются вместе с давлением на больших глубинах",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Квадратичное слагаемое отбрасывают, потому что оно мало по сравнению с двумя другими",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t09",
+   "type": "single",
+   "step_id": "basniev.pressure_diffusivity_equation",
+   "claim_ids": [
+    "basniev.pressure_diffusivity_equation#c3"
+   ],
+   "prompt": "Как связаны коэффициент пьезопроводности κ, проницаемость k, вязкость μ и β*?",
+   "answer": "d",
+   "explanation": "Коэффициент пьезопроводности равен проницаемости, делённой на произведение вязкости и β*.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "κ = μβ*/k",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "κ = β*/(k·μ)",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "κ = k·μ/β*",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "κ = k/(μβ*)",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t10",
+   "type": "multiple",
+   "step_id": "basniev.pressure_diffusivity_equation",
+   "claim_ids": [
+    "basniev.pressure_diffusivity_equation#c4",
+    "basniev.pressure_diffusivity_equation#c8"
+   ],
+   "prompt": "Какие утверждения о применимости уравнения пьезопроводности верны?",
+   "answer": [
+    "c",
+    "d"
+   ],
+   "explanation": "Уравнение выведено для слабосжимаемой жидкости, поэтому второе слагаемое отбрасывают.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Коэффициент κ не зависит от проницаемости пласта",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Давление распространяется по пласту с постоянной скоростью, как звук",
+     "misconception": "misc.pressure_sound_speed"
+    },
+    {
+     "id": "c",
+     "text": "Уравнение применимо к слабосжимаемой упругой жидкости",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Второе слагаемое в интеграле отбрасывают, так как жидкость слабосжимаемая",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t11",
+   "type": "order",
+   "step_id": "basniev.gallery_const_pressure_solution",
+   "claim_ids": [
+    "basniev.gallery_const_pressure_solution#c1",
+    "basniev.gallery_const_pressure_solution#c2"
+   ],
+   "prompt": "Расставьте шаги решения задачи о галерее при постоянном давлении в правильном порядке.",
+   "answer": [
+    "d",
+    "a",
+    "c",
+    "b"
+   ],
+   "explanation": "Сначала задают условия, затем вводят переменные, сводят уравнение и находят константу.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Ввести безразмерное давление P и автомодельную переменную u",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Найти константу C1 из условия P = 1 при u стремящемся к бесконечности",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Свести уравнение к обыкновенному через производные по u",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Записать начальное и граничные условия",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t12",
+   "type": "gap",
+   "step_id": "basniev.gallery_const_pressure_solution",
+   "claim_ids": [
+    "basniev.gallery_const_pressure_solution#c4"
+   ],
+   "prompt": "Задача о галерее при постоянном давлении решается через автомодельную переменную и {{1}}.",
+   "answer": [
+    "интеграл вероятности"
+   ],
+   "explanation": "Интеграл вероятности выражается через функцию erf и даёт распределение давления.",
+   "kind": "recall"
+  },
+  {
+   "id": "basniev.t13",
+   "type": "multiple",
+   "step_id": "basniev.gallery_rate_pressure_profile",
+   "claim_ids": [
+    "basniev.gallery_rate_pressure_profile#c1",
+    "basniev.gallery_rate_pressure_profile#c2",
+    "basniev.gallery_rate_pressure_profile#c5"
+   ],
+   "prompt": "Какие утверждения о дебите галереи при постоянном давлении на галерее верны?",
+   "answer": [
+    "a",
+    "c",
+    "d"
+   ],
+   "explanation": "Дебит падает как один над корнем из времени, а накопленная добыча растёт как корень из времени.",
+   "kind": "data",
+   "options": [
+    {
+     "id": "a",
+     "text": "Дебит стремится к нулю при времени, стремящемся к бесконечности",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Дебит постоянен во времени при постоянном давлении на галерее",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Дебит убывает как один над корнем из времени",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Накопленная добыча растёт пропорционально корню из времени",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t14",
+   "type": "single",
+   "step_id": "basniev.gallery_pressure_cavitation",
+   "claim_ids": [
+    "basniev.gallery_pressure_cavitation#c2",
+    "basniev.gallery_pressure_cavitation#c4"
+   ],
+   "prompt": "Что происходит с давлением у галереи при постоянном дебите в поздние моменты времени?",
+   "answer": "b",
+   "explanation": "При больших временах давление у галереи может стать отрицательным, и тогда возникает кавитация.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Остаётся равным начальному давлению",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Может стать отрицательным, и вблизи галереи возникает кавитация",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Стабилизируется на уровне давления насыщения",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Растёт выше начального из-за накопления запаса",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t15",
+   "type": "order",
+   "step_id": "basniev.gallery_pressure_cavitation",
+   "claim_ids": [
+    "basniev.gallery_pressure_cavitation#c5",
+    "basniev.gallery_pressure_cavitation#c1"
+   ],
+   "prompt": "Расставьте шаги поиска давления у галереи и в пласте в правильном порядке.",
+   "answer": [
+    "b",
+    "c",
+    "a",
+    "d"
+   ],
+   "explanation": "Сначала находят давление у галереи по условию на бесконечности, затем интегрируют по x и подставляют его в распределение.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Проинтегрировать уравнение по x при фиксированном времени t",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Подставить условие на бесконечности, где первое слагаемое по правилу Лопиталя стремится к нулю",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "При x→∞ экспонента стремится к нулю, давление у галереи равно pк минус член с корнем из времени",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Подставить pr(t) в уравнение и получить давление в любой точке пласта",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t16",
+   "type": "multiple",
+   "step_id": "basniev.radial_point_source_setup",
+   "claim_ids": [
+    "basniev.radial_point_source_setup#c1",
+    "basniev.radial_point_source_setup#c2"
+   ],
+   "prompt": "Какие условия радиальной задачи о скважине с постоянным дебитом заданы в главе?",
+   "answer": [
+    "c",
+    "d"
+   ],
+   "explanation": "Скважину принимают точечным стоком, а до пуска давление во всём пласте равно контурному.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Граница возмущённой зоны со временем останавливается на конечном радиусе",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Скважина пущена с переменным дебитом, зависящим от времени",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "До пуска давление во всём пласте одинаково и равно контурному",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Скважина имеет нулевой радиус и работает как точечный сток",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t17",
+   "type": "single",
+   "step_id": "basniev.radial_ei_main_formula",
+   "claim_ids": [
+    "basniev.radial_ei_main_formula#c2",
+    "basniev.radial_ei_main_formula#c4"
+   ],
+   "prompt": "Какой функцией выражается давление в любой точке плоскорадиального потока упругой жидкости?",
+   "answer": "c",
+   "explanation": "Основная формула упругого режима записывает давление через интегральную показательную функцию.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Функцией Бесселя первого рода нулевого порядка",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Синусоидальной функцией времени",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Интегральной показательной функцией Ei",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Линейной функцией логарифма радиуса",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t18",
+   "type": "order",
+   "step_id": "basniev.radial_ei_main_formula",
+   "claim_ids": [
+    "basniev.radial_ei_main_formula#c1",
+    "basniev.radial_ei_main_formula#c7"
+   ],
+   "prompt": "Расставьте шаги решения радиальной задачи через функцию v в правильном порядке.",
+   "answer": [
+    "c",
+    "b",
+    "d",
+    "a"
+   ],
+   "explanation": "Сначала вводят v, затем разделяют переменные, интегрируют, а постоянную находят по условию на забое.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Найти C1 через дебит Q0 из условия на забое",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Разделить переменные и проинтегрировать логарифм",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Ввести v = dP/dξ и получить уравнение первого порядка для v и ξ",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Получить v = C1 e^(−ξ²)/ξ",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t19",
+   "type": "gap",
+   "step_id": "basniev.ei_log_approximation_rule",
+   "claim_ids": [
+    "basniev.ei_log_approximation_rule#c3"
+   ],
+   "prompt": "Погрешность логарифмической замены не превосходит {{1}} при x = r²/(4κt) ≤ 0,01.",
+   "answer": [
+    "0,25%"
+   ],
+   "explanation": "При x не больше 0,01 погрешность логарифмической замены не превышает 0,25%.",
+   "kind": "data"
+  },
+  {
+   "id": "basniev.t20",
+   "type": "calc",
+   "step_id": "basniev.ei_log_approximation_rule",
+   "claim_ids": [
+    "basniev.ei_log_approximation_rule#c1",
+    "basniev.ei_log_approximation_rule#c3"
+   ],
+   "prompt": "Для x = 0,01 вычислите -Ei(-x) по приближению ln(1/x) минус 0,5772.",
+   "answer": 4.028,
+   "explanation": "Логарифмическая замена дает ln(100) минус 0,5772, то есть примерно 4,028.",
+   "kind": "transfer",
+   "tolerance": 0.001,
+   "unit": null,
+   "expression": "log(1/0.01)-0.5772"
+  },
+  {
+   "id": "basniev.t21",
+   "type": "multiple",
+   "step_id": "basniev.accuracy_and_well_profile",
+   "claim_ids": [
+    "basniev.accuracy_and_well_profile#c1",
+    "basniev.accuracy_and_well_profile#c3"
+   ],
+   "prompt": "Какие утверждения о погрешности формулы 23.52 верны?",
+   "answer": [
+    "a",
+    "b"
+   ],
+   "explanation": "Формула строго верна для точечного стока, но для обычных скважин она точна уже на ранней стадии.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Для обычной скважины формула точна уже очень рано после пуска",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Формула строго верна только для точечного стока в неограниченном пласте",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Для конечного пласта формула остаётся точной на любом времени",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Давление на забое со временем растёт, поэтому формула не работает",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t22",
+   "type": "calc",
+   "step_id": "basniev.accuracy_and_well_profile",
+   "claim_ids": [
+    "basniev.accuracy_and_well_profile#c4"
+   ],
+   "prompt": "При κ = 1 м²/с и rc = 0,1 м найдите время t, при котором f0 = 100, если f0 = κt/rc².",
+   "answer": 1.0,
+   "explanation": "Из f0 = κt/rc² получаем t = f0·rc²/κ, то есть 1 секунду.",
+   "kind": "data",
+   "tolerance": 0.01,
+   "unit": "с",
+   "expression": "100*0.1**2/1"
+  },
+  {
+   "id": "basniev.t23",
+   "type": "calc",
+   "step_id": "basniev.pssc_gallery_pressure",
+   "claim_ids": [
+    "basniev.pssc_gallery_pressure#c4"
+   ],
+   "prompt": "При κ = 1 м²/с и t = 4 с найдите границу зоны l(t) = 2√(κt) в метрах.",
+   "answer": 4.0,
+   "explanation": "Подстановка κ и t в формулу границы зоны даёт 4 метра.",
+   "kind": "transfer",
+   "tolerance": 0.01,
+   "unit": "м",
+   "expression": "2*sqrt(1*4)"
+  },
+  {
+   "id": "basniev.t24",
+   "type": "order",
+   "step_id": "basniev.pssc_gallery_pressure",
+   "claim_ids": [
+    "basniev.pssc_gallery_pressure#c2",
+    "basniev.pssc_gallery_pressure#c4"
+   ],
+   "prompt": "Расставьте шаги метода ПССС для галереи при постоянном забойном давлении в правильном порядке.",
+   "answer": [
+    "a",
+    "b",
+    "d",
+    "c"
+   ],
+   "explanation": "Сначала задают объём зоны, затем пишут баланс упругого запаса, интегрируют его и подставляют границу в дебит.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Записать объём возмущённой зоны V(t) = Bhl(t)",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Приравнять отбор за dt к приращению упругого запаса в зоне",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Подставить l(t) в дебит и получить Q(t), убывающий как 1/√t",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Проинтегрировать баланс и получить l(t) = 2√(κt)",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t25",
+   "type": "calc",
+   "step_id": "basniev.pssc_radial_balance_error",
+   "claim_ids": [
+    "basniev.pssc_radial_balance_error#c1"
+   ],
+   "prompt": "При rc = 0,1 м, κ = 1 м²/с и t = 1 с найдите R(t) = sqrt(rc² + 4κt) в метрах.",
+   "answer": 2.0025,
+   "explanation": "Подставляя значения в закон движения границы, получаем радиус около 2,0025 метра.",
+   "kind": "transfer",
+   "tolerance": 0.0005,
+   "unit": "м",
+   "expression": "sqrt(0.1**2+4*1*1)"
+  },
+  {
+   "id": "basniev.t26",
+   "type": "order",
+   "step_id": "basniev.pssc_radial_balance_error",
+   "claim_ids": [
+    "basniev.pssc_radial_balance_error#c1"
+   ],
+   "prompt": "Расставьте шаги вывода границы R(t) по методу ПССС в правильном порядке.",
+   "answer": [
+    "b",
+    "c",
+    "d",
+    "a"
+   ],
+   "explanation": "Сначала записывают объём зоны и перепад давления, затем подставляют их в баланс, интегрируют и получают границу.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Получить R(t) = sqrt(rc² + 4κt)",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Записать объём возмущённой зоны через R(t) и радиус скважины",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Найти средневзвешенное давление и перепад для установившегося потока",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Подставить объём и перепад в баланс и проинтегрировать по времени и радиусу",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basniev.t27",
+   "type": "gap",
+   "step_id": "basniev.pssc_radial_pressure_limits",
+   "claim_ids": [
+    "basniev.pssc_radial_pressure_limits#c4"
+   ],
+   "prompt": "Погрешность определения дебита по методу ПССС при постоянном забойном давлении составляет около {{1}}.",
+   "answer": [
+    "5%"
+   ],
+   "explanation": "По сравнению с точными расчетами метод ПССС даёт погрешность дебита около 5%.",
+   "kind": "data"
+  }
+ ]
+}

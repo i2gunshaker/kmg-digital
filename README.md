@@ -10,11 +10,11 @@
 
 ### 1. Ветка и зависимости
 
-Рабочая ветка — `avervill`:
+Рабочая ветка — `main`:
 
 ```bash
-git checkout avervill
-git pull origin avervill
+git checkout main
+git pull origin main
 ```
 
 Python 3.12+ (рекомендуется локальное `.venv`) и Node.js 20+:

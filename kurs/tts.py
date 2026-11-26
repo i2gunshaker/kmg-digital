@@ -271,12 +271,14 @@ def backend_name() -> str:
     return "edge"
 
 
-def synth(text: str, out: Path, *, backend: str | None = None, voice: str | None = None) -> Path:
+def synth(text: str, out: Path, *, backend: str | None = None, voice: str | None = None, lang: str = "ru") -> Path:
     """Синтез фразы в файл (mp3 у edge и elevenlabs, wav у silero). Кэш: тот же текст второй раз не синтезируется."""
     backend = backend or backend_name()
+    en = lang == "en"
     out.parent.mkdir(parents=True, exist_ok=True)
     key = out.with_suffix(".txt")
-    if out.exists() and key.exists() and key.read_text(encoding="utf-8") == f"{backend}|{voice}|{text}":
+    cache_tag = f"{backend}|{voice}|{lang}|{text}"
+    if out.exists() and key.exists() and key.read_text(encoding="utf-8") == cache_tag:
         return out
     if backend == "edge":
         try:
@@ -285,7 +287,8 @@ def synth(text: str, out: Path, *, backend: str | None = None, voice: str | None
             raise TTSError("edge-tts не установлен: pip install edge-tts") from e
 
         async def go() -> None:
-            await edge_tts.Communicate(strip_stress(text), voice or "ru-RU-DmitryNeural", rate="-5%").save(str(out))
+            default_voice = "en-US-AndrewNeural" if en else "ru-RU-DmitryNeural"
+            await edge_tts.Communicate(strip_stress(text), voice or default_voice, rate="-5%").save(str(out))
 
         asyncio.run(go())
     elif backend == "silero":
@@ -293,25 +296,35 @@ def synth(text: str, out: Path, *, backend: str | None = None, voice: str | None
             import torch
         except ImportError as e:
             raise TTSError("Silero требует torch: pip install torch") from e
-        try:
-            model, _ = torch.hub.load("snakers4/silero-models", "silero_tts", language="ru", speaker="v5_ru")
-        except Exception:
-            model, _ = torch.hub.load("snakers4/silero-models", "silero_tts", language="ru", speaker="v4_ru")
-        # Silero: ударение — «+» перед ударной гласной
-        plus = re.sub(r"([аеёиоуыэюяАЕЁИОУЫЭЮЯ])\u0301", lambda m: "+" + m.group(1), text)
-        model.save_wav(text=plus, speaker=voice or "aidar", sample_rate=48000, audio_path=str(out))
+        if en:
+            model, _ = torch.hub.load("snakers4/silero-models", "silero_tts", language="en", speaker="v3_en")
+            model.save_wav(text=strip_stress(text), speaker=voice or "en_0", sample_rate=48000, audio_path=str(out))
+        else:
+            try:
+                model, _ = torch.hub.load("snakers4/silero-models", "silero_tts", language="ru", speaker="v5_ru")
+            except Exception:
+                model, _ = torch.hub.load("snakers4/silero-models", "silero_tts", language="ru", speaker="v4_ru")
+            # Silero: ударение — «+» перед ударной гласной
+            plus = re.sub(r"([аеёиоуыэюяАЕЁИОУЫЭЮЯ])\u0301", lambda m: "+" + m.group(1), text)
+            model.save_wav(text=plus, speaker=voice or "aidar", sample_rate=48000, audio_path=str(out))
     elif backend == "elevenlabs":
         import urllib.error
         import urllib.request
 
-        # Голос по умолчанию — Nikolay (проверен на геологических терминах); переопределяется ELEVENLABS_VOICE_ID в .env.
-        vid = voice or os.environ.get("ELEVENLABS_VOICE_ID") or "3EuKHIEZbSzrHGNmdYsx"
+        # Голос по умолчанию: RU — Nikolay (проверен на геологических терминах), переопределяется ELEVENLABS_VOICE_ID;
+        # EN — George, переопределяется ELEVENLABS_VOICE_ID_EN.
+        if en:
+            default_vid = os.environ.get("ELEVENLABS_VOICE_ID_EN") or DEFAULT_EL_VOICE_ID_EN
+        else:
+            default_vid = os.environ.get("ELEVENLABS_VOICE_ID") or "3EuKHIEZbSzrHGNmdYsx"
+        vid = voice or default_vid
+        language_code = "en" if en else "ru"
         model_id = os.environ.get("ELEVENLABS_MODEL_ID") or os.environ.get("ELEVENLABS_MODEL") or "eleven_v4"
         if model_id == "eleven_v4":
             payload: dict[str, Any] = {
                 "text": strip_stress(text),
                 "model_id": model_id,
-                "language_code": "ru",
+                "language_code": language_code,
                 "apply_text_normalization": "on",
                 "voice_settings": {"stability": 0.55, "similarity_boost": 0.78},
             }
@@ -319,7 +332,7 @@ def synth(text: str, out: Path, *, backend: str | None = None, voice: str | None
             payload = {
                 "text": strip_stress(text),
                 "model_id": model_id,
-                "language_code": "ru",
+                "language_code": language_code,
                 "voice_settings": {"stability": 0.55, "similarity_boost": 0.78, "speed": 0.95},
             }
         last_err: Exception | None = None
@@ -349,7 +362,7 @@ def synth(text: str, out: Path, *, backend: str | None = None, voice: str | None
             raise TTSError(f"ElevenLabs error: {last_err}") from last_err
     else:
         raise TTSError(f"неизвестный синтезатор {backend}")
-    key.write_text(f"{backend}|{voice}|{text}", encoding="utf-8")
+    key.write_text(cache_tag, encoding="utf-8")
     return out
 
 
@@ -466,6 +479,7 @@ def sync_drift(lines: list[dict], words: list[dict]) -> float:
 
 # ---------------------------------------------------------------- паспорта Remotion (Track 2)
 DEFAULT_EL_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"  # George (premade, multilingual)
+DEFAULT_EL_VOICE_ID_EN = "JBFqnCBsd6RMkjVDRZzb"  # George для lang="en"; переопределяется ELEVENLABS_VOICE_ID_EN
 DEFAULT_EL_MODEL = "eleven_multilingual_v2"
 SUPPORTED_BACKENDS = ("auto", "elevenlabs", "silero", "edge_tts", "mock")
 
@@ -532,9 +546,14 @@ def strip_stress_marks(text: str) -> str:
     return (text or "").replace("\u0301", "").replace("+", "")
 
 
-def normalize_for_speech(text: str, backend: str, domain_dir: Path) -> tuple[str, str]:
+def normalize_for_speech(text: str, backend: str, domain_dir: Path, *, lang: str = "ru") -> tuple[str, str]:
     """Возвращает (текст_для_синтеза, чистый_произносимый_эталон_без_ударений)."""
     s = (text or "").strip()
+    if lang == "en":
+        # Английский текст: без русских раскрытий символов и без словаря ударений.
+        s = s.replace("→", " leads to ").replace("≠", " is not equal to ")
+        s = re.sub(r"\s+", " ", s).strip()
+        return s, s
     for pat, repl in _SYMBOL_EXPANSIONS:
         s = pat.sub(repl, s)
     s = s.replace("→", " переходит в ").replace("≠", " не равно ")
@@ -708,6 +727,8 @@ def _synth_elevenlabs_segment(
     voice_id: str,
     model_id: str,
     out_mp3: Path,
+    *,
+    lang: str = "ru",
 ) -> tuple[Path, list[dict]]:
     from elevenlabs import VoiceSettings
 
@@ -719,7 +740,7 @@ def _synth_elevenlabs_segment(
     }
     if model_id == "eleven_v4":
         kwargs["voice_settings"] = VoiceSettings(stability=0.55, similarity_boost=0.78)
-        kwargs["language_code"] = "ru"
+        kwargs["language_code"] = "en" if lang == "en" else "ru"
         kwargs["apply_text_normalization"] = "on"
     else:
         kwargs["voice_settings"] = VoiceSettings(stability=0.55, similarity_boost=0.78, style=0.12, use_speaker_boost=True)
@@ -936,7 +957,10 @@ def synthesize_passport(
     if not script:
         raise ValueError("Пустой script в паспорте")
 
-    resolved_voice = voice_id or os.environ.get("ELEVENLABS_VOICE_ID") or DEFAULT_EL_VOICE_ID
+    if lang == "en" and voice_id is None:
+        resolved_voice = os.environ.get("ELEVENLABS_VOICE_ID_EN") or DEFAULT_EL_VOICE_ID_EN
+    else:
+        resolved_voice = voice_id or os.environ.get("ELEVENLABS_VOICE_ID") or DEFAULT_EL_VOICE_ID
     resolved_model = model_id or os.environ.get("ELEVENLABS_MODEL_ID") or DEFAULT_EL_MODEL
     chosen = backend
     if chosen == "auto":
@@ -969,7 +993,7 @@ def synthesize_passport(
 
         entries: list[dict[str, Any]] = []
         for idx, line in enumerate(script):
-            tts_text, spoken_ref = normalize_for_speech(line["text"], use_backend, cfg.domain_dir)
+            tts_text, spoken_ref = normalize_for_speech(line["text"], use_backend, cfg.domain_dir, lang=lang)
             planned_dur = max(1.2, float(line["t_end"]) - float(line["t_start"]))
             meta_tag = f"{use_backend}|{resolved_model}|{resolved_voice}|{lang}|{tts_text}"
             digest = hashlib.sha256(meta_tag.encode("utf-8")).hexdigest()[:24]
@@ -987,7 +1011,7 @@ def synthesize_passport(
                     words = _even_words(spoken_ref, dur)
                 elif use_backend == "elevenlabs":
                     _, words = _synth_elevenlabs_segment(
-                        el_client, tts_text, resolved_voice, resolved_model, cached_audio
+                        el_client, tts_text, resolved_voice, resolved_model, cached_audio, lang=lang
                     )
                     dur = _ffprobe_duration(cached_audio)
                     if not words:
@@ -1147,6 +1171,7 @@ def synthesize_passport(
         "wer": asr_info["wer"],
         "max_sync_drift_sec": asr_info["max_sync_drift_sec"],
         "pause_window": next((e.get("pause_window") for e in segment_entries if e.get("pause_window")), None),
+        "resolved_voice_id": resolved_voice,
     }
 
 

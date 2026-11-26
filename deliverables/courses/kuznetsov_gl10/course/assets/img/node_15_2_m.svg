@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 426" width="400" height="426" role="img" aria-label="Форма ловушки повторяет форму рифа" font-family="'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif">
+<title>Форма ловушки повторяет форму рифа</title>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="#4DC4BF"/></marker><marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="#ECEFF4"/></marker><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#95A5A6" stroke-width="2"/></pattern><pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" fill="#0F1419"/><circle cx="8" cy="8" r="1.1" fill="#0F1419"/></pattern><pattern id="dash" width="14" height="8" patternUnits="userSpaceOnUse"><line x1="1" y1="4" x2="9" y2="4" stroke="#0F1419" stroke-width="1.4"/></pattern><pattern id="brick" width="24" height="14" patternUnits="userSpaceOnUse"><path d="M0 0H24M0 7H24M6 0V7M18 7V14" stroke="#0F1419" stroke-width="1.1" fill="none"/></pattern></defs>
+<rect width="400" height="426" rx="10" fill="#0F1419"/>
+<rect x="18.0" y="14.0" width="75.9" height="28.0" rx="14" fill="#8E44AD" fill-opacity="1.0" stroke="none" stroke-width="1.2"/>
+<text x="55.9" y="33.0" font-size="16" fill="#FFFFFF" text-anchor="middle" font-weight="700">схема</text>
+<text x="105.9" y="33.0" font-size="16" fill="#AEB9C5" text-anchor="start">вертикаль преувеличена, не в</text>
+<text x="105.9" y="52.0" font-size="16" fill="#AEB9C5" text-anchor="start">масштабе</text>
+<text x="18.0" y="84.0" font-size="19" fill="#ECEFF4" text-anchor="start" font-weight="700">Форма ловушки повторяет форму</text>
+<text x="18.0" y="109.0" font-size="19" fill="#ECEFF4" text-anchor="start" font-weight="700">рифа</text>
+<g transform="translate(0 126.0)">
+<rect x="22.0" y="44.0" width="356.0" height="170.0" rx="0" fill="#6B8E5A" fill-opacity="0.45" stroke="none" stroke-width="1.2"/>
+<rect x="22.0" y="44.0" width="356.0" height="170.0" fill="url(#dash)" fill-opacity="0.4"/>
+<polygon points="22.0,214.0 378.0,214.0 378.0,248.0 22.0,248.0" fill="#8C7B6B" fill-opacity="0.75" stroke="none" stroke-width="2.0" stroke-linejoin="round"/>
+<polygon points="128.8,214.0 135.9,106.8 150.2,93.4 249.8,93.4 264.1,106.8 271.2,214.0" fill="#F0A35E" fill-opacity="0.85" stroke="#0F1419" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="128.8,214.0 135.9,106.8 150.2,93.4 249.8,93.4 264.1,106.8 271.2,214.0" fill="url(#brick)" fill-opacity="0.28"/>
+<polygon points="57.6,214.0 100.3,160.4 150.2,93.4 135.9,106.8 128.8,214.0" fill="#7FB3D5" fill-opacity="0.85" stroke="#0F1419" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="57.6,214.0 100.3,160.4 150.2,93.4 135.9,106.8 128.8,214.0" fill="url(#dots)" fill-opacity="0.28"/>
+<polygon points="342.4,214.0 299.7,160.4 249.8,93.4 264.1,106.8 271.2,214.0" fill="#7FB3D5" fill-opacity="0.85" stroke="#0F1419" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="342.4,214.0 299.7,160.4 249.8,93.4 264.1,106.8 271.2,214.0" fill="url(#dots)" fill-opacity="0.28"/>
+<clipPath id="rf"><rect x="22.0" y="30.0" width="356.0" height="123.7"/></clipPath><g clip-path="url(#rf)">
+<polygon points="128.8,214.0 135.9,106.8 150.2,93.4 249.8,93.4 264.1,106.8 271.2,214.0" fill="#2E8B57" fill-opacity="0.5" stroke="none" stroke-width="2.0" stroke-linejoin="round"/>
+<polygon points="57.6,214.0 100.3,160.4 150.2,93.4 135.9,106.8 128.8,214.0" fill="#2E8B57" fill-opacity="0.5" stroke="none" stroke-width="2.0" stroke-linejoin="round"/>
+<polygon points="342.4,214.0 299.7,160.4 249.8,93.4 264.1,106.8 271.2,214.0" fill="#2E8B57" fill-opacity="0.5" stroke="none" stroke-width="2.0" stroke-linejoin="round"/>
+</g>
+<line x1="22.0" y1="153.7" x2="378.0" y2="153.7" stroke="#3498DB" stroke-width="2.2" stroke-dasharray="8,5"/>
+<text x="26.0" y="173.7" font-size="16" fill="#ECEFF4" text-anchor="start" font-weight="700" stroke="#0F1419" stroke-width="4" paint-order="stroke" stroke-linejoin="round">контакт</text>
+</g>
+<text x="18.0" y="402.0" font-size="16" fill="#AEB9C5" text-anchor="start">по тексту главы, стр. 219–220</text>
+</svg>

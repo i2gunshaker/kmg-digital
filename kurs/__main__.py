@@ -104,11 +104,12 @@ def _gen(cfg: Config, args) -> int:
                 doc, issues = generate_tasks(cfg, ch, llm, layer, load_chapter_units(cfg, ch), force=args.force)
                 print(f"{ch.id}: заданий {len(doc['tasks'])}; {report(issues)}")
                 rc |= 1 if any(i.level == "error" for i in issues) else 0
-            if todo("visual"):
+            retry = bool(getattr(args, "retry_rejected", False)) and args.only in (None, "visual") and (ch.build_dir / "visual.json").exists()
+            if retry or todo("visual"):
                 rp = ch.build_dir / "routing.json"
                 routing = json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else None
                 rep = generate_visuals(
-                    cfg, ch, llm, layer, load_chapter_units(cfg, ch), routing=routing, everything=bool(args.redo and args.only == "visual"), force=args.force
+                    cfg, ch, llm, layer, load_chapter_units(cfg, ch), routing=routing, everything=bool(args.redo and args.only == "visual"), retry_rejected=retry, force=args.force
                 )
                 print(
                     f"{ch.id}: рисунков моделью {rep['accepted']} из {rep['nodes']}, по существу {rep['rich']};"
@@ -251,6 +252,7 @@ def main(argv=None) -> int:
     p.add_argument("--only", choices=["layer", "routing", "tasks", "visual"], help="только одна часть")
     p.add_argument("--force", action="store_true", help="перезаписать файлы, изменённые вручную")
     p.add_argument("--redo", action="store_true", help="сделать заново то, что уже готово")
+    p.add_argument("--retry-rejected", action="store_true", help="рисунки: переделать только отклонённые проверкой, с её замечаниями; принятые остаются")
     p.add_argument("--max-usd", type=float, help="сколько можно потратить за этот запуск; без него платных вызовов нет")
     p.add_argument("--profile", help="набор моделей: cheap, mid, max")
 

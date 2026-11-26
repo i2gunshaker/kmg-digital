@@ -1,0 +1,365 @@
+{
+ "chapter": "latyshova_gl5_par17-20",
+ "routes": [
+  {
+   "node_id": "latyshova.zadachi_gis_razreza",
+   "format": "карточки",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Р/Пр, вводный узел со списком целей ГИС. Сумма критериев 1, видео не нужно, хватает карточек и текста."
+  },
+  {
+   "node_id": "latyshova.glinistyy_rastvor_vskrytie",
+   "format": "длинное видео",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М/И: проникновение фильтрата идёт во времени и скрыто от глаза. Сумма критериев 7, видео оправдано, затем практикум по показаниям."
+  },
+  {
+   "node_id": "latyshova.repressiya_tehvoda_nefiltr",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М/Н: движение фильтрата под репрессией скрыто, причина и следствие очевидны. Сумма 7, видео оправдано, интерактив для сценариев раствора."
+  },
+  {
+   "node_id": "latyshova.tipy_razreza_kollektorov",
+   "format": "карточки",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 2,
+    "counterintuitive": 0,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Р/П: статичная схема порового пространства лучше анимации. Сумма 3, видео не нужно."
+  },
+  {
+   "node_id": "latyshova.metody_sp_mikrozondy",
+   "format": "карточки",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Р/И: узнавание методов по признакам. Сумма 3, видео не оправдано, карточки и квиз с практикумом."
+  },
+  {
+   "node_id": "latyshova.parametr_nasysheniya_produktivnost",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф/И: смысл Pн через ползунки. Сумма 3, видео не идёт, интерактив с ползунками."
+  },
+  {
+   "node_id": "latyshova.litologicheskaya_kolonka",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Р/Пр: сборка колонки по сумме признаков как процедура. Сумма 3, видео не нужно, блок-схема."
+  },
+  {
+   "node_id": "latyshova.kogda_priznakov_malo",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н/Р: выбор между простым и смешанным разрезом по сценариям. Сумма 2, видео не нужно."
+  },
+  {
+   "node_id": "latyshova.vydelenie_kollektora_priznaki",
+   "format": "карточки",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Р/Н: узнавание признаков коллектора на диаграммах. Сумма 3, видео не нужно, карточки и квиз по фото."
+  },
+  {
+   "node_id": "latyshova.radialny_gradient_dinamika",
+   "format": "длинное видео",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 0,
+    "counterintuitive": 2,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "wellbore-log-sync",
+   "why": "Тип И/Р: зона проникновения меняется во времени и отсутствие градиента контринтуитивно. Сумма 6, видео оправдано, синхрон прибор-кривая-интерпретация."
+  },
+  {
+   "node_id": "latyshova.kriterii_kpr_rentabelnost",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н/Ф: граница зависит от экономики и сценария. Сумма 3, видео не идёт, интерактив на сценарии."
+  },
+  {
+   "node_id": "latyshova.kpr_shagi_pereschet",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Ф/Пр: пошаговый пересчёт дебита в проницаемость. Сумма 2, видео не идёт, практикум по шагам."
+  },
+  {
+   "node_id": "latyshova.porog_na_diagrammah",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Пр/Ф: перевод проницаемости в порог диаграммы через корреляцию. Сумма 3, видео не нужно, блок-схема и практикум."
+  },
+  {
+   "node_id": "latyshova.harakter_nasysh_normalizaciya",
+   "format": "интерактив",
+   "secondary_format": "шортс",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф/М: нормализация кривых и смысл Pн. Сумма 4, видео не оправдано, интерактив с ползунками."
+  },
+  {
+   "node_id": "latyshova.diagramma_pn_kn_fig69",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "feature-recognition",
+   "why": "Тип Р/Ф: попадание точки в область графика рис. 69. Сумма 2, видео не нужно, интерактив на признаки."
+  },
+  {
+   "node_id": "latyshova.krit_pn_kn_petrofizika",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н/Ф: два способа деления коллекторов по притоку. Сумма 3, видео не идёт, интерактив на сценарии."
+  },
+  {
+   "node_id": "latyshova.primery_tablica_22",
+   "format": "практикум на данных",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Ф/Пр: расчёт пар Pн и kн по кривым. Сумма 1, видео не нужно, практикум и таблица."
+  },
+  {
+   "node_id": "latyshova.eff_tolshina_vnk",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Пр/М: порядок определения ГНК по нейтронным диаграммам. Сумма 4, видео не оправдано, практикум."
+  },
+  {
+   "node_id": "latyshova.tonkoslojistyj_kollektor",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф/Пр: тонкие прослои не видны даже микрозондам. Сумма 4, видео не оправдано, интерактив с ползунками."
+  },
+  {
+   "node_id": "latyshova.zadachi_96_103",
+   "format": "практикум на данных",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Пр/Ф: расчётные задачи на эффективную толщину. Сумма 0, видео не нужно, практикум."
+  },
+  {
+   "node_id": "latyshova.karbonat_osobennosti_razreza",
+   "format": "карточки",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 2,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Р/М: низкопористые карбонаты и слабая связь с глинистостью. Сумма 4, видео не оправдано, карточки и текст."
+  },
+  {
+   "node_id": "latyshova.normalizaciya_karbonat",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 2,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "feature-recognition",
+   "why": "Тип Р/Ф: расхождение кривых как признак продуктивности. Сумма 5, видео не идёт, интерактив на признаки."
+  },
+  {
+   "node_id": "latyshova.krit_kn_karbonat",
+   "format": "карточки",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Ф/Р: граничная пористость по таблице 23. Сумма 2, видео не нужно, карточки."
+  },
+  {
+   "node_id": "latyshova.zadachi_104_108",
+   "format": "практикум на данных",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Пр/Р: задачи на выделение карбонатных коллекторов по комплексу. Сумма 0, видео не нужно, практикум."
+  }
+ ]
+}
