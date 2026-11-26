@@ -91,6 +91,7 @@ def render_from_spec(
         max_chars=max_chars,
         lang=lang,
         skip_asr=skip_asr,
+        fixed_timeline=scene.get("parameters", {}).get("fixed_timeline", False),
     )
 
     updated_passport = json.loads(Path(tts_res["passport_json"]).read_text(encoding="utf-8"))

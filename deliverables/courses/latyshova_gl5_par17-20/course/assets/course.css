@@ -200,6 +200,8 @@ input[type="range"] { width: 100%; min-height: 32px; accent-color: var(--accent)
 .video-card.vertical video { max-width: 360px; }
 
 /* данные */
+.volve-jump { margin: 10px 0 0; }
+.volve-jump .btn { display: inline-flex; align-items: center; padding: 6px 14px; border-color: var(--accent); text-decoration: none; }
 .volve-box { border: 1px solid var(--accent); border-radius: var(--radius); padding: 16px; display: grid; gap: 14px; background: var(--surface-2); }
 .volve-controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; }
 .volve-controls label { display: grid; gap: 4px; }
@@ -289,3 +291,8 @@ input[type="range"] { width: 100%; min-height: 32px; accent-color: var(--accent)
   #tab-step, #tab-path, #tab-cards, #tab-map, #tab-glossary, #tab-legend { display: none !important; }
   .summary-card { break-inside: avoid; margin-bottom: 12px; }
 }
+
+/* Длинная формула в строке: на телефоне прокручивается сама, а не растягивает страницу */
+.math-wide { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+.math-block { display: block; contain: inline-size; overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; }
+li:has(.math-wide), li:has(.math-block) { min-width: 0; }

@@ -123,6 +123,9 @@
             {% if s.prereq %}
             <p class="prereq">Опирается на: {% for p in s.prereq %}<a href="#step-{{ p.id }}" data-goto-step="{{ p.id }}">{{ p.title }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</p>
             {% endif %}
+            {% if loop.first and volve %}{% set volve_steps = steps|selectattr('show_volve')|list %}{% set volve_step = volve_steps[0] if volve_steps else none %}{% if volve_step and volve_step.id != s.id %}
+            <p class="volve-jump"><a href="#volve-widget" class="btn" data-goto-step="{{ volve_step.id }}">Попробовать на реальной скважине Volve →</a></p>
+            {% endif %}{% endif %}
           </header>
 
           <section id="sec-{{ s.id }}-core" class="block core">
@@ -300,7 +303,7 @@
             </div>
             {% endif %}
             {% if s.show_volve and volve %}
-            <div class="volve-box">
+            <div class="volve-box" id="volve-widget">
               <p><b>Реальная скважина Volve {{ volve.well }}.</b> Три интервала по 5 метров. Передвиньте ползунок глубины, сравните показания и выберите интервал, который даст нефть. Правило оператора для коллектора: <code>{{ volve.operator_rule.condition }}</code>.</p>
               <div class="volve-controls">
                 <label>Интервал

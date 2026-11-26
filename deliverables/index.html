@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Глава → курс · пакет сдачи</title>
+<style>
+  :root {
+    --bg: #0F1419;
+    --surface: #1A2129;
+    --surface-2: #222B36;
+    --ink: #ECEFF4;
+    --muted: #AEB9C5;
+    --line: #2F3B47;
+    --accent: #4DC4BF;
+    --accent-ink: #0F1419;
+    --accent-soft: #153736;
+    --ok: #3AD17A;
+    --warn: #F0AD4E;
+    --radius: 10px;
+    --sans: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--sans); }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 16px 56px; }
+  header.top { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 28px; }
+  header.top p.kicker { margin: 0 0 4px; color: var(--muted); font-size: 0.95rem; letter-spacing: 0.02em; }
+  h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.2; }
+  h2 { margin: 40px 0 14px; font-size: 1.35rem; }
+  h3 { margin: 0; font-size: 1.1rem; line-height: 1.35; }
+  .lede { margin: 0; color: var(--muted); max-width: 70ch; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .card.lead { border-color: var(--accent); }
+  .book { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .q { margin: 0; font-size: 1.15rem; font-weight: 600; line-height: 1.35; }
+  .flag { align-self: flex-start; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px; font-size: 0.9rem; }
+  .facts { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding-top: 6px; }
+  .btn { display: inline-block; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-weight: 600; border-radius: 8px; padding: 9px 14px; }
+  .btn:hover { filter: brightness(1.08); }
+  .files { font-size: 0.95rem; }
+  .files a { font-family: var(--mono); font-size: 0.9rem; }
+  .videos { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; }
+  video { width: 100%; display: block; background: #000; border-radius: 8px; }
+  .vertical video { max-width: 360px; margin: 0 auto; }
+  dl.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 0; }
+  dl.metrics div { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
+  dl.metrics dt { color: var(--muted); font-size: 0.85rem; }
+  dl.metrics dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .badges { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .badges li { display: grid; grid-template-columns: 11.5rem 1fr; gap: 12px; align-items: baseline; }
+  .src { display: inline-block; font-size: 0.9rem; border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; color: var(--muted); white-space: nowrap; }
+  .src.inferred, .src.explanatory { border-style: dashed; }
+  .src.external, .src.hypothesis { border-left-width: 3px; }
+  .src.stated { border-color: var(--accent); color: var(--ink); }
+  .src.hypothesis { border-left-color: var(--warn); color: var(--warn); }
+  .memo { margin: 16px 0 0; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--surface-2); border-radius: 0 8px 8px 0; }
+  .memo p { margin: 0; }
+  .memo p + p { margin-top: 6px; }
+  footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.95rem; }
+  code { font-family: var(--mono); font-size: 0.9em; }
+  @media (max-width: 760px) {
+    .videos { grid-template-columns: minmax(0, 1fr); }
+    .badges li { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">КМГ · хакатон «Глава → курс» · пакет сдачи 26.11.2026</p>
+    <h1>Три главы учебников — три курса и два обучающих ролика</h1>
+    <p class="lede">Всё в этой папке открывается без интернета. Курсы сделаны из глав учебников. У каждого утверждения есть ссылка на страницу книги, а у роликов есть паспорт со сценарием и проверками звука.</p>
+  </header>
+
+  <section aria-labelledby="h-courses">
+    <h2 id="h-courses">Курсы</h2>
+    <div class="grid">
+      <article class="card lead">
+        <span class="flag">Начните отсюда · интерактив <span style="white-space:nowrap">Volve 15/9-F-1 B</span></span>
+        <p class="book">Латышова · гл. V, §17–20</p>
+        <h3 class="q">Почему высокое сопротивление — ещё не нефть?</h3>
+        <p class="facts">24 шага, 31 задание. На реальной скважине Volve можно выбрать интервал, который даст нефть.</p>
+        <div class="actions">
+          <a class="btn" href="courses/latyshova_gl5_par17-20/course/index.html">Открыть курс</a>
+          <span class="files"><a href="courses/latyshova_gl5_par17-20/layer.json">layer.json</a> · <a href="courses/latyshova_gl5_par17-20/coverage.json">coverage.json</a></span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="book">Басниев · гл. XXIII–XXIV</p>
+        <h3 class="q">Почему нефть сама идёт в скважину?</h3>
+        <p class="facts">21 шаг, 27 заданий: упругий режим, пьезопроводность, рост воронки депрессии.</p>
+        <div class="actions">
+          <a class="btn" href="courses/basniev_gl23-24/course/index.html">Открыть курс</a>
+          <span class="files"><a href="courses/basniev_gl23-24/layer.json">layer.json</a> · <a href="courses/basniev_gl23-24/coverage.json">coverage.json</a></span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="book">Кузнецов · гл. 10</p>
+        <h3 class="q">Как устроены рифовые резервуары?</h3>
+        <p class="facts">17 шагов, 23 задания: строение рифа, неоднородность и ёмкость коллектора.</p>
+        <div class="actions">
+          <a class="btn" href="courses/kuznetsov_gl10/course/index.html">Открыть курс</a>
+          <span class="files"><a href="courses/kuznetsov_gl10/layer.json">layer.json</a> · <a href="courses/kuznetsov_gl10/coverage.json">coverage.json</a></span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-videos">
+    <h2 id="h-videos">Обучающие ролики</h2>
+    <div class="videos">
+      <article class="card vertical">
+        <p class="book">Шортс 9:16 · Латышова</p>
+        <h3>Высокое сопротивление ≠ нефть</h3>
+        <video controls preload="metadata" src="videos/latyshova_shorts_high_rt/latyshova_shorts_high_rt.mp4"></video>
+        <dl class="metrics">
+          <div><dt>Длительность</dt><dd>66,0 с</dd></div>
+          <div><dt>Громкость</dt><dd>−16,06 LUFS</dd></div>
+          <div><dt>WER</dt><dd>1,41%</dd></div>
+          <div><dt>Сдвиг речи</dt><dd>0,37 с</dd></div>
+        </dl>
+        <p class="files"><a href="videos/latyshova_shorts_high_rt/passport.json">passport.json</a> · <a href="videos/latyshova_shorts_high_rt/scene.json">scene.json</a> · <a href="videos/latyshova_shorts_high_rt/subtitles.vtt">subtitles.vtt</a></p>
+      </article>
+      <article class="card">
+        <p class="book">Разбор 16:9 · Басниев</p>
+        <h3>Упругий режим и воронка депрессии</h3>
+        <video controls preload="metadata" src="videos/basniev_deepdive_elastic_funnel/basniev_deepdive_elastic_funnel.mp4"></video>
+        <dl class="metrics">
+          <div><dt>Длительность</dt><dd>100,5 с</dd></div>
+          <div><dt>Громкость</dt><dd>−16,11 LUFS</dd></div>
+          <div><dt>WER</dt><dd>5,24%</dd></div>
+          <div><dt>Сдвиг речи</dt><dd>0,23 с</dd></div>
+        </dl>
+        <p class="files"><a href="videos/basniev_deepdive_elastic_funnel/passport.json">passport.json</a> · <a href="videos/basniev_deepdive_elastic_funnel/scene.json">scene.json</a> · <a href="videos/basniev_deepdive_elastic_funnel/subtitles.vtt">subtitles.vtt</a></p>
+      </article>
+    </div>
+    <p class="facts" style="margin-top:12px">Субтитры вшиты в кадр, файл <code>subtitles.vtt</code> лежит рядом. Громкость указана по паспорту мастер-дорожки, WER и сдвиг речи — по проверке распознаванием.</p>
+  </section>
+
+  <section aria-labelledby="h-read">
+    <h2 id="h-read">Как читать курс</h2>
+    <div class="card">
+      <p style="margin:0">Рядом с каждым утверждением стоит метка. Она показывает, откуда взят факт:</p>
+      <ul class="badges">
+        <li><span class="src stated">стр. N · из книги</span><span>Слова автора или пересказ его утверждения. Рядом есть дословная цитата.</span></li>
+        <li><span class="src inferred">стр. N · вывод</span><span>Вывод из текста автора. На чём он держится, видно в цитате.</span></li>
+        <li><span class="src explanatory">стр. N · пояснение ИИ</span><span>Пояснение, которое модель составила по этим страницам главы.</span></li>
+        <li><span class="src external">внешнее</span><span>Знание из-за пределов главы. Оно не сверялось с книгой.</span></li>
+        <li><span class="src hypothesis">гипотеза</span><span>В главе опоры нет. Нужна проверка специалистом.</span></li>
+      </ul>
+      <div class="memo">
+        <p><b>Куда смотреть.</b> Метка <span class="src stated">стр. N</span> указывает страницу книги, а под утверждением раскрывается «Цитата автора». В конце каждого шага есть тренажёр с заданиями.</p>
+        <p>В курсе Латышовой кнопка «Попробовать на реальной скважине Volve →» на первом шаге ведёт к виджету с каротажем скважины 15/9-F-1 B.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Как собран пакет и как его воспроизвести, описано в <a href="README.md">README.md</a>. Тег заморозки: <code>freeze-2026-11-26-final</code>. Данные Volve: Equinor Volve Open Data License.
+  </footer>
+</div>
+</body>
+</html>

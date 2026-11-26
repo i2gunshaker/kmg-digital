@@ -49,12 +49,14 @@ def test_mock_tts_loudnorm_and_pause(tmp_path):
         specs["latyshova_passport"],
         tmp_path / "tts_out",
         backend="mock",
+        fixed_timeline=True,
         skip_asr=True,
     )
     assert res["backend"] == "mock"
     assert res["master_wav"].exists() and res["master_mp3"].exists() and res["subtitles_vtt"].exists()
     assert -17.5 <= res["measured_lufs"] <= -14.5
-    assert res["pause_window"] is not None
+    assert res["total_duration_sec"] == 66.0
+    assert res["pause_window"] == [41.0, 42.5]
     assert abs((res["pause_window"][1] - res["pause_window"][0]) - 1.5) < 0.05
 
     passport = json.loads(res["passport_json"].read_text(encoding="utf-8"))

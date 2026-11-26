@@ -150,6 +150,28 @@ def test_training_video_specs_and_passports(tmp_path):
     bas_scene = json.loads(Path(res["basniev_scene"]).read_text(encoding="utf-8"))
     radii_front = [pr["R_psss_m"] for pr in bas_scene["state_sample"]["profiles"]]
     assert radii_front == sorted(radii_front) and radii_front[-1] > radii_front[0]
+    for prefix, count, duration, pause in (
+        ("latyshova", 8, 66, [41, 42.5]), ("basniev", 10, 100.5, [67, 68.5])
+    ):
+        scene = json.loads(res[f"{prefix}_scene"].read_text())
+        passport = json.loads(res[f"{prefix}_passport"].read_text())
+        assert len(passport["script"]) == count
+        assert scene["duration_sec"] == passport["node_card"]["duration_sec"] == duration
+        assert scene["parameters"]["prediction_pause_sec"] == pause
+        assert [tuple(pause)] == [(a["t_end"], b["t_start"])
+                                  for a, b in zip(passport["script"], passport["script"][1:])
+                                  if b["t_start"] - a["t_end"] >= 1]
+    rows = lat_scene["state_sample"]["profile_rows"]
+    assert set((r["RES"], r["kp_pct"]) for r in rows if r["lithology"] != "shale") == {(28, 4), (24, 24)}
+    for pr in bas_scene["state_sample"]["profiles"]:
+        points = pr["curve"]
+        assert points[0]["r_m"] == 0.5 and points[-1]["r_m"] == 150
+        assert [pt["p_MPa"] for pt in points] == sorted(pt["p_MPa"] for pt in points)
+    example = bas_scene["state_sample"]["radius_task"]
+    assert example["kappa_m2_s"] == pytest.approx(0.69444, abs=0.00001)
+    radii = {pt["hours"]: pt["radius_m"] for pt in example["curve"]}
+    assert radii[1] == pytest.approx(100) and radii[4] == pytest.approx(200, abs=0.001)
+    assert radii_front[-1] == pytest.approx(120, abs=0.01)
     assert Path(res["mentor_brief"]).exists()
 
 

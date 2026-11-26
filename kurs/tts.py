@@ -908,8 +908,8 @@ def run_whisper_check(wav_path: Path, expected_ref: str, timings: list[dict], la
         first_asr_start = asr_words[0][0]
         last_asr_end = asr_words[-1][1]
         max_drift = max(
-            abs(first_asr_start - timings[0]["t_start"]),
-            abs(last_asr_end - timings[-1]["t_end"]),
+            abs(first_asr_start - (timings[0]["words"][0]["start"] if timings[0]["words"] else timings[0]["t_start"])),
+            abs(last_asr_end - (timings[-1]["words"][-1]["end"] if timings[-1]["words"] else timings[-1]["t_end"])),
         )
     return {
         "wer": wer,
@@ -940,7 +940,7 @@ def caption_chunks(words: list[dict], t_end: float, max_words: int = CAPTION_MAX
     """Режет реплику на подписи для экрана: не больше max_words слов, разрыв по знаку препинания, где можно.
 
     Подпись висит от своего первого слова до первого слова следующей (последняя — до конца реплики).
-    Подпись короче min_sec сливается с соседней, если вместе выходит не больше max_words + 1 слов.
+    Подпись короче min_sec сливается с соседней, если вместе выходит не больше max_words слов.
     """
     toks = [{"word": strip_stress_marks(str(w["word"])).strip(), "start": float(w["start"])} for w in words]
     toks = [w for w in toks if w["word"]]
@@ -985,7 +985,7 @@ def caption_chunks(words: list[dict], t_end: float, max_words: int = CAPTION_MAX
         for gi in range(len(groups)):
             if dur(gi) >= min_sec:
                 continue
-            nb = [x for x in (gi - 1, gi + 1) if 0 <= x < len(groups) and words_in(groups[x]) + words_in(groups[gi]) <= max_words + 1]
+            nb = [x for x in (gi - 1, gi + 1) if 0 <= x < len(groups) and words_in(groups[x]) + words_in(groups[gi]) <= max_words]
             if nb:
                 o = min(nb, key=lambda x: words_in(groups[x]))
                 a, b = sorted((gi, o))
@@ -1024,6 +1024,7 @@ def synthesize_passport(
     max_chars: int = 8000,
     lang: str = "ru",
     skip_asr: bool = False,
+    fixed_timeline: bool = False,
 ) -> dict[str, Any]:
     """Озвучивает паспорт целиком, склеивает с паузой предсказания 1.5 с, нормирует -16 LUFS и проверяет ASR."""
     if backend not in SUPPORTED_BACKENDS:
@@ -1152,12 +1153,23 @@ def synthesize_passport(
         cursor = 0.0
         for idx, ent in enumerate(segment_entries):
             seg_wav = tdir / f"seg_{idx:03d}.wav"
-            _run_ffmpeg(["-i", str(ent["audio_path"]), "-ar", "44100", "-ac", "1", "-acodec", "pcm_s16le", str(seg_wav)])
+            filters = []
+            tempo = 1.0
+            if fixed_timeline:
+                line = script[idx]
+                slot = line["t_end"] - line["t_start"]
+                # Оставляем финальный кадр для чтения результата.
+                hold = min(1.2, slot * 0.15) if idx == len(script) - 1 else 0.0
+                tempo = ent["duration"] / (slot - hold)
+                filters = ["-af", f"atempo={tempo:.9f},apad,atrim=duration={slot:.9f}"]
+                next_start = script[idx + 1]["t_start"] if idx + 1 < len(script) else line["t_end"]
+                ent["pause_after_sec"] = next_start - line["t_end"]
+            _run_ffmpeg(["-i", str(ent["audio_path"]), *filters, "-ar", "44100", "-ac", "1", "-acodec", "pcm_s16le", str(seg_wav)])
             real_dur = _ffprobe_duration(seg_wav)
             ent["t_start"] = round(cursor, 3)
             ent["t_end"] = round(cursor + real_dur, 3)
             ent["shifted_words"] = [
-                {"word": w["word"], "start": round(cursor + w["start"], 3), "end": round(cursor + w["end"], 3)}
+                {"word": w["word"], "start": round(cursor + w["start"] / tempo, 3), "end": round(cursor + min(real_dur, w["end"] / tempo), 3)}
                 for w in ent["words"]
             ]
             concat_list.append(seg_wav)
@@ -1215,7 +1227,7 @@ def synthesize_passport(
     for line, ent in zip(passport["script"], segment_entries):
         line["t_start"] = ent["t_start"]
         line["t_end"] = ent["t_end"]
-    if len(passport.get("frames") or []) == len(segment_entries):
+    if not fixed_timeline and len(passport.get("frames") or []) == len(segment_entries):
         for fr, ent in zip(passport["frames"], segment_entries):
             fr["t"] = round((ent["t_start"] + ent["t_end"]) / 2, 2)
     passport["node_card"]["duration_sec"] = total_duration

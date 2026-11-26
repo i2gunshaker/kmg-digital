@@ -10,12 +10,12 @@ const PROVENANCE_COLORS: Record<string, string> = {
 
 export const getCurrentState = (t: number, segments: TimingSegment[], frames: PassportFrame[]) => {
   const seg =
-    segments.find((s) => t >= s.t_start && t <= s.t_end) ||
-    segments.find((s) => s.pause_window && t >= s.pause_window[0] && t <= s.pause_window[1]) ||
+    segments.find((s) => t >= s.t_start && t < s.t_end) ||
+    segments.find((s) => s.pause_window && t >= s.pause_window[0] && t < s.pause_window[1]) ||
     [...segments].reverse().find((s) => t >= s.t_start) ||
     segments[0];
 
-  const pauseSeg = segments.find((s) => s.pause_window && t >= s.pause_window[0] && t <= s.pause_window[1]);
+  const pauseSeg = segments.find((s) => s.pause_window && t >= s.pause_window[0] && t < s.pause_window[1]);
   const inPause = Boolean(pauseSeg?.pause_window);
   const pauseProgress =
     pauseSeg?.pause_window
@@ -44,12 +44,13 @@ export const captionAt = (seg: TimingSegment | null | undefined, t: number): str
 
 export const FrameChrome: React.FC<{
   props: VideoProps;
-  scaleText: string;
+  scaleText?: string;
+  heading?: string;
   isTrueScale: boolean;
   provenanceOverride?: 'реальные данные' | 'симуляция' | 'схема';
   schoolBadge?: string;
   children: React.ReactNode;
-}> = ({props, scaleText, isTrueScale, provenanceOverride, schoolBadge, children}) => {
+}> = ({props, scaleText, heading, isTrueScale, provenanceOverride, schoolBadge, children}) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
   const t = frame / fps;
@@ -67,8 +68,12 @@ export const FrameChrome: React.FC<{
   const padTop = isPortrait ? 130 : 38;
   const bottomSafe = isPortrait ? 270 : 54;
 
-  const captionText = (seg?.on_screen || props.passport.node_card.title || '').trim();
-  const subText = captionAt(seg, t);
+  const captionText = heading ?? (seg?.on_screen || props.passport.node_card.title || '').trim();
+  const words = seg?.words || [];
+  const cap = seg?.captions?.find(c => c.start <= t && t < c.end);
+  const spoken = words.filter(w => w.start <= t && (!cap || w.start >= cap.start));
+  const subText = inPause ? props.passport.prediction_question :
+    spoken.slice(-7).map(w => w.word.replace(/[+́]/g, '')).join(' ');
   const totalDur = Math.max(1, props.timings.total_duration_sec || props.scene.duration_sec);
   const progressPct = Math.min(100, Math.max(0, (t / totalDur) * 100));
 
@@ -110,7 +115,7 @@ export const FrameChrome: React.FC<{
             >
               {label}
             </span>
-            <span
+            {scaleText && <span
               style={{
                 backgroundColor: isTrueScale ? '#1F4D3A' : '#25303C',
                 border: `2px solid ${isTrueScale ? '#2ECC71' : '#4C5E70'}`,
@@ -122,10 +127,10 @@ export const FrameChrome: React.FC<{
               }}
             >
               {scaleText}
-            </span>
+            </span>}
           </div>
 
-          {schoolBadge ? (
+          {schoolBadge?.trim() ? (
             <span
               style={{
                 color: '#9FB0C0',
@@ -145,7 +150,7 @@ export const FrameChrome: React.FC<{
         {/* Крупный экранный заголовок (≤ 7 слов, ≥ 44px) */}
         <div
           style={{
-            fontSize: isPortrait ? 48 : 44,
+            fontSize: isPortrait ? 60 : 56,
             lineHeight: 1.15,
             fontWeight: 800,
             color: inPause ? '#F1C40F' : '#FFFFFF',
@@ -177,20 +182,19 @@ export const FrameChrome: React.FC<{
         <div
           style={{
             position: 'absolute',
-            right: padX + 20,
-            // 9:16: справа внизу области сцены, над субтитрами — не перекрывает заголовок панели
-            ...(isPortrait ? {bottom: bottomSafe + 232} : {top: 174}),
+            right: padX,
+            top: padTop,
             backgroundColor: 'rgba(15, 20, 25, 0.92)',
             border: '3px solid #F1C40F',
             borderRadius: 18,
-            padding: '14px 22px',
+            padding: '0 14px',
             display: 'flex',
             alignItems: 'center',
             gap: 16,
             zIndex: 20,
           }}
         >
-          <svg width={56} height={56} viewBox="0 0 56 56">
+          <svg width={44} height={44} viewBox="0 0 56 56">
             <circle cx={28} cy={28} r={22} fill="none" stroke="#334150" strokeWidth={6} />
             <circle
               cx={28}
@@ -209,7 +213,7 @@ export const FrameChrome: React.FC<{
             </text>
           </svg>
           <div style={{fontSize: isPortrait ? 26 : 22, fontWeight: 700, color: '#F1C40F'}}>
-            Предскажите ответ!
+            Время на ответ
           </div>
         </div>
       ) : null}
@@ -233,7 +237,7 @@ export const FrameChrome: React.FC<{
             border: '1px solid #2E3B49',
             borderRadius: 14,
             padding: isPortrait ? '16px 22px' : '12px 24px',
-            fontSize: isPortrait ? 30 : 27,
+            fontSize: isPortrait ? 42 : 44,
             lineHeight: 1.32,
             color: '#ECEFF4',
             textAlign: 'center',

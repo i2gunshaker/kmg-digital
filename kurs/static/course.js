@@ -201,6 +201,8 @@
       ev.preventDefault();
       var sid = el.getAttribute("data-goto-step");
       showStep(sid, true);
+      var widget = el.getAttribute("href") === "#volve-widget" ? document.getElementById("volve-widget") : null;
+      if (widget) widget.scrollIntoView({ block: "start" });
     });
   });
 

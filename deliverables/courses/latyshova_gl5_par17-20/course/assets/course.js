@@ -201,6 +201,8 @@
       ev.preventDefault();
       var sid = el.getAttribute("data-goto-step");
       showStep(sid, true);
+      var widget = el.getAttribute("href") === "#volve-widget" ? document.getElementById("volve-widget") : null;
+      if (widget) widget.scrollIntoView({ block: "start" });
     });
   });
 
@@ -219,7 +221,9 @@
       var tex = el.getAttribute("data-tex") || el.textContent;
       var display = el.getAttribute("data-display") === "true";
       try {
-        window.katex.render(tex, el, { displayMode: display, throwOnError: false, strict: "ignore" });
+        window.katex.render(tex.replace(/\\tag\*?\s*\{([^{}]*)\}/g, "\\qquad ($1)"), el, { displayMode: display, throwOnError: false, strict: "ignore" });
+        if (!display && (tex.length > 110 || /\\begin/.test(tex))) el.classList.add("math-block");
+        else if (!display && tex.length > 45) el.classList.add("math-wide");
       } catch (e) {}
     });
   }
@@ -575,7 +579,8 @@
     var cues = (DATA.subtitles && DATA.subtitles[sid]) || [];
     if (!cues.length || !vid.addTextTrack || !window.VTTCue) return;
     var track = vid.addTextTrack("subtitles", "Русский", "ru");
-    track.mode = "showing";
+    // Подписи уже впечатаны в кадр; дорожка — для чтения с экрана и включения вручную, иначе текст двоится
+    track.mode = "hidden";
     cues.forEach(function (c) {
       track.addCue(new window.VTTCue(c.t_start, c.t_end, c.text));
     });
