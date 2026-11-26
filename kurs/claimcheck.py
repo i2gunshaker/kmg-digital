@@ -83,16 +83,23 @@ NEG_WORDS = {
     "not", "no", "never", "without", "none", "cannot", "nor",
 }
 _HEDGE = re.compile(
-    r"(?<!\w)(?:может|могут|мог(?:ла|ли|ло)?|вероятно|возможно|предположительно|как\s+правило|обычно|часто|чаще\s+всего|иногда|"
-    r"в\s+большинстве(?:\s+случаев)?|в\s+основном|по-видимому|видимо|примерно|приблизительно|около|порядка|нередко|"
+    r"(?<!\w)(?:может|могут|мог(?:ла|ли|ло)?|вероятно|возможно(?!\s+(?:лишь|только|при|если|на|в|\w+ть)(?!\w))|предположительно|как\s+правило|обычно|часто|чаще\s+всего|иногда|"
+    r"в\s+большинстве(?:\s+случаев)?|в\s+основном|по-видимому|видимо|примерно|приблизительно|нередко|"
+    # «около устья», «первого порядка» — место и порядок, а не оговорка; оговорка — только перед числом
+    r"(?:около|порядка)(?=\s+(?:[\d.,]|нескольк|десят|сот|тысяч|половин|трет|четверт|дву|тр[её]х|пят))|"
     r"may|might|likely|probably|usually|typically|often|generally|approximately|sometimes|tend(?:s)?\s+to)(?!\w)",
     re.I,
 )
 _COND = re.compile(
-    r"(?<!\w)(?:если|при\s+условии|только|лишь|когда|в\s+случае|пока|при\s+(?:\w+\s+)?(?:давлени|температур|насыщени|содержани|значени)\w*|"
+    r"(?<!\w)(?<!не\s)(?:если|при\s+условии|только|лишь|когда|в\s+случае|пока|при\s+(?:\w+\s+)?(?:давлени|температур|насыщени|содержани|значени)\w*|"
     r"if|only|unless|when|provided|in\s+case)(?!\w)",
     re.I,
 )
+# Отрицание через язык: английское в цитате и русское в утверждении (слитное «не-» не считается: «нефть», «нередко»).
+_NEG_EN = re.compile(r"(?<!\w)(?:not|no|never|none|nor|cannot|without|neither)(?!\w)|n't(?!\w)", re.I)
+_NEG_RU = re.compile(r"(?<!\w)(?:не|нет|ни|никогда|без|нельзя)(?!\w)", re.I)
+# Условие, которое при переводе не пропадает без потери смысла (в отличие от частых «if», «when»).
+_COND_STRONG = re.compile(r"(?<!\w)(?:only\s+(?:if|when|at|in|for|after|before|while)|unless|provided\s+that|as\s+long\s+as)(?!\w)", re.I)
 _ABSOLUTE = re.compile(r"(?<!\w)(?:всегда|никогда|любо(?:й|е|го|му|м|я|ую|ых|ые)|всяк\w+|исключительно|неизбежно|always|never|every|any|invariably)(?!\w)", re.I)
 
 # Пары противоположных направлений: основы слов, без окончаний.
@@ -145,6 +152,9 @@ def _direction(text: str, predicates_only: bool = False) -> set[str]:
     return out
 
 
+_COPULA = ("явля", "служ", "быть", "был", "буд", "может", "могут", "мог", "следу", "долж", "счита", "обязат", "всегда")
+
+
 def negated_heads(text: str) -> tuple[set[str], set[str]]:
     """(основы слов, которые в тексте встречаются только под отрицанием, основы всех слов).
 
@@ -159,6 +169,8 @@ def negated_heads(text: str) -> tuple[set[str], set[str]]:
                 if ws[j] in _STOP or ws[j] in NEG_WORDS:
                     continue
                 neg_pos.add(j)
+                if ws[j].startswith(_COPULA):  # «не является признаком» и «не признак» — одно отрицание
+                    continue
                 break
     heads = {stem(ws[j]) for j in neg_pos}
     plain = {stem(w) for j, w in enumerate(ws) if j not in neg_pos and w not in NEG_WORDS}
@@ -171,6 +183,11 @@ class Finding:
     code: str
     msg: str
     evidence: str = ""
+
+
+def _cyrillic(s: str) -> bool:
+    ru, en = len(re.findall(r"[а-яё]", s, re.I)), len(re.findall(r"[a-z]", re.sub(r"\$[^$]*\$|\\[a-zA-Z]+", " ", s), re.I))
+    return ru >= en
 
 
 def claim_findings(text: str, quote: str, source_texts: list[str] | None = None, context: str = "") -> list[Finding]:
@@ -188,6 +205,27 @@ def claim_findings(text: str, quote: str, source_texts: list[str] | None = None,
         code = "condition_flipped" if "перевёрнуто условие" in p else "unit_mismatch" if "(в источнике:" in p else "number_not_in_source"
         out.append(Finding(code, f"число {p}", win))
 
+    if _cyrillic(text) != _cyrillic(quote):
+        # Утверждение по-русски, цитата по-английски: слова сравнивать нельзя, смысл проверяет судья.
+        # Но оговорка и жёсткое условие видны и через язык: «usually» → «обычно», «only if» → «только если».
+        # Только когда цитата — одно предложение и утверждение пересказывает его целиком.
+        if len(sentences(quote)) == 1 and len(words(text)) >= 0.45 * len(words(quote)):
+            if _HEDGE.search(quote) and not _HEDGE.search(text):
+                w = _HEDGE.search(quote).group(0)
+                out.append(Finding("assumption_as_fact", f"у автора «{w}», в утверждении сказано как факт", quote))
+            q_neg, c_neg = _NEG_EN.search(quote), _NEG_RU.search(text)
+            if q_neg and not c_neg:
+                out.append(Finding("negation_dropped", f"у автора отрицание «{q_neg.group(0)}», в утверждении — без отрицания", quote))
+            elif c_neg and not q_neg:
+                out.append(Finding("negation_added", f"в утверждении отрицание «{c_neg.group(0)}», у автора его нет", quote))
+            m = _COND_STRONG.search(quote)
+            only = m and m.group(0).lower().startswith("only")
+            if m and not (re.search(r"(?<!\w)(?:только|лишь|исключительно)(?!\w)", text, re.I) if only else _COND.search(text) or re.search(r"(?<!\w)(?:без|кроме|пока)(?!\w)", text, re.I)):
+                out.append(Finding("condition_dropped", f"у автора условие «{quote[m.start():][:80]}», в утверждении его нет", quote))
+        m = _ABSOLUTE.search(text)
+        if m and not _ABSOLUTE.search(quote):
+            out.append(Finding("overgeneralization", f"в утверждении «{m.group(0)}», у автора такого обобщения нет", quote))
+        return out
     sup = overlap(text, quote)
     if sup < 0.25 and len(content_stems(text)) >= 4:
         out.append(Finding("quote_unsupported", f"у утверждения и цитаты общих смысловых слов {sup:.0%}", win))

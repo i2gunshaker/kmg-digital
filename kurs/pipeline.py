@@ -197,8 +197,12 @@ def rebuild(cfg: Config, ch: Chapter, only_node: str | None = None, *, video: bo
     rc = 0
     if p["stale_videos"] and video:
         from .video import render_videos
+        from .video_link import rerender
 
-        render_videos(cfg, ch, layer, only=p["stale_videos"], log=log)
+        done = {v["id"] for v in rerender(cfg, ch, layer, p["stale_videos"], log=log)}
+        rest = [v for v in p["stale_videos"] if v not in done]
+        if rest:
+            render_videos(cfg, ch, layer, only=rest, log=log)
     elif p["stale_videos"]:
         log(f"  ролики устарели: {', '.join(p['stale_videos'])} — пересобрать: kurs video {ch.id} --only <id> (или rebuild --video)")
     if p["course"] or t["replaced"] or t["removed"]:
@@ -214,7 +218,102 @@ def rebuild(cfg: Config, ch: Chapter, only_node: str | None = None, *, video: bo
     return rc
 
 
-def run(cfg: Config, chapter: str, *, max_usd: float | None, profile: str | None, video: bool, log=print) -> int:
+def _spent_since(t0: float) -> float:
+    """Сколько этот запуск уже потратил по журналу вызовов (кэш не в счёт)."""
+    from datetime import datetime
+
+    from .config import BUILD
+
+    p = BUILD / "llm_usage.jsonl"
+    if not p.exists():
+        return 0.0
+    since, s = datetime.fromtimestamp(t0).isoformat(timespec="seconds"), 0.0
+    for line in p.read_text(encoding="utf-8").splitlines():
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        if r.get("ts", "") >= since and not r.get("from_cache"):
+            s += float(r.get("cost_usd") or 0)
+    return s
+
+
+def write_scene_coverage(cfg: Config, ch: Chapter, layer: dict) -> Path:
+    """build/<глава>/scene_coverage.json: шаблон NodeStory (рисунок, кадры, сценарий) и старые сцены-слайды."""
+    from .video import scene_coverage
+    from .video_link import node_story_coverage
+
+    doc = scene_coverage(layer, ch)
+    try:
+        doc["node_story"] = node_story_coverage(cfg, ch, layer)
+    except Exception as e:  # noqa: BLE001 — отчёт не должен ронять сборку
+        doc["node_story"] = {"error": str(e)[:200]}
+    p = ch.build_dir / "scene_coverage.json"
+    p.write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding="utf-8")
+    try:  # отчёт для сдачи: видеоёмкие узлы по маршрутизации → шаблон, модель состояния или «нужен новый»
+        from .video_spec import build_template_coverage_report
+
+        build_template_coverage_report(cfg, ch, layer, routing=_read(ch.build_dir / "routing.json"))
+    except Exception as e:  # noqa: BLE001
+        print(f"  отчёт template_coverage не собран: {str(e)[:160]}")
+    return p
+
+
+def run_videos(cfg: Config, ch: Chapter, layer: dict, *, max_usd: float | None, picks: dict[str, str] | None = None,
+               backend: str = "auto", skip_asr: bool = False, log=print) -> list[dict]:
+    """Ролики по узлам (шортс и разбор по маршрутизации) анимацией Remotion — прямо в курс главы.
+    Сценарий пишет модель в пределах max_usd; без денег — сохранённый или по правилам. Не собрался — кадры-слайды."""
+    from .llm import LLM
+    from .video import pick_nodes, render_videos
+    from .video_link import render_node
+
+    if picks is None:
+        picks = {("9:16" if k == "shorts" else "16:9"): v for k, v in pick_nodes(layer, _read(ch.build_dir / "routing.json")).items()}
+    write_scene_coverage(cfg, ch, layer)
+    llm = LLM(cfg, scope=ch.id, budget=max_usd) if max_usd and max_usd > 0.005 else None
+    out = []
+    try:
+        for fmt, nid in picks.items():
+            try:
+                out.append(render_node(cfg, ch, layer, nid, fmt, llm=llm, backend=backend, skip_asr=skip_asr, log=log))
+            except Exception as e:  # noqa: BLE001 — ролик должен быть, пусть и попроще
+                log(f"  ролик {fmt} по {nid}: Remotion не собрал ({str(e)[:200]}) — собираю кадрами-слайдами")
+                out += render_videos(cfg, ch, layer, node_id=nid, fmt="shorts" if fmt == "9:16" else "long", log=log)
+    finally:
+        if llm:
+            log(f"{ch.id}: на сценарии роликов ${llm.spent:.3f}")
+            llm.wallet.release()
+    return out
+
+
+def run_vision(cfg: Config, ch: Chapter, layer: dict, *, max_usd: float | None, log=print) -> bool:
+    """Рисунки курса глазами модели (все кадры, поиск и защита). Подтверждённо неверный рисунок от модели снимается.
+    True — что-то снято, курс нужно собрать заново."""
+    from .layer_gen import ManualEdits
+    from .llm import LLM, LLMError
+    from .visual_vision import apply, check
+
+    if not max_usd or max_usd < 0.01:
+        log(f"{ch.id}: проверка рисунков зрением пропущена — денег запуска не осталось")
+        return False
+    llm = LLM(cfg, scope=ch.id, budget=max_usd)
+    try:
+        doc = check(cfg, ch, llm, layer, log=log)
+        log(f"{ch.id}: рисунков {doc['pictures']}, с подтверждённой ошибкой {len(doc['with_issues'])}, снято защитником {doc['dropped']}")
+        gone = apply(ch, doc)
+        if gone:
+            log(f"  заменены простой схемой: {', '.join(gone)}")
+        return bool(gone)
+    except (LLMError, ManualEdits, FileNotFoundError) as e:
+        log(f"{ch.id}: проверка рисунков не прошла до конца ({str(e)[:160]})")
+        return False
+    finally:
+        log(f"{ch.id}: на проверку рисунков ${llm.spent:.3f}")
+        llm.wallet.release()
+
+
+def run(cfg: Config, chapter: str, *, max_usd: float | None, profile: str | None, video: bool, vision: bool = False,
+        backend: str = "auto", log=print) -> int:
     """Полный прогон главы (в т.ч. незнакомой .md на русском или английском) одной командой."""
     from .__main__ import _gen
     from .course import build_course, verify_course_dir
@@ -242,10 +341,13 @@ def run(cfg: Config, chapter: str, *, max_usd: float | None, profile: str | None
     issues = check_layer(cfg, ch, layer, coverage=cov) + (check_coverage(cfg, ch, cov, layer) if cov else [])
     log(report(issues))
     if video:
-        from .video import render_videos
-
-        render_videos(cfg, ch, layer, log=log)
+        left = None if max_usd is None else max(0.0, max_usd - _spent_since(t0))
+        run_videos(cfg, ch, layer, max_usd=left, backend=backend, log=log)
+    else:
+        write_scene_coverage(cfg, ch, layer)  # отчёт о покрытии узлов шаблонами сцен нужен и без роликов
     built = build_course(cfg, ch, layer)
+    if vision and run_vision(cfg, ch, layer, max_usd=None if max_usd is None else max(0.0, max_usd - _spent_since(t0)), log=log):
+        built = build_course(cfg, ch, layer)
     errs = verify_course_dir(cfg, ch, built)
     for e in errs:
         log("  приёмка: " + e)

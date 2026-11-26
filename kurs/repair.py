@@ -20,6 +20,7 @@ from .quotes import (
     sentences,
     snap_quote,
 )
+from .claimcheck import _cyrillic, content_stems, overlap
 from .units import Unit
 from .verify import check_quantities_against_source, numbers
 
@@ -143,6 +144,13 @@ def repair_claims(card: dict, own: list[str], units: dict[str, Unit], pages: dic
                 if wide:
                     quote = wide
                     log.append(f"цитата расширена до предложения ({u.id})")
+            # Цитата обрезана до «что служит причиной…» и не держит утверждение: берётся всё предложение автора.
+            weak = _cyrillic(c["text"]) == _cyrillic(quote) and len(content_stems(c["text"])) >= 4
+            if weak and overlap(c["text"], quote) < 0.25:
+                wide = widen_quote(quote, u, pages, need & numbers(u.text))
+                if wide and overlap(c["text"], wide) > overlap(c["text"], quote):
+                    quote = wide
+                    log.append(f"цитата расширена: не держала утверждение ({u.id})")
         text, kind = c["text"], c["kind"]
         if check_quantities_against_source(text, [u.text]):
             # Число не подтверждено единицей: вместо пересказа ставится сама фраза автора.

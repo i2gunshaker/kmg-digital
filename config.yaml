@@ -12,8 +12,8 @@ llm:
   total_usd: 23.2
   # единственные модели, к которым разрешены сетевые вызовы
   allow: [claude-haiku-5-5]
-  # одновременные запросы
-  workers: 2
+  # одновременные запросы; при 429 запросы ждут своей очереди (KURS_LLM_PATIENCE, с), а не падают
+  workers: 4
   # набор моделей: senior — граф узлов, задания, маршрутизация; fast — карточки и правки
   # judge — кто сверяет карточки с источником по смыслу (senior | fast | off), judge_rounds — сколько проходов
   # visual — кто составляет описания рисунков, visual_judge — кто сверяет их со смыслом шага (senior | fast | off)
@@ -24,10 +24,11 @@ llm:
   profiles:
     cheap:
       models: {anthropic: {senior: claude-haiku-5-5, fast: claude-haiku-5-5}}
-      effort: {senior: medium, fast: low}
+      # fast: medium — карточки главы из 18 узлов стоят ≈ $0.16; low дешевле, по качеству не сравнивали
+      effort: {senior: medium, fast: medium}
       judge: senior
       judge_rounds: 1
-      judge_effort: [medium]
+      judge_effort: [medium]   # на формулах с high ответ не умещается: 11 из 18 судей Баренблатта обрезаны
     mid:
       models: {anthropic: {senior: claude-sonnet-5-5, fast: claude-haiku-5-5}}
       effort: {senior: medium, fast: medium}

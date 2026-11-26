@@ -147,52 +147,78 @@ def test_key_json_is_never_read(pkg, tmp_path):
 
 # ---------------------------------------------------------------- слой 2 и 3: подставная модель
 def fake_llm(cfg, tmp, calls):
+    """Подставная модель: вердикты по элементам (schema.verdicts) и решения судей (schema.rulings)."""
+    def verdict(target, error, cat="other", sev="minor", problem="", fix="", page=20, ev="Пористость песчаников меняется от 5 до 25 %"):
+        return {"target": target, "evidence_quote": ev, "page_pdf": page, "error": error, "confidence": 90, "category": cat, "severity": sev,
+                "problem": problem, "fix": fix}
+
     def transport(model, system, user, schema, effort, max_tokens, images=None):
         props = schema["properties"]
-        kind = "verdicts" if "verdicts" in props else ("vision" if images else "text")
-        calls.append((kind, len(images or [])))
-        if "verdicts" in props:
-            view = json.loads(user)
-            # скептик отбрасывает приманку C2 и всё, что без явного противоречия
-            out = [{"target": v["target"], "keep": v["target"] not in ("C2",), "why": "."} for v in view]
-            return Reply(json.dumps({"verdicts": out}, ensure_ascii=False), model, Usage(input=100, output=50))
+        calls.append(("judge" if "rulings" in props else "vision" if images else "text", len(images or [])))
+        if "rulings" in props:
+            view = json.loads(user[user.index("Кандидаты:\n") + len("Кандидаты:\n"):])
+            advocate = "Ты защитник" in user
+            out = []
+            for v in view:
+                # приманку C2 снимают оба судьи, A2 — защитник (взгляд один, значит не проходит)
+                keep = v["target"] not in ("C2",) and not (advocate and v["target"] == "A2")
+                out.append({"target": v["target"], "why": ".", "keep": keep, "fix": "Исправлено." if keep else "", "page_pdf": 20, "evidence_quote": ""})
+            return Reply(json.dumps({"rulings": out}, ensure_ascii=False), model, Usage(input=100, output=50))
         if images:
-            rem = [{"target": "F3", "category": "frame_error", "severity": "critical", "problem": "Газ нарисован под нефтью.",
-                    "fix": "Газ над нефтью, нефть над водой.", "page_pdf": 20,
-                    "evidence_quote": "Газ всегда должен быть в верхней части ловушки"}]
-            return Reply(json.dumps({"remarks": rem}, ensure_ascii=False), model, Usage(input=100, output=50))
-        rem = [
-            {"target": "S2", "category": "wrong_mechanism", "severity": "critical", "problem": "Механизм притока не тот.",
-             "fix": "Нефть к скважине поступает за счёт упругого расширения жидкости и породы при снижении давления.", "page_pdf": 20,
-             "evidence_quote": "Приток нефти к скважине обеспечивает упругое расширение жидкости и породы при снижении давления."},
-            # приманка: доказательство есть, но скептик его отклонит
-            {"target": "C2", "category": "overgeneralization", "severity": "significant", "problem": "?", "fix": "?", "page_pdf": 20,
-             "evidence_quote": "Высокая пористость не гарантирует высокую проницаемость"},
-            # выдуманное доказательство — строгий фильтр выбросит
-            {"target": "A2", "category": "wrong_mechanism", "severity": "critical", "problem": "?", "fix": "?", "page_pdf": 21,
-             "evidence_quote": "Губка всегда сжимается сильнее любой горной породы."},
-        ]
-        return Reply(json.dumps({"remarks": rem}, ensure_ascii=False), model, Usage(input=100, output=50))
+            view = json.loads(user[user.index("Кадр:\n") + len("Кадр:\n"):])
+            bad = view["id"] == "F3"
+            out = [verdict(view["id"], bad, "frame_error", "critical", "Газ нарисован под нефтью." if bad else "", "Газ над нефтью." if bad else "")]
+            return Reply(json.dumps({"verdicts": out}, ensure_ascii=False), model, Usage(input=100, output=50))
+        out = [verdict(v["id"], False) for v in json.loads(user[user.index("Элементы:\n") + len("Элементы:\n"):])]
+        for o in out:
+            if o["target"] == "S2":
+                o.update(verdict("S2", True, "wrong_mechanism", "critical", "Механизм притока не тот.",
+                                 "Нефть к скважине поступает за счёт упругого расширения жидкости и породы при снижении давления.", 20,
+                                 "Приток нефти к скважине обеспечивает упругое расширение жидкости и породы при снижении давления."))
+            if o["target"] == "C2":
+                o.update(verdict("C2", True, "overgeneralization", "significant", "?", "?", 20, "Высокая пористость не гарантирует высокую проницаемость"))
+            if o["target"] == "A2" and "Взгляд первый" in user:
+                o.update(verdict("A2", True, "wrong_mechanism", "critical", "?", "?", 21, "Губка всегда сжимается сильнее любой горной породы."))
+        out.append(verdict("ZZ", True, "other", "minor", "?", "?", 21, "Граничное значение"))  # чужой target
+        return Reply(json.dumps({"verdicts": out}, ensure_ascii=False), model, Usage(input=100, output=50))
 
     return LLM(cfg, scope="review", transport=transport, cache_dir=tmp / "cache", log_path=tmp / "usage.jsonl", budget=1.0)
 
 
-def test_llm_layers_with_strict_filter(pkg):
+def test_llm_layers_with_judges(pkg):
     cfg, p, tmp = pkg
     calls: list = []
     doc = review(cfg, p, tmp / "b.json", llm=fake_llm(cfg, tmp, calls), log=lambda *_: None)["doc"]
     r = by_target(doc)
-    assert r["S2"]["category"] == "wrong_mechanism" and r["S2"]["page_pdf"] == 21  # страница уточнена по тексту главы
-    assert "C2" not in r and "A2" not in r
+    assert r["S2"]["category"] == "wrong_mechanism" and r["S2"]["page_pdf"] == 21  # страница утверждения, на которое ссылается фраза
+    assert "C2" not in r and "A2" not in r and "ZZ" not in r
     assert r["F3"]["category"] == "frame_error"
-    assert r["C3"]["category"] == "wrong_scaling"  # замечание кода сохраняется и важнее модели
+    assert r["C3"]["category"] == "wrong_scaling" and r["C3"]["page_pdf"] == 21
     kinds = [c[0] for c in calls]
-    assert kinds.count("text") == 1 and kinds.count("verdicts") == 2 and kinds.count("vision") == 1
-    assert ("vision", 3) in calls and ("verdicts", 1) in calls  # визуальный скептик получил PNG кадра F3
+    assert kinds.count("vision") == 6 and all(n == 1 for k, n in calls if k == "vision")  # три кадра, два взгляда, по кадру на запрос
+    assert kinds.count("text") == 9  # три взгляда: утверждения, закадр, аналогии
     assert self_check(doc) == []
+    trace = json.loads((tmp / "b.trace.json").read_text(encoding="utf-8"))
+    assert next(t for t in trace if t["target"] == "S2")["votes"] == 3
     assert _resolve_target("F06 — shows: ...", {"F06", "F08"}) == "F06"
     assert _resolve_target("F07, F08", {"F07", "F08"}) is None
     assert _resolve_target("ZZ", {"F06"}) is None
+
+
+def test_parallel_system_is_shared(pkg):
+    """Общая часть одинакова у всех запросов: глава кэшируется один раз."""
+    cfg, p, tmp = pkg
+    seen = set()
+    llm = fake_llm(cfg, tmp, [])
+    inner = llm._transport
+
+    def spy(model, system, user, *a, **k):
+        seen.add(tuple(system))
+        return inner(model, system, user, *a, **k)
+
+    llm._transport = spy
+    review(cfg, p, tmp / "b.json", llm=llm, log=lambda *_: None)
+    assert len(seen) == 1
 
 
 def test_without_money_only_code_remarks_survive(pkg):

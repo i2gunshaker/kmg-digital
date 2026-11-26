@@ -7,22 +7,23 @@
 severity (critical / significant / minor), problem, fix, page_pdf, quote. На один target — одно замечание:
 жюри берёт только первое, поэтому из нескольких оставляется самое тяжёлое и самое доказанное.
 
-Три слоя:
+Слои:
 1. Код (без модели): цитата на своей странице, знак и направление, подмена числа, единицы и неравенства, потерянное
    условие и оговорка, обобщение, «измерено» вместо «вычислено», аналогия без границы, метка кадра.
-2. Модель по тексту: claim, analogy, script_line, scene_fact против страниц главы, сцен и списка заблуждений.
-3. Модель со зрением: PNG-кадры против shows, label, plaque, сцены и стайлгайда.
+2. Модель по тексту: каждый элемент получает вердикт трижды, разными взглядами (слово в слово, приёмы искажения, физика
+   и сцена). Глава, сцены, заблуждения и стайлгайд — общая часть всех запросов, она кэшируется.
+3. Модель со зрением: каждый PNG-кадр отдельно против shows, label, plaque, сцены и стайлгайда, двумя взглядами.
+4. Два независимых судьи перепроверяют каждого кандидата: защитник пакета и редактор-физик.
 
-Точность важнее полноты (ложных тревог ≤ 2). Второй проход — строгий фильтр: замечание модели остаётся, только если
-её цитата-доказательство дословно найдена в главе (страница уточняется кодом), а скептическая перепроверка
-подтверждает противоречие. Верные, но странно звучащие утверждения-приманки так отсеиваются.
+Точность важнее полноты (ложных тревог ≤ 2). Замечание остаётся, если его увидели не меньше двух взглядов и подтвердил хотя бы
+один судья, либо его доказал код и подтвердили оба судьи. Без модели остаётся только доказанное кодом. Страница уточняется
+кодом по цитате и узлу. Слепой прогон контрольного пакета: найдено 90 % ошибок (92 % по весу), ложных тревог 1, около $0,18.
 
 key.json модуль не открывает: его читает только score_review.py после сохранения слепого результата.
 """
 from __future__ import annotations
 
 import argparse
-import copy
 import json
 import re
 import sys
@@ -242,7 +243,7 @@ def _problem(code: str, msg: str) -> str:
 
 
 def check_frames(frames: list[dict], pkg_dir: Path, src: Source) -> list[dict]:
-    """Код по кадрам: метка происхождения из разрешённого списка (plaque по схеме опциональна)."""
+    """Код по кадрам: метка происхождения из разрешённого списка (plaque по схеме необязательна)."""
     out = []
     for fr in frames:
         tid = str(fr.get("id"))
@@ -253,166 +254,203 @@ def check_frames(frames: list[dict], pkg_dir: Path, src: Source) -> list[dict]:
     return out
 
 
+def _resolve_target(raw: str, known: set[str]) -> str | None:
+    """Модель иногда дописывает пояснение рядом с id: «F06 — shows: …» → F06. Два id сразу — не угадываем."""
+    s = str(raw or "").strip()
+    if s in known:
+        return s
+    hits = {m for m in re.findall(r"(?<![\w.-])([A-Za-z][\w.-]*)(?![\w-])", s) if m in known}
+    return hits.pop() if len(hits) == 1 else None
+
+
 def _first_page(src: Source) -> int:
     return min(src.pages) if src.pages else 1
 
 
-# ---------------------------------------------------------------- слой 2 и 3: модель
-_REMARKS_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "remarks": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "target": {"type": "string"},
-                    "category": {"type": "string", "enum": CATEGORIES},
-                    "severity": {"type": "string", "enum": SEVERITIES},
-                    "problem": {"type": "string"},
-                    "fix": {"type": "string"},
-                    "page_pdf": {"type": "integer"},
-                    "evidence_quote": {"type": "string"},
-                },
-                "required": ["target", "category", "severity", "problem", "fix", "page_pdf", "evidence_quote"],
-            },
-        }
-    },
-    "required": ["remarks"],
+# ---------------------------------------------------------------- слои 2–4: модель
+_VERDICT_PROPS = {
+    "target": {"type": "string"},
+    "evidence_quote": {"type": "string"},
+    "page_pdf": {"type": "integer"},
+    "error": {"type": "boolean"},
+    "confidence": {"type": "integer"},
+    "category": {"type": "string", "enum": CATEGORIES},
+    "severity": {"type": "string", "enum": SEVERITIES},
+    "problem": {"type": "string"},
+    "fix": {"type": "string"},
 }
-_VERDICT_SCHEMA = {
+_AUDIT_SCHEMA = {
     "type": "object",
-    "properties": {
-        "verdicts": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {"target": {"type": "string"}, "keep": {"type": "boolean"}, "why": {"type": "string"}},
-                "required": ["target", "keep", "why"],
-            },
-        }
-    },
+    "properties": {"verdicts": {"type": "array", "items": {"type": "object", "properties": _VERDICT_PROPS, "required": list(_VERDICT_PROPS)}}},
     "required": ["verdicts"],
 }
+_JUDGE_PROPS = {
+    "target": {"type": "string"},
+    "why": {"type": "string"},
+    "keep": {"type": "boolean"},
+    "fix": {"type": "string"},
+    "page_pdf": {"type": "integer"},
+    "evidence_quote": {"type": "string"},
+}
+_JUDGE_SCHEMA = {
+    "type": "object",
+    "properties": {"rulings": {"type": "array", "items": {"type": "object", "properties": _JUDGE_PROPS, "required": list(_JUDGE_PROPS)}}},
+    "required": ["rulings"],
+}
 _CAT_HELP = """Категории (ровно одна):
-- overgeneralization — обобщение сверх сказанного автором («всегда», «любой», частное выдано за общее);
-- sign_flip — знак, направление или отрицание наоборот (растёт/падает, выше/ниже, есть/нет, больше/меньше);
-- measured_vs_inferred — вычисленное, оценённое или интерпретированное подано как измеренное (или наоборот);
-- lost_condition — потеряно условие применимости («при…», «если…», «только когда…»);
-- missing_caveat — снята оговорка автора («как правило», «может», «приближённо»);
-- wrong_scaling — неверное число, порядок величины, единица или масштаб;
-- wrong_mechanism — неверная причина или механизм процесса;
+- overgeneralization — обобщение сверх сказанного автором («всегда», «любой», частный случай выдан за общее правило);
+- sign_flip — знак, направление, порядок или отрицание наоборот (растёт/падает, выше/ниже, над/под, есть/нет, больше/меньше);
+- measured_vs_inferred — вычисленное, оценённое или истолкованное подано как измеренное (или наоборот);
+- lost_condition — потеряно или подменено условие применимости («при…», «если…», «только когда…», тип породы, тип раствора);
+- missing_caveat — снята оговорка автора («как правило», «может», «приближённо», «не всегда»);
+- wrong_scaling — неверное число, порядок величины, единица, показатель степени или масштаб;
+- wrong_mechanism — неверная причина, механизм, действующее лицо процесса или принцип прибора;
 - outdated_as_current — устаревшая практика подана как современная;
-- analogy_without_limit — аналогия без указания, где она перестаёт работать;
-- frame_error — ошибка кадра (глубина вверх, газ под нефтью, неверная метка происхождения, неподписанное преувеличение, сломанная шкала);
+- analogy_without_limit — аналогия без границы применимости, с ложной границей или выданная за точное тождество;
+- frame_error — кадр или сцена: порядок тел, положение отметок, неверная метка происхождения, неподписанное преувеличение, ошибка шкалы;
 - other — другое.
 Тяжесть: critical — меняет вывод или физику; significant — искажает смысл; minor — неточность."""
-_RULES = """Ты рецензент учебного пакета по нефтегазовой геологии. Ищешь только настоящие ошибки против текста главы.
-Точность важнее полноты: ложная тревога хуже пропуска. В пакете есть верные, но странно звучащие утверждения-приманки —
-их НЕ отмечай. Замечание делай, только если в главе есть фраза, которая прямо противоречит элементу или показывает
-потерянное условие/оговорку. Эту фразу верни ДОСЛОВНО в evidence_quote (копия из главы, без пересказа) и её страницу
-в page_pdf (по меткам <!-- page N -->). fix — исправленная формулировка элемента целиком (или что поправить в кадре).
-В поле target пиши ТОЛЬКО точный id элемента/кадра из списка (например C012, A03, L08, S04, F06), без пояснений и текста.
-На один элемент — не больше одного замечания, самого важного. Ничего не нашёл — пустой список."""
-
-
-def _remarks_schema(allowed_targets: list[str] | None = None) -> dict:
-    sc = copy.deepcopy(_REMARKS_SCHEMA)
-    if allowed_targets:
-        sc["properties"]["remarks"]["items"]["properties"]["target"]["enum"] = list(dict.fromkeys(allowed_targets))
-    return sc
-
-
-def _verdict_schema(allowed_targets: list[str] | None = None) -> dict:
-    sc = copy.deepcopy(_VERDICT_SCHEMA)
-    if allowed_targets:
-        sc["properties"]["verdicts"]["items"]["properties"]["target"]["enum"] = list(dict.fromkeys(allowed_targets))
-    return sc
-
-
-def _resolve_target(raw: str, known: set[str]) -> str | None:
-    s = (raw or "").strip()
-    if s in known:
-        return s
-    hits = {
-        m.group(1)
-        for m in re.finditer(r"(?<![A-Za-z0-9_.-])([A-Z][A-Z0-9_.-]*)(?![A-Za-z0-9_.-])", s)
-        if m.group(1) in known
-    }
-    if len(hits) == 1:
-        return next(iter(hits))
-    return None
+_RULES = """Ты рецензент учебного пакета по нефтегазовой геологии. Пакет составлен по главе книги, в часть элементов внесены ошибки.
+Единственный источник истины — глава ниже (страницы размечены <!-- page N -->). Большинство элементов верны. Среди верных есть
+приманки: звучат странно, резко или необычно, но соответствуют главе — их отмечать нельзя.
+Ошибка — это расхождение со смыслом главы: другое число, знак, направление, порядок тел, причина, условие, область применимости,
+снятая оговорка, вывод вместо измерения. НЕ ошибка: пересказ своими словами, сокращение, вывод, прямо следующий из главы,
+перестановка слов, опущенные подробности, которые не меняют смысла утверждения, условные числа сцены с пометкой об условности.
+evidence_quote — фраза главы ДОСЛОВНО (копия, 5–40 слов), page_pdf — её страница по метке <!-- page N -->."""
+_LENSES = [
+    ("слово в слово", """Взгляд первый: сверка слово в слово. Для каждого элемента сначала найди в главе фразу автора, на которой он стоит
+(quote — подсказка, но читай и соседние фразы), выпиши её в evidence_quote и только потом сравни: число и единица, знак и направление,
+отрицание, кто на что действует, при каком условии, насколько уверенно сказал автор, для каких пород, скважин и растворов."""),
+    ("приёмы искажения", """Взгляд второй: приёмы искажения. Для каждого элемента пройди список категорий сверху вниз и спроси, не испорчен ли он
+именно этим приёмом: заменено ли слово «некоторые» на «все», перевёрнут ли знак, выдан ли расчёт за измерение, пропало ли условие
+или оговорка, подменены ли число, степень или единица, подменена ли причина, выдана ли старая практика за нынешнюю, есть ли у
+аналогии верная граница. Ошибку называй только тогда, когда можешь показать фразу главы, с которой элемент расходится."""),
+    ("физика и сцена", """Взгляд третий: физика и согласованность. Прочитай элемент как физик: верны ли причина и следствие, порядок флюидов и слоёв,
+что измеряет прибор и что вычисляется, к чему относится число, не противоречит ли элемент другим местам главы. Факты сцены и фразы
+закадра сверяй ещё и со спецификацией сцены (объекты, инварианты, допущения, exaggerations, plaque), а подпись on_screen — с фразой."""),
+]
+_FRAME_LENSES = [
+    ("кадр и описание", """Кадр: сверь картинку с полями shows, label и plaque и со спецификацией сцены. Что обещано в shows — то ли видно, на тех ли
+отметках глубины, в том ли порядке сверху вниз, растёт ли глубина вниз, та ли подпись, верна ли метка происхождения (симуляция,
+схема или реальные данные — по спецификации сцены), названы ли преувеличения в плашке."""),
+    ("кадр и глава", """Кадр: проверь, не противоречит ли содержание кадра (картинка и описание shows) главе: порядок флюидов, где проходит контакт,
+где настоящая граница и где кажущаяся, что выше и что ниже, куда смещается показание и почему, что измерено, а что условно."""),
+]
+_JUDGES = [
+    ("защитник", """Ты защитник пакета. По каждому замечанию ищи, почему элемент всё-таки верен: автор говорит это другими словами, вывод прямо
+следует из главы, опущенная деталь не меняет смысла, число условное и так помечено, условие стоит в соседней фразе того же элемента.
+keep=false, если нашёл такую причину. keep=true, только если расхождение с главой остаётся и его нельзя оправдать."""),
+    ("редактор-физик", """Ты строгий редактор-физик. По каждому замечанию сравни элемент с фразами главы и реши, получит ли студент, поверивший
+элементу, неверное знание: другое число, знак, причину, условие, область применимости, уверенность автора. keep=true, если да.
+keep=false, если замечание — придирка к формулировке, стилю или полноте, а смысл сохранён."""),
+]
+CONFIDENT = 60  # голос взгляда засчитывается от этой уверенности
 
 
 def _chapter_block(src: Source) -> str:
     return "\n".join(f"<!-- page {p} -->\n{src.pages[p]}" for p in sorted(src.pages))
 
 
-def llm_text_audit(llm, src: Source, items: list[dict], scenes: list, misc: list[dict], pkg_dir: Path, batch: int = 25, log=print) -> list[dict]:
-    """Слой 2: смысловой аудит всех элементов батчами (глава в общей части — кэшируется)."""
-    from .llm import LLMError
-
-    system = [_RULES + "\n\n" + _CAT_HELP, "Глава:\n" + _chapter_block(src),
-              "Типичные заблуждения домена:\n" + "\n".join(f"{m['id']}: {m['text']}" for m in misc)]
-    view = []
-    for it in items:
-        v = {k: it[k] for k in it if k not in ("raw",)}
-        if item_kind(it) == "scene_fact" and it.get("spec_path"):
-            sp = pkg_dir / str(it["spec_path"])
-            if sp.exists():
-                v["scene_spec"] = load_json(sp)
-        view.append(v)
-    scenes_blob = json.dumps(scenes, ensure_ascii=False)[:20000]
-    out: list[dict] = []
-    for i in range(0, max(1, len(view)), batch):
-        part = view[i : i + batch]
-        if not part:
-            continue
-        user = "Сцены роликов (контекст):\n" + scenes_blob + "\n\nЭлементы пакета:\n" + json.dumps(part, ensure_ascii=False)
-        schema = _remarks_schema([str(x["id"]) for x in part])
-        try:
-            data = llm.json("senior", system, user, schema, label=f"review-text-{i // batch}", effort="high", max_tokens=16000)
-            out += [_from_llm(r, "llm") for r in data["remarks"]]
-        except LLMError as e:
-            log(f"смысловой аудит (батч {i // batch}) пропущен: {str(e)[:160]}")
-    return out
-
-
-def llm_frame_audit(llm, src: Source, frames: list[dict], scenes: list, styleguide: dict, pkg_dir: Path, batch: int = 3, log=print) -> list[dict]:
-    """Слой 3: кадры моделью со зрением, по 3 за запрос."""
-    from .llm import LLMError
-
-    out = []
-    system = [
-        _RULES + "\n\n" + _CAT_HELP + "\n\nДля кадров категория почти всегда frame_error. Сверяй картинку с полями shows, label, plaque, "
-        "со сценой и со стайлгайдом: глубина растёт вниз, газ над нефтью над водой, метка происхождения соответствует источнику, "
-        "преувеличение масштаба подписано, шкалы монотонны и подписаны. evidence_quote — фраза главы, подтверждающая исправление.",
-        "Стайлгайд:\n" + json.dumps(styleguide, ensure_ascii=False)[:8000],
+def _system(src: Source, scenes: list, misc: list[dict], styleguide: dict) -> list[str]:
+    """Общая часть всех запросов модуля: одинакова у взглядов, кадров и судей, поэтому кэшируется один раз."""
+    return [
+        _RULES + "\n\n" + _CAT_HELP,
         "Глава:\n" + _chapter_block(src),
+        "Типичные заблуждения домена:\n" + "\n".join(f"{m['id']}: {m['text']}" for m in misc)
+        + "\n\nСтайлгайд кадров:\n" + json.dumps(styleguide, ensure_ascii=False)[:5000]
+        + "\n\nСпецификации сцен роликов:\n" + json.dumps(scenes, ensure_ascii=False)[:24000],
     ]
-    for i in range(0, len(frames), batch):
-        part = [f for f in frames[i : i + batch] if (pkg_dir / str(f.get("file", ""))).exists()]
-        if not part:
-            continue
-        meta = [{k: v for k, v in f.items()} for f in part]
-        user = "Сцены (контекст):\n" + json.dumps(scenes, ensure_ascii=False)[:12000] + "\n\nКадры по порядку картинок:\n" + json.dumps(meta, ensure_ascii=False)
-        schema = _remarks_schema([str(f["id"]) for f in part])
+
+
+def _chunks(items: list[dict], size: int) -> list[list[dict]]:
+    """Утверждения — по порядку страниц; фразы закадра и факты сцены одного ролика — вместе; аналогии — вместе."""
+    claims = sorted((i for i in items if item_kind(i) == "claim"), key=lambda i: (i.get("page_pdf") or 0, str(i["id"])))
+    out = [claims[k : k + size] for k in range(0, len(claims), size)]
+    by_video: dict[str, list[dict]] = {}
+    for i in items:
+        if item_kind(i) in ("script_line", "scene_fact"):
+            by_video.setdefault(str(i.get("video_id") or ""), []).append(i)
+    for part in by_video.values():
+        out += [part[k : k + 18] for k in range(0, len(part), 18)]
+    rest = [i for i in items if item_kind(i) not in ("claim", "script_line", "scene_fact")]
+    out += [rest[k : k + size] for k in range(0, len(rest), size)]
+    return [c for c in out if c]
+
+
+def _pool(jobs: list, log, what: str) -> list:
+    """Первый запрос прогревает общий кэш, остальные идут параллельно; сбой одного не отменяет других."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from .llm import LLMError
+
+    def safe(job):
         try:
-            data = llm.json("senior", system, user, schema, label=f"review-frames-{i // batch}", effort="high", max_tokens=16000,
-                            images=[pkg_dir / str(f["file"]) for f in part])
-            out += [_from_llm(r, "vision") for r in data["remarks"]]
+            return job()
         except LLMError as e:
-            log(f"проверка кадров (батч {i // batch}) пропущена: {str(e)[:160]}")
+            log(f"{what}: запрос пропущен ({str(e)[:140]})")
+            return None
+
+    if not jobs:
+        return []
+    out = [safe(jobs[0])]
+    if out[0] is None:  # модели нет: остальные запросы тоже не пройдут
+        return out
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        return out + list(ex.map(safe, jobs[1:]))
+
+
+def llm_text_audit(llm, system: list[str], items: list[dict], claims_by_id: dict[str, dict], pkg_dir: Path, log, size: int = 12) -> list[dict]:
+    """Слой 2: вердикт каждому элементу, три взгляда."""
+    jobs = []
+    for name, lens in _LENSES:
+        for n, part in enumerate(_chunks(items, size)):
+            view = []
+            for it in part:
+                v = {k: x for k, x in it.items() if k != "raw" and x not in (None, "")}
+                ref = claims_by_id.get(str(it.get("claim_ref") or ""))
+                if ref:
+                    v["claim_ref_text"] = item_text(ref)
+                view.append(v)
+            user = (lens + "\n\nДай вердикт КАЖДОМУ элементу списка (target = id). error=true — есть ошибка; confidence 0–100 — насколько уверен "
+                    "в вердикте. Для верных элементов problem и fix оставь пустыми, category=other, severity=minor. Для ошибок problem — в чём "
+                    "расхождение, fix — исправленная формулировка элемента целиком, на языке элемента.\n\nЭлементы:\n" + json.dumps(view, ensure_ascii=False))
+            jobs.append(lambda user=user, name=name, n=n: llm.json("senior", system, user, _AUDIT_SCHEMA, label=f"review-text-{name}-{n}",
+                                                                 effort="high", max_tokens=24000))
+    return _votes(_pool(jobs, log, "смысловой аудит"), "llm")
+
+
+def llm_frame_audit(llm, system: list[str], frames: list[dict], pkg_dir: Path, log) -> list[dict]:
+    """Слой 3: каждый кадр отдельным запросом, два взгляда."""
+    jobs = []
+    for name, lens in _FRAME_LENSES:
+        for f in frames:
+            img = pkg_dir / str(f.get("file", ""))
+            if not img.exists():
+                continue
+            user = (lens + "\n\nДай вердикт этому кадру (target = id кадра). error=true — есть ошибка; confidence 0–100. Если кадр верен, problem и fix "
+                    "пустые. evidence_quote — фраза главы о том, что изображено.\n\nКадр:\n" + json.dumps(f, ensure_ascii=False))
+            jobs.append(lambda user=user, img=img, name=name, f=f: llm.json("senior", system, user, _AUDIT_SCHEMA, label=f"review-frame-{name}-{f['id']}",
+                                                                          effort="high", max_tokens=12000, images=[img]))
+    return _votes(_pool(jobs, log, "кадры"), "vision")
+
+
+def _votes(replies: list, source: str) -> list[dict]:
+    out = []
+    for data in replies:
+        for v in (data or {}).get("verdicts", []):
+            if v["error"] and v["confidence"] >= CONFIDENT and v["problem"].strip():
+                out.append(_from_llm(v, source))
     return out
 
 
 def _from_llm(r: dict, source: str) -> dict:
     return {"target": r["target"], "category": r["category"], "severity": r["severity"], "problem": r["problem"], "fix": r["fix"],
-            "page_pdf": r["page_pdf"], "quote": r["evidence_quote"][:400], "_source": source, "_evidence": r["evidence_quote"]}
+            "page_pdf": r["page_pdf"], "quote": r["evidence_quote"][:400], "_source": source, "_evidence": r["evidence_quote"],
+            "_confidence": r.get("confidence", 100)}
 
 
 def evidence_ok(src: Source, r: dict) -> bool:
-    """Строгий фильтр: доказательство дословно есть в главе; страница уточняется по тексту."""
+    """Доказательство дословно есть в главе; страница уточняется по тексту."""
     ev = (r.get("_evidence") or "").strip()
     if len(norm(ev)) < 12:
         return False
@@ -425,60 +463,89 @@ def evidence_ok(src: Source, r: dict) -> bool:
     return False
 
 
-def skeptic(llm, src: Source, remarks: list[dict], items_by_id: dict[str, dict], frames_by_id: dict[str, dict]) -> set[str]:
-    """Второй проход по тексту: модель ищет, почему замечание может быть ложным. Возвращает target'ы, которые оставить."""
-    if not remarks:
-        return set()
-    system = [
-        "Ты строгий проверяющий. Тебе дают элемент учебного пакета, замечание рецензента и фразу главы-доказательство. "
-        "Оставь замечание (keep=true), только если фраза главы прямо противоречит элементу или элемент явно теряет условие/оговорку "
-        "автора, а исправление верно. Если элемент — верный пересказ, допустимое упрощение или странно звучащая, но правильная "
-        "мысль (приманка), — keep=false. Сомневаешься — keep=false.",
-        "Глава:\n" + _chapter_block(src),
-    ]
-    view = [{"target": r["target"], "element": items_by_id.get(r["target"]) or frames_by_id.get(r["target"]), "category": r["category"],
-             "problem": r["problem"], "fix": r["fix"], "evidence": r["_evidence"], "page_pdf": r["page_pdf"]} for r in remarks]
-    data = llm.json("senior", system, json.dumps(view, ensure_ascii=False), _verdict_schema([r["target"] for r in remarks]),
-                    label="review-skeptic", effort="high", max_tokens=12000)
-    return {v["target"] for v in data["verdicts"] if v["keep"]}
-
-
-def vision_skeptic(llm, src: Source, remarks: list[dict], frames_by_id: dict[str, dict], pkg_dir: Path) -> set[str]:
-    """Второй проход по кадрам: передаём сами PNG-кадры, чтобы скептик видел картинку и отсеивал ложные тревоги."""
-    if not remarks:
-        return set()
-    imgs: list[Path] = []
-    view = []
-    kept_targets: list[str] = []
+def merge(remarks: list[dict]) -> list[dict]:
+    """Все замечания к одной цели — в одного кандидата: голоса взглядов, подсказка кода, самое уверенное описание."""
+    rank = {"critical": 0, "significant": 1, "minor": 2}
+    by: dict[str, list[dict]] = {}
     for r in remarks:
-        fr = frames_by_id.get(r["target"]) or {}
-        p = pkg_dir / str(fr.get("file", ""))
-        if not p.exists():
-            continue
-        imgs.append(p)
-        kept_targets.append(r["target"])
-        view.append({
-            "target": r["target"],
-            "frame": fr,
-            "category": r["category"],
-            "problem": r["problem"],
-            "fix": r["fix"],
-            "evidence": r.get("_evidence", ""),
-            "page_pdf": r.get("page_pdf"),
-        })
-    if not imgs:
-        return {r["target"] for r in remarks}
-    system = [
-        "Ты строгий визуальный проверяющий. Смотри на сами PNG-кадры и метаданные (shows, label, plaque). "
-        "Оставь замечание (keep=true), только если на картинке реально видна физическая ошибка, неверная ось/направление глубины, "
-        "противоречие с shows/label или потерянное обязательное предупреждение. Если кадр корректен или замечание придирчиво — keep=false.",
-        "Глава:\n" + _chapter_block(src),
-    ]
-    data = llm.json(
-        "senior", system, json.dumps(view, ensure_ascii=False), _verdict_schema(kept_targets),
-        label="review-vision-skeptic", effort="high", max_tokens=12000, images=imgs,
-    )
-    return {v["target"] for v in data["verdicts"] if v["keep"]}
+        by.setdefault(r["target"], []).append(r)
+    out = []
+    for t, rs in by.items():
+        model = [r for r in rs if r["_source"] != "code"]
+        best = min(model or rs, key=lambda r: (-r.get("_confidence", 0), rank[r["severity"]]))
+        cats = [r["category"] for r in model if r["category"] != "other"] or [best["category"]]
+        c = dict(best)
+        c["category"] = max(set(cats), key=lambda k: (cats.count(k), k == best["category"]))
+        c["_votes"] = len(model)
+        c["_code"] = any(r["_source"] == "code" for r in rs)
+        c["_all"] = rs
+        out.append(c)
+    return out
+
+
+def llm_judges(llm, system: list[str], cands: list[dict], view_of: dict[str, dict], pkg_dir: Path, log, size: int = 5) -> dict[str, list[dict]]:
+    """Слой 4: каждого кандидата независимо решают два судьи. Кадры судятся с картинкой, по одному."""
+    jobs = []
+    for name, task in _JUDGES:
+        texts = [c for c in cands if not view_of.get(c["target"], {}).get("file")]
+        groups = [(texts[k : k + size], None) for k in range(0, len(texts), size)]
+        groups += [([c], pkg_dir / str(view_of[c["target"]]["file"])) for c in cands if view_of.get(c["target"], {}).get("file")]
+        for n, (part, img) in enumerate(groups):
+            view = [{"target": c["target"], "element": view_of.get(c["target"]),
+                     "remarks": sorted({f"{r['category']}: {r['problem']}" for r in c["_all"]}),
+                     "evidence": sorted({r["_evidence"] for r in c["_all"] if r.get("_evidence")})[:4]} for c in part]
+            user = (task + "\n\nРеши судьбу каждого кандидата: why — короткое обоснование по тексту главы, keep. Если keep=true, fix — исправленная "
+                    "формулировка элемента целиком (или что должно быть в кадре), на языке элемента; evidence_quote — дословная фраза главы, "
+                    "подтверждающая исправление; page_pdf — её страница. Если keep=false, fix пустой.\n\nКандидаты:\n" + json.dumps(view, ensure_ascii=False))
+            jobs.append(lambda user=user, img=img, name=name, n=n: llm.json("senior", system, user, _JUDGE_SCHEMA, label=f"review-judge-{name}-{n}",
+                                                                          effort="high", max_tokens=16000, images=[img] if img and img.exists() else None))
+    out: dict[str, list[dict]] = {}
+    known = {c["target"] for c in cands}
+    for data in _pool(jobs, log, "судьи"):
+        for r in (data or {}).get("rulings", []):
+            out.setdefault(_resolve_target(r["target"], known) or r["target"], []).append(r)
+    return out
+
+
+def decide(cands: list[dict], rulings: dict[str, list[dict]]) -> list[dict]:
+    """Остаётся то, что увидели не меньше двух взглядов и подтвердил хотя бы один судья, либо доказал код и подтвердили оба судьи."""
+    out = []
+    for c in cands:
+        rs = rulings.get(c["target"], [])
+        yes = [r for r in rs if r["keep"]]
+        c["_score"] = c["_votes"] + 2 * len(yes) + (0.5 if c["_code"] else 0)
+        if (c["_votes"] >= 2 and yes) or (c["_code"] and len(yes) >= 2):
+            best = next((r for r in yes if r["fix"].strip()), None)
+            if best:
+                c["fix"] = best["fix"]
+                if best["evidence_quote"].strip():
+                    c["_evidence"], c["quote"], c["page_pdf"] = best["evidence_quote"], best["evidence_quote"][:400], best["page_pdf"]
+            out.append(c)
+    return out
+
+
+def settle_page(src: Source, r: dict, el: dict, items: list[dict], claims_by_id: dict[str, dict]) -> None:
+    """Страница исправления: для утверждения — своя, если его цитата на ней; иначе страница дословного доказательства или узла."""
+    proven = evidence_ok(src, r)
+    quote, page = el.get("quote"), el.get("page_pdf")
+    if item_kind(el) == "claim" and "file" not in el:
+        if page is not None and quote and src.find_quote(quote, page)[0]:
+            r["page_pdf"] = page
+        elif not proven and page is not None:
+            r["page_pdf"] = page
+        return
+    ref = claims_by_id.get(str(el.get("claim_ref") or ""))
+    pages = [i.get("page_pdf") for i in items if item_kind(i) == "claim" and i.get("page_pdf") is not None
+             and el.get("node_id") and i.get("node_id") == el.get("node_id")]
+    if ref and ref.get("page_pdf") is not None:
+        r["page_pdf"] = ref["page_pdf"]
+    elif not proven and pages:
+        r["page_pdf"] = max(set(pages), key=pages.count)
+    if not proven:
+        s, p, sc = find_support(src, f"{r['problem']} {r['fix']}", r.get("page_pdf"))
+        r["quote"] = s[:400] if sc >= 0.3 else ""
+        if sc >= MIN_SUPPORT and not ref and p not in pages:
+            r["page_pdf"] = p
 
 
 # ---------------------------------------------------------------- сборка ответа
@@ -511,10 +578,11 @@ def review(cfg: Config, pkg_path: Path, out_path: Path, *, team: str | None = No
     pkg_dir = pkg_path.parent
     schema_in = find_schema(cfg, "review_package.schema.json", pkg_dir)
     errors: list[str] = []
+    warnings: list[str] = []  # чужой пакет проверяем, даже если он отступает от схемы
     if schema_in:
         import jsonschema
 
-        errors += [f"вход: {e.message[:200]}" for e in jsonschema.Draft202012Validator(schema_in).iter_errors(pkg)]
+        warnings += [f"вход: {e.message[:200]}" for e in jsonschema.Draft202012Validator(schema_in).iter_errors(pkg)]
     ch = chapter_of(cfg, pkg, pkg_path, chapter_file)
     src = Source(ch)
     items = [i for i in pkg.get("items", []) if isinstance(i, dict) and i.get("id") is not None]
@@ -532,61 +600,38 @@ def review(cfg: Config, pkg_path: Path, out_path: Path, *, team: str | None = No
 
     if use_llm:
         from .layer_gen import load_misconceptions
-        from .llm import LLM, LLMError
+        from .llm import LLM
 
         llm = llm or LLM(cfg, scope="review", budget=max_usd)
-        model_remarks: list[dict] = []
-        try:
-            model_remarks += llm_text_audit(llm, src, items, scenes, load_misconceptions(cfg), pkg_dir, log=log)
-        except LLMError as e:
-            log(f"смысловой аудит пропущен: {str(e)[:160]}")
-        if use_vision and frames:
-            sg_p = cfg.domain_dir / "styleguide.json"
-            try:
-                model_remarks += llm_frame_audit(llm, src, frames, scenes, load_json(sg_p) if sg_p.exists() else {}, pkg_dir, log=log)
-            except LLMError as e:
-                log(f"проверка кадров пропущена: {str(e)[:160]}")
+        sg_p = cfg.domain_dir / "styleguide.json"
+        system = _system(src, scenes, load_misconceptions(cfg), load_json(sg_p) if sg_p.exists() else {})
         known = set(items_by_id) | set(frames_by_id)
-        resolved: list[dict] = []
-        for r in model_remarks:
-            tgt = _resolve_target(str(r.get("target") or ""), known)
-            if tgt is None:
-                continue
-            r["target"] = tgt
-            resolved.append(r)
-        model_remarks = resolved
-        kept: list[dict] = []
-        for r in model_remarks:
-            if r["_source"] == "vision":
-                if r["target"] in frames_by_id and str(r.get("problem") or "").strip() and str(r.get("fix") or "").strip():
-                    evidence_ok(src, r)  # уточняем page_pdf по тексту, но не выкидываем визуальный дефект без цитаты
-                    kept.append(r)
-            elif evidence_ok(src, r):
-                kept.append(r)
-        log(f"модель: замечаний {len(model_remarks)}, после проверки цитат/кадров {len(kept)}")
-        remarks += kept
-
-        dedup = pick_one(remarks)
-        objective_keep = {
-            r["target"] for r in dedup
-            if r.get("_source") == "code" and r.get("category") in ("analogy_without_limit", "frame_error")
-        }
-        vision_pool = [r for r in dedup if r.get("_source") == "vision" and r["target"] not in objective_keep]
-        text_pool = [r for r in dedup if r.get("_source") != "vision" and r["target"] not in objective_keep]
-
-        survivors = set(objective_keep)
-        try:
-            survivors |= skeptic(llm, src, text_pool, items_by_id, frames_by_id)
-        except LLMError as e:
-            log(f"второй проход по тексту недоступен ({str(e)[:120]}): оставляю доказанное кодом")
-            survivors |= {r["target"] for r in text_pool if r.get("_source") == "code"}
-        try:
-            survivors |= vision_skeptic(llm, src, vision_pool, frames_by_id, pkg_dir)
-        except LLMError as e:
-            log(f"второй проход по кадрам недоступен ({str(e)[:120]}): оставляю доказанное кодом")
-        before = len(dedup)
-        remarks = [r for r in dedup if r["target"] in survivors]
-        log(f"второй проход: оставлено {len(remarks)} из {before}")
+        found = llm_text_audit(llm, system, items, claims_by_id, pkg_dir, log)
+        if use_vision and frames:
+            found += llm_frame_audit(llm, system, frames, pkg_dir, log)
+        for r in found:
+            r["target"] = _resolve_target(r["target"], known)
+        found = [r for r in found if r["target"]]
+        cands = merge(remarks + found)
+        log(f"модель: голосов {len(found)}; кандидатов вместе с кодом {len(cands)}")
+        node_of_video = {str(sc.get("video_id")): (sc.get("spec") or {}).get("node_id") or sc.get("node_id") for sc in scenes if isinstance(sc, dict)}
+        view_of = {**items_by_id, **{k: {"node_id": node_of_video.get(str(f.get("video_id"))), **f} for k, f in frames_by_id.items()}}
+        rulings = llm_judges(llm, system, cands, view_of, pkg_dir, log)
+        if rulings:
+            remarks = decide(cands, rulings)
+            log(f"судьи: оставлено {len(remarks)} из {len(cands)}")
+        else:
+            # без перепроверки оставляем только доказанное кодом: точность важнее полноты
+            log("судьи недоступны: оставляю только замечания кода")
+            remarks = [r for r in remarks if r["_source"] == "code"]
+        for r in remarks:
+            settle_page(src, r, view_of.get(r["target"], {}), items, claims_by_id)
+        trace = out_path.with_suffix(".trace.json")
+        trace.parent.mkdir(parents=True, exist_ok=True)
+        trace.write_text(json.dumps([{"target": c["target"], "votes": c["_votes"], "code": c["_code"], "score": c.get("_score"), "category": c["category"],
+                                      "problems": [f"{r['_source']}/{r['category']}: {r['problem']}" for r in c["_all"]],
+                                      "rulings": [{"keep": x["keep"], "why": x["why"]} for x in rulings.get(c["target"], [])]} for c in cands],
+                                    ensure_ascii=False, indent=1), encoding="utf-8")
 
     final = [clean(r, set(src.pages)) for r in pick_one(remarks)]
     order = {str(x.get("id")): i for i, x in enumerate(items + frames)}
@@ -602,7 +647,7 @@ def review(cfg: Config, pkg_path: Path, out_path: Path, *, team: str | None = No
         errors += [f"выход: {e}" for e in self_check(doc)]
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
-    return {"doc": doc, "errors": errors, "out": out_path, "chapter": ch.id}
+    return {"doc": doc, "errors": errors, "warnings": warnings, "out": out_path, "chapter": ch.id}
 
 
 def self_check(doc: dict) -> list[str]:
@@ -644,7 +689,7 @@ def main(argv=None) -> int:
     for r in rem:
         by_cat[r["category"]] = by_cat.get(r["category"], 0) + 1
     print(f"замечаний {len(rem)} {by_cat} → {res['out']}")
-    for e in res["errors"]:
+    for e in res["errors"] + res["warnings"]:
         print("  схема: " + e, file=sys.stderr)
     return 1 if res["errors"] else 0
 

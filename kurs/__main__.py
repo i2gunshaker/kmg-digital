@@ -3,6 +3,8 @@
   python -m kurs units   <глава|путь.md>              — вырезать главу и разбить на единицы
   python -m kurs cost    <глава|путь.md>              — прогноз цены и остаток общего предела, бесплатно
   python -m kurs gen     <глава|путь.md> --max-usd N  — слой, покрытие, маршрутизация, задания, рисунки
+  python -m kurs vision  <глава> --max-usd N [--apply] — посмотреть на рисунки моделью со зрением, снять неверные
+  python -m kurs enrich  <глава> --max-usd N          — дополнить слой: заблуждения, «как сейчас», линза, невыученные единицы
   python -m kurs check   <глава> [layer.json] [cov]   — проверить слой и покрытие
   python -m kurs visual  <глава>                      — что нарисовано к шагам и замечания, бесплатно
   python -m kurs llm                                  — проверить ключ и модели без платных вызовов
@@ -89,6 +91,10 @@ def _gen(cfg: Config, args) -> int:
                     for m in msgs:
                         print(f"  осталось {nid}: {m}")
                 rc |= 1 if rep["check_errors"] or rep["missed_calls"] else 0
+                from .enrich import enrich_layer
+
+                more = enrich_layer(cfg, ch, llm, force=args.force)
+                print(f"{ch.id}: дополнено {more['added']}, не сказанных единиц {more['untaught_before']} → {more.get('untaught_after', more['untaught_before'])}")
             layer = load_layer(ch)
             if todo("routing"):
                 routing, issues = generate_routing(cfg, ch, llm, layer, force=args.force)
@@ -110,6 +116,63 @@ def _gen(cfg: Config, args) -> int:
                 )
                 for nid, msgs in rep["rejected"].items():
                     print(f"  простая схема {nid}: {'; '.join(msgs[:2])}")
+        except (LLMError, ManualEdits, FileNotFoundError) as e:
+            print(f"{ch.id}: {e}", file=sys.stderr)
+            rc = 1
+        finally:
+            print(f"{ch.id}: вызовов {llm.calls}, из кэша {llm.cache_hits}, ${llm.spent:.3f}; {_money(cfg, wallet)}")
+    if wallet:
+        wallet.release()
+    return rc
+
+
+def _vision(cfg: Config, args) -> int:
+    from .layer_gen import ManualEdits
+    from .llm import LLM, LLMError
+    from .visual_vision import apply, check
+
+    rc, wallet = 0, None
+    for cid in args.chapter:
+        ch = cfg.chapter(cid)
+        llm = LLM(cfg, scope=ch.id, budget=args.max_usd, wallet=wallet)
+        wallet = llm.wallet
+        try:
+            layer = json.loads((ch.build_dir / "layer.json").read_text(encoding="utf-8"))
+            doc = check(cfg, ch, llm, layer)
+            print(f"{ch.id}: рисунков {doc['pictures']}, с подтверждённой ошибкой {len(doc['with_issues'])}, снято защитником {doc['dropped']}, "
+                  f"без ответа {doc['failed']}")
+            for r in doc["with_issues"]:
+                for x in r["issues"]:
+                    print(f"  {r['node_id']} {Path(r['file']).name} [{x['severity']}] {x['seen']} → {x['truth']}")
+            if args.apply and (gone := apply(ch, doc)):
+                print(f"  заменены простой схемой: {', '.join(gone)}; пересоберите: python -m kurs rebuild {ch.id}")
+        except (LLMError, ManualEdits, FileNotFoundError) as e:
+            print(f"{ch.id}: {e}", file=sys.stderr)
+            rc = 1
+        finally:
+            print(f"{ch.id}: вызовов {llm.calls}, из кэша {llm.cache_hits}, ${llm.spent:.3f}; {_money(cfg, wallet)}")
+    if wallet:
+        wallet.release()
+    return rc
+
+
+def _enrich(cfg: Config, args) -> int:
+    from .enrich import enrich_layer
+    from .layer_gen import ManualEdits
+    from .llm import LLM, LLMError
+
+    if args.profile:
+        cfg.use_profile(args.profile)
+    rc, wallet = 0, None
+    for cid in args.chapter:
+        ch = cfg.chapter(cid)
+        llm = LLM(cfg, scope=ch.id, budget=args.max_usd, wallet=wallet)
+        wallet = llm.wallet
+        try:
+            rep = enrich_layer(cfg, ch, llm, force=args.force)
+            print(f"{ch.id}: узлов к дополнению {rep['nodes']}, добавлено {rep['added']}, снято судьёй {rep['dropped']}, "
+                  f"не сказанных единиц {rep['untaught_before']} → {rep.get('untaught_after', rep['untaught_before'])}"
+                  + (f"; возвращены узлы: {', '.join(rep['reverted'])}" if rep["reverted"] else ""))
         except (LLMError, ManualEdits, FileNotFoundError) as e:
             print(f"{ch.id}: {e}", file=sys.stderr)
             rc = 1
@@ -191,6 +254,17 @@ def main(argv=None) -> int:
     p.add_argument("--max-usd", type=float, help="сколько можно потратить за этот запуск; без него платных вызовов нет")
     p.add_argument("--profile", help="набор моделей: cheap, mid, max")
 
+    p = sub.add_parser("enrich")
+    p.add_argument("chapter", nargs="+")
+    p.add_argument("--force", action="store_true", help="перезаписать слой, изменённый вручную")
+    p.add_argument("--max-usd", type=float, help="сколько можно потратить за этот запуск; без него — только кэш")
+    p.add_argument("--profile", help="набор моделей: cheap, mid, max")
+
+    p = sub.add_parser("vision")
+    p.add_argument("chapter", nargs="+")
+    p.add_argument("--apply", action="store_true", help="снять собранные моделью рисунки с подтверждённой ошибкой")
+    p.add_argument("--max-usd", type=float, help="сколько можно потратить за этот запуск; без него — только кэш")
+
     p = sub.add_parser("cost")
     p.add_argument("chapter", nargs="+")
     p.add_argument("--profile", help="набор моделей: cheap, mid, max")
@@ -216,6 +290,8 @@ def main(argv=None) -> int:
     p.add_argument("--max-usd", type=float, help="сколько можно потратить; без него — только кэш и правила")
     p.add_argument("--profile", help="набор моделей: cheap, mid, max")
     p.add_argument("--video", action="store_true", help="собрать и ролики")
+    p.add_argument("--vision", action="store_true", help="проверить рисунки зрением модели (≈ $0,02 на главу из --max-usd)")
+    p.add_argument("--backend", default="auto", help="голос роликов: auto (ElevenLabs по ключу, иначе Silero, edge-tts), elevenlabs, silero, edge_tts, mock")
     p.add_argument("--domain", help="доменный пакет: geology (по умолчанию), drilling или путь к папке")
 
     p = sub.add_parser("plan")
@@ -245,11 +321,17 @@ def main(argv=None) -> int:
     p = sub.add_parser("video")
     p.add_argument("chapter")
     p.add_argument("--node", help="узел для ролика (по умолчанию — по маршрутизации)")
-    p.add_argument("--format", choices=["shorts", "long"])
+    p.add_argument("--format", choices=["shorts", "long", "9:16", "16:9"])
     p.add_argument("--only", action="append", help="id ролика")
     p.add_argument("--dry", action="store_true", help="только сценарий и паспорт, без синтеза и рендера")
+    p.add_argument("--engine", choices=["remotion", "html"], default="remotion", help="remotion — анимированный ролик (по умолчанию), html — кадры-слайды")
+    p.add_argument("--backend", default="auto", help="голос: auto, elevenlabs, silero, edge_tts, mock")
+    p.add_argument("--skip-asr", action="store_true", help="без проверки распознаванием")
+    p.add_argument("--max-usd", type=float, help="деньги на сценарий моделью; без него — сохранённый сценарий или по правилам")
+    p.add_argument("--import", dest="import_dir", help="папка готового ролика (build/videos/<id>) — положить в курс главы")
 
     p = sub.add_parser("metrics")
+    p.add_argument("--official", help="записать таблицу организаторов (chapter,stage,…) в этот файл, например metrics.csv")
     p.add_argument("chapter", nargs="*")
     p.add_argument("--manifest", action="store_true", help="напечатать таблицу для MANIFEST.md")
 
@@ -310,6 +392,11 @@ def main(argv=None) -> int:
     if args.cmd == "gen":
         return _gen(cfg, args)
 
+    if args.cmd == "enrich":
+        return _enrich(cfg, args)
+    if args.cmd == "vision":
+        return _vision(cfg, args)
+
     if args.cmd == "cost":
         return _cost(cfg, args)
 
@@ -341,7 +428,7 @@ def main(argv=None) -> int:
 
         if args.domain:
             cfg.use_domain(args.domain)
-        return run(cfg, args.chapter, max_usd=args.max_usd, profile=args.profile, video=args.video)
+        return run(cfg, args.chapter, max_usd=args.max_usd, profile=args.profile, video=args.video, vision=args.vision, backend=args.backend)
 
     if args.cmd in ("plan", "rebuild"):
         from .pipeline import plan, plan_text, rebuild
@@ -372,11 +459,33 @@ def main(argv=None) -> int:
         argv2 += (["--no-vision"] if args.no_vision else []) + (["--chapter-file", args.chapter_file] if args.chapter_file else [])
         return review_main(argv2)
 
+    if args.cmd == "video" and args.engine == "remotion" and not args.dry:
+        from .pipeline import rebuild, run_videos
+        from .video import pick_nodes
+        from .video_link import import_dir
+
+        ch = cfg.chapter(args.chapter)
+        layer = json.loads((ch.build_dir / "layer.json").read_text(encoding="utf-8"))
+        if args.import_dir:
+            e = import_dir(cfg, ch, layer, Path(args.import_dir))
+            print(f"{e['id']} → {ch.build_dir / 'videos.json'}; пересоберите курс: python -m kurs rebuild {ch.id}")
+            return 0
+        fmt = {"shorts": "9:16", "long": "16:9"}.get(args.format, args.format)
+        if args.node:
+            picks = {fmt or "9:16": args.node}
+        else:
+            rp = ch.build_dir / "routing.json"
+            picks = {("9:16" if k == "shorts" else "16:9"): v for k, v in pick_nodes(layer, json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else None).items()}
+            picks = {k: v for k, v in picks.items() if not fmt or k == fmt}
+        run_videos(cfg, ch, layer, max_usd=args.max_usd, picks=picks, backend=args.backend, skip_asr=args.skip_asr)
+        return rebuild(cfg, ch)
+
     if args.cmd == "video":
         from .video import render_videos
 
         ch = cfg.chapter(args.chapter)
         layer = json.loads((ch.build_dir / "layer.json").read_text(encoding="utf-8"))
+        args.format = {"9:16": "shorts", "16:9": "long"}.get(args.format, args.format)
         res = render_videos(cfg, ch, layer, only=args.only, node_id=args.node, fmt=args.format, dry=args.dry)
         bad = [r for r in res if r["errors"] or r["status"] == "failed"]
         return 1 if bad or not res else 0
@@ -384,9 +493,20 @@ def main(argv=None) -> int:
     if args.cmd == "metrics":
         from .metrics import chapter_metrics, manifest_section, write_metrics
 
-        ids = args.chapter or [c for c in cfg.chapters if (cfg.chapters[c].build_dir / "layer.json").exists()]
+        from .config import BUILD
+
+        # по умолчанию — все собранные главы: из config.yaml и тестовые (build/<id>/chapter_meta.json)
+        ids = args.chapter or [c for c in cfg.chapters if (BUILD / c / "layer.json").exists()] + sorted(
+            p.parent.name for p in BUILD.glob("*/chapter_meta.json") if (p.parent / "layer.json").exists() and p.parent.name not in cfg.chapters)
         rows = [chapter_metrics(cfg, cfg.chapter(c)) for c in ids]
         print(write_metrics(cfg, rows))
+        if args.official:
+            from .config import ROOT
+            from .metrics import economics_section, official_rows, write_official
+
+            off = official_rows(cfg, ids, ROOT / "manual_edits.csv", ROOT / "mentor_minutes.csv")
+            print(write_official(off, Path(args.official)))
+            print(economics_section(off))
         if args.manifest:
             print(manifest_section(rows))
         return 0

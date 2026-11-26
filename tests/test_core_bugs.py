@@ -308,3 +308,29 @@ def test_bug5_unknown_english_chapter_path(tmp_path, monkeypatch):
     cov = _full_coverage(ch.id, units, nid)
     assert [i for i in check_layer(cfg, ch, layer, coverage=cov) if i.level == "error"] == []
     assert [i for i in check_coverage(cfg, ch, cov, layer) if i.level == "error"] == []
+
+
+def test_chapter_remembers_its_domain_pack(tmp_path, monkeypatch):
+    """Глава, собранная с --domain drilling, пересобирается с тем же пакетом, а не с геологией по умолчанию."""
+    import kurs.config as kc
+
+    monkeypatch.setattr(kc, "BUILD", tmp_path)
+    monkeypatch.delenv("KURS_DOMAIN_PACK", raising=False)
+    md = tmp_path / "src" / "Drill Chapter.md"
+    md.parent.mkdir()
+    md.write_text("# Mud weight window\n\nHydrostatic pressure grows with true vertical depth.\n", encoding="utf-8")
+    cfg = kc.Config()
+    cfg.use_domain("drilling")
+    ch = cfg.chapter(str(md))
+    assert json.loads(ch.meta_path.read_text(encoding="utf-8"))["domain"] == "drilling"
+
+    fresh = kc.Config()  # новый процесс: rebuild <id>
+    assert fresh.domain_dir.name == "geology"
+    fresh.chapter(ch.id)
+    assert fresh.domain_dir.name == "drilling"
+    fresh.chapter("kuznetsov_gl10")
+    assert fresh.domain_dir.name == "geology"
+    # повторный run по пути без --domain пакет главы не меняет
+    again = kc.Config()
+    again.chapter(str(md))
+    assert again.domain_dir.name == "drilling"

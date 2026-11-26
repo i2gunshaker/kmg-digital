@@ -27,11 +27,7 @@ import wave
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
-
 from .config import BUILD, ROOT, Config
-
-load_dotenv(ROOT / ".env")
 
 
 # ---------------------------------------------------------------- числа словами
@@ -869,21 +865,23 @@ def compute_wer(ref_text: str, hyp_text: str) -> float:
 
 
 def run_whisper_check(wav_path: Path, expected_ref: str, timings: list[dict], lang: str = "ru") -> dict:
-    """Обратная проверка разборчивости и сдвига через локальный mlx-whisper."""
-    import mlx_whisper
+    """Обратная проверка разборчивости и сдвига локальным распознавателем: mlx-whisper на Mac, иначе faster-whisper."""
+    try:
+        import mlx_whisper
 
-    res = mlx_whisper.transcribe(
-        str(wav_path),
-        path_or_hf_repo="mlx-community/whisper-small-mlx",
-        language=lang,
-        word_timestamps=True,
-    )
-    hyp = (res.get("text") or "").strip()
+        res = mlx_whisper.transcribe(
+            str(wav_path),
+            path_or_hf_repo=os.environ.get("KURS_MLX_MODEL", "mlx-community/whisper-small-mlx"),
+            language=lang,
+            word_timestamps=True,
+        )
+        hyp = (res.get("text") or "").strip()
+        asr_words = [(float(w["start"]), float(w["end"])) for seg in res.get("segments") or [] for w in seg.get("words") or []]
+    except ImportError:
+        words = transcribe(wav_path, language=lang)  # faster-whisper; нет и его — TTSError
+        hyp = " ".join(w["word"] for w in words).strip()
+        asr_words = [(float(w["start"]), float(w["end"])) for w in words]
     wer = compute_wer(expected_ref, hyp)
-    asr_words = []
-    for seg in res.get("segments") or []:
-        for w in seg.get("words") or []:
-            asr_words.append((float(w["start"]), float(w["end"])))
     max_drift = 0.0
     if asr_words and timings:
         first_asr_start = asr_words[0][0]
@@ -1018,7 +1016,8 @@ def synthesize_passport(
                 "on_screen": line.get("on_screen", ""),
                 "claim_id": line.get("claim_id"),
                 "is_analogy": bool(line.get("is_analogy", False)),
-                "pause_after_sec": 1.5 if idx == pause_idx else (0.25 if idx < len(script) - 1 else 0.0),
+                # последняя фраза не обрывается: финальное состояние держится на экране
+                "pause_after_sec": 1.5 if idx == pause_idx else (0.25 if idx < len(script) - 1 else 1.2),
             })
         return entries
 
@@ -1099,15 +1098,23 @@ def synthesize_passport(
 
     # Обратная проверка mlx-whisper на финальном звуке (-16 LUFS)
     full_ref = " ".join(ent["spoken_ref"] for ent in segment_entries)
+    asr_missing = ""
     if skip_asr or actual_backend == "mock":
         asr_info = {"wer": 0.0, "max_sync_drift_sec": 0.0, "asr_transcript": full_ref, "asr_skipped": True}
     else:
-        asr_info = run_whisper_check(master_wav, full_ref, timings, lang=lang)
+        try:
+            asr_info = run_whisper_check(master_wav, full_ref, timings, lang=lang)
+        except TTSError as e:  # нет распознавателя на этой машине: ролик не теряем, проверка речи — «warn»
+            asr_missing = str(e)
+            asr_info = {"wer": 0.0, "max_sync_drift_sec": 0.0, "asr_transcript": "", "asr_skipped": True}
 
     # Обновим копию паспорта фактическими таймкодами и статусом аудиопроверки.
     for line, ent in zip(passport["script"], segment_entries):
         line["t_start"] = ent["t_start"]
         line["t_end"] = ent["t_end"]
+    if len(passport.get("frames") or []) == len(segment_entries):
+        for fr, ent in zip(passport["frames"], segment_entries):
+            fr["t"] = round((ent["t_start"] + ent["t_end"]) / 2, 2)
     passport["node_card"]["duration_sec"] = total_duration
     ac = passport.setdefault("audio_check", {})
     ac.update({
@@ -1120,8 +1127,11 @@ def synthesize_passport(
         "max_sync_drift_sec": asr_info["max_sync_drift_sec"],
         "prediction_pause_sec": 1.5 if pause_idx is not None else 0.0,
         "asr_transcript": asr_info["asr_transcript"],
-        "status": "ok" if (abs(loud_stats["measured_lufs"] + 16.0) <= 1.5 and asr_info["wer"] <= 0.10) else "warn",
+        "status": "ok" if (abs(loud_stats["measured_lufs"] + 16.0) <= 1.5 and asr_info["wer"] <= 0.10 and not asr_missing) else "warn",
     })
+    if asr_missing:
+        ac["asr_skipped"] = True
+        ac["asr_note"] = f"разборчивость не проверена: {asr_missing}"
     updated_passport = out_dir / "passport.json"
     updated_passport.write_text(json.dumps(passport, ensure_ascii=False, indent=2), encoding="utf-8")
 
