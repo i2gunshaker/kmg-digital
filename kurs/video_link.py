@@ -8,6 +8,7 @@
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -48,7 +49,8 @@ def register(cfg: Config, ch: Chapter, out_dir: Path, *, kind: str, layer: dict,
     tdoc = json.loads(tp.read_text(encoding="utf-8")) if tp.exists() else {}
     segs = tdoc.get("segments", [])
     seconds = float(tdoc.get("total_duration_sec") or passport["node_card"].get("duration_sec") or (segs[-1]["t_end"] if segs else 0))
-    cues = [{"t_start": s["t_start"], "t_end": s["t_end"], "text": re.sub(r"[+́]", "", s["spoken_ref"])} for s in segs] or [
+    cues = [{"t_start": c["start"], "t_end": c["end"], "text": c["text"]} for s in segs for c in s.get("captions") or []] or [
+        {"t_start": s["t_start"], "t_end": s["t_end"], "text": re.sub(r"[+́]", "", s["spoken_ref"])} for s in segs] or [
         {"t_start": ln["t_start"], "t_end": ln["t_end"], "text": ln["text"]} for ln in passport["script"]]
     texts = _claim_texts(layer)
     claim_ids = sorted({ln["claim_id"] for ln in passport["script"] if ln.get("claim_id")})
@@ -57,6 +59,8 @@ def register(cfg: Config, ch: Chapter, out_dir: Path, *, kind: str, layer: dict,
         "id": vid,
         "title": f"{TITLE[fmt]}: {passport['node_card']['title']}",
         "file": str((dst / mp4.name).relative_to(ch.build_dir)),
+        # хэш файла: новый MP4 под тем же id (другой голос, новые подписи) меняет videos.json, и rebuild пересобирает курс
+        "mp4_sha256": hashlib.sha256((dst / mp4.name).read_bytes()).hexdigest()[:16],
         "poster": poster,
         "node_ids": [passport["node_id"]],
         "claim_ids": claim_ids,

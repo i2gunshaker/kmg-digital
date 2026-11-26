@@ -7,7 +7,7 @@ from pathlib import Path
 import jsonschema
 
 from kurs.config import Config
-from kurs.tts import compute_wer, normalize_for_speech, synthesize_passport
+from kurs.tts import _is_word, caption_chunks, compute_wer, normalize_for_speech, synthesize_passport
 from kurs.units import build_units, cut_chapter
 from kurs.video_render import render_from_spec
 from kurs.video_spec import (
@@ -61,6 +61,28 @@ def test_mock_tts_loudnorm_and_pause(tmp_path):
     passport_schema = json.loads((cfg.schemas_dir / "passport.schema.json").read_text(encoding="utf-8"))
     jsonschema.validate(passport, passport_schema)
     assert passport["audio_check"]["status"] == "ok"
+
+    # Подписи на экране и в .vtt — куски реплик не длиннее 7 слов
+    timings = json.loads((tmp_path / "tts_out" / "timings.json").read_text(encoding="utf-8"))
+    caps = [c for s in timings["segments"] for c in s["captions"]]
+    assert len(caps) > len(timings["segments"])
+    assert all(sum(_is_word(w) for w in c["text"].split()) <= 7 for c in caps)
+    vtt = res["subtitles_vtt"].read_text(encoding="utf-8")
+    assert vtt.count(" --> ") == len(caps)
+
+
+def test_caption_chunks_short_readable_pieces():
+    text = "Прибор в стволе пишет отклик среды, а не саму породу. Поэтому в смешанном разрезе одного кажущегося сопротивления мало."
+    words = [{"word": w, "start": i * 0.5, "end": i * 0.5 + 0.5} for i, w in enumerate(text.split())]
+    caps = caption_chunks(words, t_end=len(words) * 0.5)
+    assert " ".join(c["text"] for c in caps) == text  # ни одно слово не потеряно
+    assert all(sum(_is_word(w) for w in c["text"].split()) <= 7 for c in caps)
+    assert all(c["end"] - c["start"] >= 1.5 for c in caps)
+    assert not any(c["text"].split()[-1] in {"в", "и", "а"} for c in caps[:-1])  # предлог не висит в конце
+    assert caps[0]["text"] == "Прибор в стволе пишет отклик среды,"
+    # короткая реплика остаётся одной подписью, тире в счёт слов не идёт
+    one = caption_chunks([{"word": w, "start": i * 0.4, "end": i * 0.4 + 0.4} for i, w in enumerate("Пласт — тонкая полоска.".split())], 2.0)
+    assert [c["text"] for c in one] == ["Пласт — тонкая полоска."]
 
 
 def test_build_spec_from_arbitrary_node_and_template_coverage(tmp_path):

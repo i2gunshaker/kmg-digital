@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Easing, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {VideoProps} from '../types';
-import {getCurrentState} from '../components/FrameChrome';
+import {captionAt, getCurrentState} from '../components/FrameChrome';
 
 /**
  * Ролик по узлу слоя: рисунок шага (те же кадры, что в курсе) меняется вместе с голосом,
@@ -186,7 +186,7 @@ export const NodeStory: React.FC<{props: VideoProps}> = ({props}) => {
             fontSize: portrait ? 34 : 29, lineHeight: 1.3, textAlign: 'center',
           }}
         >
-          {seg ? seg.spoken_ref.replace(/\+/g, '') : ''}
+          {captionAt(seg, t)}
         </div>
         <div style={{display: 'flex', justifyContent: 'space-between', fontSize: portrait ? 22 : 18, color: '#7F8FA0'}}>
           <span>{st.source_line}</span>

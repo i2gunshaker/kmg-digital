@@ -24,6 +24,7 @@ export interface TimingSegment {
   pause_after_sec: number;
   pause_window?: [number, number] | null;
   words: TimingWord[];
+  captions?: {text: string; start: number; end: number}[];
 }
 
 export interface PassportFrame {

@@ -202,6 +202,14 @@ def test_plan_finds_stale_tasks_and_videos(env):
     assert "t2" in plan_text(p)
     assert plan(cfg, ch, layer, only_node=n1["id"])["stale_tasks"] == []
 
+    # Ролик заменён тем же id (другой голос, новые подписи) — слой тот же, а курс пересобирается
+    n2["claims"][1]["text"] = n2["claims"][1]["text"].replace("18", "17")
+    assert not plan(cfg, ch, layer)["course"]
+    (ch.build_dir / "videos.json").write_text(json.dumps({"videos": [{"id": "v2", "node_ids": [n2["id"]], "cues": [{"text": "новые"}]}]}), encoding="utf-8")
+    p = plan(cfg, ch, layer)
+    assert p["course"] and p["videos_changed"] and not p["changed_claims"]
+    assert "заменены ролики" in plan_text(p)
+
 
 def test_plan_rebuilds_course_when_chapter_visuals_change(env):
     """Перерисовали рисунки главы (kurs gen --only visual) — rebuild пересобирает курс, хотя слой не менялся."""

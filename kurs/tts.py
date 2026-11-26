@@ -926,13 +926,90 @@ def _format_vtt_ts(sec: float) -> str:
     return f"{hh:02d}:{mm:02d}:{ss:02d}.{ms:03d}"
 
 
+CAPTION_MAX_WORDS = 7  # стандарт подачи: не больше 7–8 слов на экране
+CAPTION_MIN_SEC = 1.5  # и не меньше 1,5 с на подпись
+_CAPTION_BREAK = re.compile(r"[.,;:!?…»)]$")
+_CAPTION_CLITIC = set("в во и а но на с со по к ко о об у за из от до не ни при для без над под что как the a an of in on at to and or".split())
+
+
+def _is_word(tok: str) -> bool:
+    return bool(re.search(r"\w", tok))
+
+
+def caption_chunks(words: list[dict], t_end: float, max_words: int = CAPTION_MAX_WORDS, min_sec: float = CAPTION_MIN_SEC) -> list[dict]:
+    """Режет реплику на подписи для экрана: не больше max_words слов, разрыв по знаку препинания, где можно.
+
+    Подпись висит от своего первого слова до первого слова следующей (последняя — до конца реплики).
+    Подпись короче min_sec сливается с соседней, если вместе выходит не больше max_words + 1 слов.
+    """
+    toks = [{"word": strip_stress_marks(str(w["word"])).strip(), "start": float(w["start"])} for w in words]
+    toks = [w for w in toks if w["word"]]
+    if not toks:
+        return []
+    n = len(toks)
+    wc = [0] * (n + 1)  # число настоящих слов (без тире) до позиции
+    for i, w in enumerate(toks):
+        wc[i + 1] = wc[i] + _is_word(w["word"])
+    target = wc[n] / max(1, math.ceil(wc[n] / max_words))
+    best: list[tuple[float, int]] = [(0.0, -1)] + [(float("inf"), -1)] * n
+    for j in range(1, n + 1):
+        for i in range(j):
+            k = wc[j] - wc[i]
+            if k == 0 or k > max_words or best[i][0] == float("inf"):
+                continue
+            cost = best[i][0] + 2 + 0.15 * (k - target) ** 2
+            if j < n and not _CAPTION_BREAK.search(toks[j - 1]["word"]):
+                cost += 4  # разрыв посреди фразы
+            if j < n and toks[j - 1]["word"].lower() in _CAPTION_CLITIC:
+                cost += 4  # предлог или союз висит в конце подписи
+            if not _is_word(toks[i]["word"]):
+                cost += 3  # подпись с тире в начале
+            if cost < best[j][0]:
+                best[j] = (cost, i)
+    cuts, j = [], n
+    while j > 0:
+        cuts.append((best[j][1], j))
+        j = best[j][1]
+    groups = [toks[i:j] for i, j in reversed(cuts)]
+
+    def dur(gi: int) -> float:
+        end = groups[gi + 1][0]["start"] if gi + 1 < len(groups) else t_end
+        return end - groups[gi][0]["start"]
+
+    def words_in(g: list[dict]) -> int:
+        return sum(_is_word(w["word"]) for w in g)
+
+    changed = True
+    while changed and len(groups) > 1:
+        changed = False
+        for gi in range(len(groups)):
+            if dur(gi) >= min_sec:
+                continue
+            nb = [x for x in (gi - 1, gi + 1) if 0 <= x < len(groups) and words_in(groups[x]) + words_in(groups[gi]) <= max_words + 1]
+            if nb:
+                o = min(nb, key=lambda x: words_in(groups[x]))
+                a, b = sorted((gi, o))
+                groups[a:b + 1] = [groups[a] + groups[b]]
+                changed = True
+                break
+    return [
+        {"text": " ".join(w["word"] for w in g), "start": round(g[0]["start"], 3),
+         "end": round(groups[gi + 1][0]["start"] if gi + 1 < len(groups) else t_end, 3)}
+        for gi, g in enumerate(groups)
+    ]
+
+
 def _write_vtt(timings: list[dict], out_vtt: Path) -> None:
     lines = ["WEBVTT", ""]
-    for idx, seg in enumerate(timings, 1):
-        lines.append(str(idx))
-        lines.append(f"{_format_vtt_ts(seg['t_start'])} --> {_format_vtt_ts(seg['t_end'])}")
-        lines.append(strip_stress_marks(seg["spoken_ref"]))
-        lines.append("")
+    idx = 0
+    for seg in timings:
+        caps = seg.get("captions") or [{"start": seg["t_start"], "end": seg["t_end"], "text": strip_stress_marks(seg["spoken_ref"])}]
+        for c in caps:
+            idx += 1
+            lines.append(str(idx))
+            lines.append(f"{_format_vtt_ts(c['start'])} --> {_format_vtt_ts(c['end'])}")
+            lines.append(c["text"])
+            lines.append("")
     out_vtt.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -1112,6 +1189,8 @@ def synthesize_passport(
             "pause_after_sec": ent["pause_after_sec"],
             "pause_window": ent.get("pause_window"),
             "words": ent["shifted_words"],
+            "captions": caption_chunks(ent["shifted_words"], ent["t_end"]) or [
+                {"text": strip_stress_marks(ent["spoken_ref"]), "start": ent["t_start"], "end": ent["t_end"]}],
         }
         for ent in segment_entries
     ]

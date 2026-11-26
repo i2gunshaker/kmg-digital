@@ -292,7 +292,7 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
           КС (Ом·м)
         </text>
         <text x={trackX + 2 * (trackW + 16) + trackW / 2} y={48} textAnchor="middle" fill="#3498DB" fontSize={24} fontWeight={700}>
-          Пористость kп (%)
+          kп (%)
         </text>
 
         {/* Слои разреза */}
@@ -337,7 +337,8 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
 
         {inTrueScale ? (
           <text x={panelW / 2} y={drawTop + drawH + 56} textAnchor="middle" fill="#2ECC71" fontSize={26} fontWeight={700}>
-            Масштаб 1:1 — пласт 10 м тоньше миллиметра на фоне длины скважины
+            <tspan x={panelW / 2}>Масштаб 1:1 — пласт 10 м тоньше</tspan>
+            <tspan x={panelW / 2} dy={34}>миллиметра на фоне длины скважины</tspan>
           </text>
         ) : (
           <text x={colX} y={panelH - 22} fill="#9FB0C0" fontSize={21}>

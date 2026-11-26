@@ -577,7 +577,8 @@
     var cues = (DATA.subtitles && DATA.subtitles[sid]) || [];
     if (!cues.length || !vid.addTextTrack || !window.VTTCue) return;
     var track = vid.addTextTrack("subtitles", "Русский", "ru");
-    track.mode = "showing";
+    // Подписи уже впечатаны в кадр; дорожка — для чтения с экрана и включения вручную, иначе текст двоится
+    track.mode = "hidden";
     cues.forEach(function (c) {
       track.addCue(new window.VTTCue(c.t_start, c.t_end, c.text));
     });
