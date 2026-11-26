@@ -72,6 +72,8 @@ try {
       }
     });
     page.on("requestfailed", (req) => {
+      // ролик браузер читает частями и обрывает первый запрос (net::ERR_ABORTED) — это не ошибка; сам ролик проверяется ниже
+      if (/\.(mp4|webm)$/i.test(req.url()) && req.failure()?.errorText === "net::ERR_ABORTED") return;
       failedRequests.push(`${req.url()} (${req.failure()?.errorText})`);
     });
 
@@ -121,6 +123,29 @@ try {
       first.click();
       return out;
     });
+    // Ролики курса: файл на месте, кодек читается, длительность есть, субтитры подключены
+    const videoProblems = await page.evaluate(async () => {
+      const vs = Array.from(document.querySelectorAll("video"));
+      vs.forEach((v) => { v.preload = "auto"; v.load(); });
+      const ready = (v) => new Promise((res) => {
+        if (v.readyState >= 1 || v.error) return res();
+        v.addEventListener("loadedmetadata", res, { once: true });
+        v.addEventListener("error", res, { once: true });
+        setTimeout(res, 8000);
+      });
+      await Promise.all(vs.map(ready));
+      return vs.flatMap((v) => {
+        const name = (v.currentSrc || v.src || "").split("/").pop();
+        if (v.error) return [`ролик ${name}: ошибка ${v.error.code}`];
+        if (v.readyState < 1 || !(v.duration > 0)) return [`ролик ${name}: не загрузился`];
+        if (!v.textTracks.length) return [`ролик ${name}: нет субтитров`];
+        return [];
+      });
+    });
+    const videoCount = await page.evaluate(() => document.querySelectorAll("video").length);
+    if (videoProblems.length) problems.push(...videoProblems);
+    if (problems.length) throw new Error(`[${vp.name}] ` + problems.slice(0, 12).join("; "));
+    layoutMetrics.videos = videoCount;
     layoutMetrics.scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     if (bodyFont < 16) problems.push(`шрифт меньше 16 px: ${bodyFont}`);
     if (problems.length) throw new Error(`[${vp.name}] ` + problems.slice(0, 12).join("; "));
@@ -180,7 +205,7 @@ try {
     }
 
     console.log(
-      `QA OK [${vp.name}] ${vp.width}x${vp.height} (${vp.theme}): scrollWidth=${layoutMetrics.scrollWidth}<=${layoutMetrics.innerWidth}, font=${layoutMetrics.bodyFont}px, offline=true`
+      `QA OK [${vp.name}] ${vp.width}x${vp.height} (${vp.theme}): scrollWidth=${layoutMetrics.scrollWidth}<=${layoutMetrics.innerWidth}, font=${layoutMetrics.bodyFont}px, роликов=${layoutMetrics.videos}, offline=true`
     );
     await context.close();
   }

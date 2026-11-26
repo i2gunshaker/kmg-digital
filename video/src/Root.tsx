@@ -3,10 +3,14 @@ import {Composition} from 'remotion';
 import {VideoProps} from './types';
 import {WellboreLogSync} from './scenes/WellboreLogSync';
 import {FieldDiffusion2D} from './scenes/FieldDiffusion2D';
+import {NodeStory} from './scenes/NodeStory';
 import {UniversalConceptScene} from './scenes/UniversalConceptScene';
 
 const SceneDispatcher: React.FC<VideoProps> = (props) => {
   const tpl = props.scene?.template_id || '';
+  if (props.scene?.state_sample?.story) {
+    return <NodeStory props={props} />;
+  }
   if (tpl === 'wellbore-log-sync' && props.scene?.state_sample?.profile_rows) {
     return <WellboreLogSync props={props} />;
   }

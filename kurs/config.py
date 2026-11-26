@@ -99,6 +99,7 @@ class Config:
         self.schemas_dir = self.input_dir / self.raw["schemas_dir"]
         # Доменный пакет: config.yaml → KURS_DOMAIN_PACK (путь или имя папки в domain/) → `kurs run --domain`
         self.domain_dir = self.domain_path(os.environ.get("KURS_DOMAIN_PACK") or self.raw["domain_pack"])
+        self._domain_fixed = bool(os.environ.get("KURS_DOMAIN_PACK"))  # явный выбор важнее записанного у главы
         self.llm = self._llm_options(os.environ.get("KURS_LLM_PROFILE"))
         self.chapters: dict[str, Chapter] = {}
         for cid, c in (self.raw.get("chapters") or {}).items():
@@ -146,13 +147,21 @@ class Config:
 
     def use_domain(self, name: str) -> None:
         self.domain_dir = self.domain_path(name)
+        self._domain_fixed = True
+
+    def _chapter_domain(self, name: str | None) -> None:
+        """Глава, собранная с --domain, помнит пакет: rebuild, check и course берут тот же."""
+        if not self._domain_fixed:
+            self.domain_dir = self.domain_path(name or self.raw["domain_pack"])
 
     def use_profile(self, name: str) -> None:
         self.llm = self._llm_options(name)
 
     def chapter(self, cid: str) -> Chapter:
         if cid in self.chapters:
-            return self.chapters[cid]
+            ch = self.chapters[cid]
+            self._chapter_domain(ch.extra.get("domain"))
+            return ch
         # Незнакомая глава (тест): передаётся путём к md-файлу.
         p = Path(cid).expanduser()
         if p.exists() and p.is_file():
@@ -164,6 +173,12 @@ class Config:
             prefix = re.sub(r"[^a-z0-9_]", "_", raw_prefix).strip("_") or "ch"
             lang = detect_language(text)
             title = _extract_heading_title(text, p.stem)
+            old_meta = BUILD / ch_id / "chapter_meta.json"
+            if old_meta.exists():  # повторный run без --domain не меняет пакет главы
+                try:
+                    self._chapter_domain(json.loads(old_meta.read_text(encoding="utf-8")).get("domain"))
+                except (ValueError, FileNotFoundError):
+                    pass
             ch = Chapter(
                 id=ch_id,
                 prefix=prefix,
@@ -179,7 +194,9 @@ class Config:
                 "set": ch.set,
                 "file": ch.file,
                 "language": ch.language,
+                "domain": self.domain_dir.name if self.domain_dir.parent == ROOT / "domain" else str(self.domain_dir),
             }
+            ch.extra["domain"] = meta["domain"]
             ch.meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
             self.chapters[ch.id] = ch
             return ch
@@ -194,8 +211,10 @@ class Config:
                 set=meta.get("set", "test"),
                 file=meta.get("file"),
                 language=meta.get("language"),
+                extra={"domain": meta["domain"]} if meta.get("domain") else {},
             )
             self.chapters[ch.id] = ch
+            self._chapter_domain(meta.get("domain"))
             return ch
         md_fallback = BUILD / cid / f"{cid}.md"
         if md_fallback.exists():

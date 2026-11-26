@@ -176,10 +176,31 @@ def domain_block(cfg: Config) -> str:
     return "\n\n".join(parts)
 
 
+def _furniture_key(text: str) -> str:
+    return re.sub(r"\W+", " ", text.lower()).strip()[:50]
+
+
+def furniture(units: list[Unit]) -> dict[str, int]:
+    """Колонтитулы: короткий абзац, который почти дословно повторяется на трёх и более страницах.
+
+    Возвращает {unit_id: число страниц}. Номера единиц не меняются, такие единицы просто не видит модель.
+    """
+    def short(u: Unit) -> bool:
+        return u.kind == "paragraph" and not u.model_description and len(u.text.strip()) <= 200
+
+    pages: dict[str, set[int]] = {}
+    for u in units:
+        if short(u):
+            pages.setdefault(_furniture_key(u.text), set()).add(u.page_pdf)
+    rep = {k: len(v) for k, v in pages.items() if len(v) >= 3 and len(k) >= 15}
+    return {u.id: rep[_furniture_key(u.text)] for u in units if short(u) and _furniture_key(u.text) in rep}
+
+
 def unit_block(units: list[Unit], errata: dict[str, str]) -> str:
     out = []
+    skip = furniture(units)
     for u in units:
-        if u.model_description:
+        if u.model_description or u.id in skip:
             continue
         pages = ",".join(map(str, u.pages or [u.page_pdf]))
         extra = f' task="{u.task_number}"' if u.task_number else ""
@@ -201,7 +222,8 @@ def system_blocks(cfg: Config, ch: Chapter, units: list[Unit], errata: dict[str,
 
 # ---------------------------------------------------------------- проход 1: граф узлов
 def content_units(units: list[Unit]) -> list[Unit]:
-    return [u for u in units if not u.model_description]
+    skip = furniture(units)
+    return [u for u in units if not u.model_description and u.id not in skip]
 
 
 def check_outline(ol: dict, units: list[Unit]) -> list[str]:
@@ -668,11 +690,15 @@ def build_coverage(ch: Chapter, ol: dict, units: list[Unit]) -> dict:
             owners.setdefault(uid, []).append(f"{ch.prefix}.{n['slug']}")
     reasons = {e["unit_id"]: e["reason"].strip() for e in ol["excluded"]}
     captions = [u for u in units if u.kind == "figure" and not u.model_description]
+    skip = furniture(units)
     rows = []
     for u in units:
         node_ids = owners.get(u.id, [])
         reason = None
-        if u.model_description:
+        if u.id in skip:
+            node_ids = []
+            reason = coded_reason(f"page_furniture: колонтитул, одна и та же строка на {skip[u.id]} страницах", u.kind)
+        elif u.model_description:
             node_ids = []
             near = sorted(captions, key=lambda c: (abs(c.page_pdf - u.page_pdf), abs(c.line - u.line)))
             ref = f"; рисунок учтён по подписи {near[0].id}" if near and abs(near[0].page_pdf - u.page_pdf) <= 1 else ""
@@ -722,12 +748,23 @@ def write_generated(ch: Chapter, name: str, doc: dict, force: bool = False) -> P
 
 
 # ---------------------------------------------------------------- оркестровка
+# Смысловые предупреждения, которые правка карточки закрывает одним словом автора:
+# вернуть «могут», «часто», условие или отрицание. Правка, от которой стало хуже, откатывается.
+FIXABLE_WARN = {
+    "assumption_as_fact:": "верните в текст утверждения оговорку автора",
+    "condition_dropped:": "верните в текст утверждения условие автора",
+    "negation_dropped:": "верните отрицание автора",
+    "negation_added:": "уберите отрицание, которого у автора нет",
+}
+
+
 def _node_issue_map(layer: dict, issues: list[Issue]) -> dict[str, list[str]]:
     ids = [n["id"] for n in layer["nodes"]]
     claim_text = {c["id"]: c["text"] for n in layer["nodes"] for c in n["claims"]}
     out: dict[str, list[str]] = {}
     for it in issues:
-        if it.level != "error":
+        hint = next((h for code, h in FIXABLE_WARN.items() if it.msg.startswith(code)), None)
+        if it.level != "error" and hint is None:
             continue
         nid = next((x for x in ids if it.where == x or it.where.startswith((x + "/", x + "#"))), None)
         if nid is None:
@@ -738,7 +775,7 @@ def _node_issue_map(layer: dict, issues: list[Issue]) -> dict[str, list[str]]:
             # Номер утверждения в карточке не виден, поэтому показываем его текст.
             cid = re.search(r"\S+#c\d+", it.where)
             where = f"утверждение «{claim_text.get(cid.group(0), '')[:100]}»" if cid else it.where.replace(nid, "").strip("/ ") or "узел"
-            out.setdefault(nid, []).append(f"{where}: {it.msg}")
+            out.setdefault(nid, []).append(f"{where}: {it.msg}" + (f" — {hint}" if hint else ""))
     return out
 
 

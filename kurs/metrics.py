@@ -122,6 +122,132 @@ def write_metrics(cfg: Config, rows: list[dict], path: Path | None = None) -> Pa
     return path
 
 
+# ---------------------------------------------------------------- таблица организаторов: строка на главу и этап
+OFFICIAL = ["chapter", "stage", "nodes", "llm_tokens_in", "llm_tokens_out", "money_usd", "person_minutes", "mentor_minutes", "video_seconds", "manual_share"]
+STAGES = ["layer", "routing", "course", "video", "review"]
+
+
+def stage_of(scope: str, label: str) -> str:
+    """Этап вызова модели по метке журнала."""
+    if scope == "review" or label.startswith("review"):
+        return "review"
+    if label.startswith("routing"):
+        return "routing"
+    if label.startswith(("tasks", "visual")):
+        return "course"
+    if label.startswith(("video", "script")):
+        return "video"
+    return "layer"
+
+
+def _stage_of_file(path: str) -> str:
+    p = path.lower()
+    for key, stage in (("routing", "routing"), ("video", "video"), ("passport", "video"), ("review", "review"), ("layer", "layer"), ("coverage", "layer"), ("node", "layer")):
+        if key in p:
+            return stage
+    return "course"
+
+
+def official_rows(cfg: Config, ids: list[str], edits: Path | None = None, mentor: Path | None = None, review_chapter: str = "vendelshtein_gl1") -> list[dict]:
+    """Строки по шаблону организаторов: токены и деньги — из журнала вызовов, минуты людей — из manual_edits.csv,
+    минуты ментора — из mentor_minutes.csv (chapter,stage,minutes), секунды видео — из videos.json."""
+    use: dict[tuple[str, str], dict] = {}
+    p = _config.BUILD / "llm_usage.jsonl"
+    for line in p.read_text(encoding="utf-8").splitlines() if p.exists() else []:
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        if r.get("from_cache"):
+            continue
+        stage = stage_of(r.get("scope", ""), r.get("label", ""))
+        u = use.setdefault((review_chapter if r.get("scope") == "review" else r.get("scope", ""), stage), {"in": 0, "out": 0, "usd": 0.0, "sec": 0.0})
+        u["in"] += r.get("input", 0) + r.get("cache_write", 0) + r.get("cache_read", 0)
+        u["out"] += r.get("output", 0)
+        u["usd"] += float(r.get("cost_usd") or 0)
+        u["sec"] += float(r.get("seconds") or 0)
+
+    def minutes(path: Path | None, field: str, stage_from) -> dict[tuple[str, str], float]:
+        out: dict[tuple[str, str], float] = {}
+        if path and path.exists():
+            with path.open(encoding="utf-8", newline="") as f:
+                for r in csv.DictReader(f):
+                    k = (r["chapter"], stage_from(r))
+                    out[k] = out.get(k, 0.0) + float(r.get(field) or 0)
+        return out
+
+    person = minutes(edits, "person_minutes", lambda r: _stage_of_file(r.get("file", "")))
+    ment = minutes(mentor, "minutes", lambda r: r.get("stage", "layer"))
+    rows = []
+    for cid in ids:
+        b = cfg.chapter(cid).build_dir
+        layer = _read(b / "layer.json")
+        vids = (_read(b / "videos.json") or {}).get("videos", [])
+        for st in STAGES:
+            u = use.get((cid, st))
+            secs = round(sum(float(v.get("duration_s") or v.get("seconds") or 0) for v in vids)) if st == "video" else 0
+            pm = person.get((cid, st), 0.0)
+            if not u and not pm and not secs and not (cid, st) in ment and not (layer and st in ("layer", "course")):
+                continue
+            machine = (u["sec"] / 60) if u else 0.0
+            rows.append({
+                "chapter": cid, "stage": st, "nodes": len(layer["nodes"]) if layer else 0, "llm_tokens_in": u["in"] if u else 0, "llm_tokens_out": u["out"] if u else 0,
+                "money_usd": round(u["usd"], 4) if u else 0, "person_minutes": round(pm, 1), "mentor_minutes": round(ment.get((cid, st), 0.0), 1),
+                "video_seconds": secs, "manual_share": round(pm / (pm + machine), 3) if pm + machine > 0 else 0,
+                "machine_minutes": round(machine, 2),
+            })
+    return rows
+
+
+def economics(rows: list[dict]) -> list[dict]:
+    """Сводка по главе из строк official_rows: деньги и человеко-минуты на узел и на минуту видео, доля ручного труда."""
+    out: dict[str, dict] = {}
+    for r in rows:
+        e = out.setdefault(r["chapter"], {"chapter": r["chapter"], "nodes": 0, "usd": 0.0, "pm": 0.0, "mentor": 0.0, "machine": 0.0,
+                                          "video_s": 0, "video_usd": 0.0, "video_pm": 0.0})
+        e["nodes"] = max(e["nodes"], int(r["nodes"] or 0))
+        e["usd"] += float(r["money_usd"] or 0)
+        e["pm"] += float(r["person_minutes"] or 0)
+        e["mentor"] += float(r["mentor_minutes"] or 0)
+        e["machine"] += float(r.get("machine_minutes") or 0)
+        if r["stage"] == "video":
+            e["video_s"] += int(r["video_seconds"] or 0)
+            e["video_usd"] += float(r["money_usd"] or 0)
+            e["video_pm"] += float(r["person_minutes"] or 0)
+    for e in out.values():
+        n, vm = e["nodes"], e["video_s"] / 60
+        e["usd_per_node"] = e["usd"] / n if n else None
+        e["pm_per_node"] = e["pm"] / n if n else None
+        e["usd_per_video_min"] = e["video_usd"] / vm if vm else None
+        e["pm_per_video_min"] = e["video_pm"] / vm if vm else None
+        e["manual_share"] = e["pm"] / (e["pm"] + e["machine"]) if e["pm"] + e["machine"] else 0.0
+    return list(out.values())
+
+
+def economics_section(rows: list[dict]) -> str:
+    def f(v, d=3):
+        return "—" if v is None else f"{v:.{d}f}"
+
+    lines = [
+        "| Глава | Узлов | $ всего | $ на узел | Чел.-мин | Чел.-мин на узел | Видео, мин | $ на минуту видео | Чел.-мин на минуту видео | Доля ручного труда | Минуты ментора |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for e in economics(rows):
+        lines.append(
+            f"| `{e['chapter']}` | {e['nodes']} | {e['usd']:.2f} | {f(e['usd_per_node'])} | {e['pm']:.0f} | {f(e['pm_per_node'], 1)} "
+            f"| {e['video_s'] / 60:.1f} | {f(e['usd_per_video_min'])} | {f(e['pm_per_video_min'], 1)} | {e['manual_share']:.0%} | {e['mentor']:.0f} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def write_official(rows: list[dict], path: Path) -> Path:
+    with path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=OFFICIAL, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+    return path
+
+
 def manifest_section(rows: list[dict]) -> str:
     """Таблица метрик для MANIFEST.md: цели взяты из архитектурного документа."""
     def pct(v):

@@ -16,6 +16,7 @@ import fcntl
 import hashlib
 import json
 import os
+import random
 import re
 import threading
 import time
@@ -38,6 +39,14 @@ class BudgetExceeded(LLMError):
 
 class OfflineMiss(LLMError):
     pass
+
+
+class RateLimited(LLMError):
+    """Сервер просит подождать (429, перегрузка, сбой связи): запрос повторяется, а не проваливает прогон."""
+
+    def __init__(self, msg: str, retry_after: float | None = None):
+        super().__init__(msg)
+        self.retry_after = retry_after
 
 
 class SchemaTooLarge(LLMError):
@@ -146,6 +155,8 @@ class Wallet:
             self.spent += actual
 
 
+_SOFTER = {"max": "high", "xhigh": "high", "high": "medium", "medium": "low"}
+
 # transport(model, system, user, schema | None, effort, max_tokens) -> Reply
 Transport = Callable[[str, list[str], str, "dict | None", str, int], Reply]
 
@@ -223,6 +234,13 @@ def _openai_content(user: str, images: list[Path] | None) -> Any:
     return parts + [{"type": "text", "text": user}]
 
 
+def _retry_after(e: Any) -> float | None:
+    try:
+        return float(e.response.headers.get("retry-after"))
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+
 def _anthropic_transport() -> Transport:
     import anthropic
 
@@ -260,9 +278,11 @@ def _anthropic_transport() -> Transport:
                 raise SchemaTooLarge(str(e.message)[:200]) from e
             raise LLMError(f"запрос отклонён (400): {e.message}") from e
         except anthropic.APIStatusError as e:
+            if e.status_code == 429 or e.status_code >= 500:
+                raise RateLimited(f"сервер занят ({e.status_code}): {str(e.message)[:160]}", _retry_after(e)) from e
             raise LLMError(f"ошибка API ({e.status_code}): {e.message}") from e
         except anthropic.APIConnectionError as e:
-            raise LLMError(f"нет связи с API: {type(e).__name__}") from e
+            raise RateLimited(f"нет связи с API: {type(e).__name__}") from e
 
         stop = ""  # оборванный ответ тоже оплачен: ошибка поднимается после записи расхода
         if msg.stop_reason == "refusal":
@@ -308,9 +328,11 @@ def _openai_transport() -> Transport:
         except openai.AuthenticationError as e:
             raise LLMError("ключ API не принят (401): проверьте OPENAI_API_KEY в .env") from e
         except openai.APIStatusError as e:
+            if e.status_code == 429 or e.status_code >= 500:
+                raise RateLimited(f"сервер занят ({e.status_code}): {str(e.message)[:160]}", _retry_after(e)) from e
             raise LLMError(f"ошибка API ({e.status_code}): {e.message}") from e
         except openai.APIConnectionError as e:
-            raise LLMError(f"нет связи с API: {type(e).__name__}") from e
+            raise RateLimited(f"нет связи с API: {type(e).__name__}") from e
         choice = resp.choices[0]
         stop = f"ответ обрезан на {max_tokens} токенах" if choice.finish_reason == "length" else ""
         if getattr(choice.message, "refusal", None):
@@ -475,7 +497,7 @@ class LLM:
             t0 = time.monotonic()
             try:
                 args = (model, system, user + note + text_schema, None if by_words else schema, effort, max_tokens)
-                reply = self._transport(*args, images=images) if images else self._transport(*args)
+                reply = self._patient(label, args, images)
                 cost = self.cost(model, reply.usage)
             except SchemaTooLarge:
                 self._by_words.add(schema_id)
@@ -487,6 +509,9 @@ class LLM:
                 self.spent += cost
                 self.calls += 1
             self._log(label, reply.model, reply.usage, cost, dt, False)
+            if reply.stop and "обрезан" in reply.stop and effort in _SOFTER:
+                effort = _SOFTER[effort]  # рассуждение не уместилось: тот же вопрос с меньшим усилием, а не потеря узла
+                continue
             if reply.stop:
                 raise LLMError(f"{label}: {reply.stop}")
             try:
@@ -509,6 +534,21 @@ class LLM:
             tmp.replace(path)
             return data
         raise LLMError(f"{label}: ответ не прошёл проверку по схеме ({str(last)[:200]})")
+
+    def _patient(self, label: str, args: tuple, images: list[Path] | None) -> Reply:
+        """Вызов с ожиданием: предел запросов в минуту и перегрузка сервера — повод подождать, а не бросить главу.
+        Сколько ждать всего, с, — KURS_LLM_PATIENCE (по умолчанию 900)."""
+        deadline = time.monotonic() + float(os.environ.get("KURS_LLM_PATIENCE") or 900)
+        wait = 12.0
+        while True:
+            try:
+                return self._transport(*args, images=images) if images else self._transport(*args)
+            except RateLimited as e:
+                pause = min(max(e.retry_after or wait, 4.0), 90.0) * (1 + 0.25 * random.random())
+                if time.monotonic() + pause > deadline:
+                    raise LLMError(f"{label}: {e}; ждать больше нельзя") from e
+                time.sleep(pause)
+                wait = min(wait * 1.5, 60.0)
 
     def _log(self, label: str, model: str, usage: Usage, cost: float, dt: float, cached: bool) -> None:
         rec = {

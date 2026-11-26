@@ -5,6 +5,7 @@ import json
 import math
 import re
 from pathlib import Path
+from typing import Any
 
 import jsonschema
 
@@ -424,6 +425,14 @@ def build_training_specs(cfg: Config, out_dir: Path | None = None) -> dict:
 
     lat_pass_path = out_dir / "latyshova_shorts_passport.json"
     bas_pass_path = out_dir / "basniev_deepdive_passport.json"
+    # Номера утверждений — из готового слоя: цитата источника находит своё утверждение
+    from .passport_bind import bind
+
+    for ch_, pp in ((lat_ch, lat_passport), (bas_ch, bas_passport)):
+        lp = ch_.build_dir / "layer.json"
+        if lp.exists():
+            for line in bind(pp, json.loads(lp.read_text(encoding="utf-8"))):
+                print(f"{pp['video_id']}: {line}")
     lat_pass_path.write_text(json.dumps(lat_passport, ensure_ascii=False, indent=2), encoding="utf-8")
     bas_pass_path.write_text(json.dumps(bas_passport, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -522,32 +531,57 @@ def _short_words(text: str, max_words: int = 7) -> str:
     return " ".join(words[:max_words])
 
 
-def _load_node_visual(cfg: Config, ch: Chapter, node: dict) -> tuple[dict | None, str | None]:
-    """Ищет спецификацию рисунка в build/<chapter>/visual.json, domain/visual/ или строит через auto_spec."""
-    from .illustrations import auto_spec, load_styleguide
+def _load_node_visual(cfg: Config, ch: Chapter, node: dict, width: int = 560) -> tuple[dict, list[tuple[str, str]]]:
+    """Рисунок узла и его кадры [(подпись, SVG)] — те же, что в курсе. Рисунок без кадров открывается по частям."""
+    from .illustrations import auto_spec, load_styleguide, load_visual_specs, with_reveal
     from .visual import canvas_width, render, render_frames
 
-    spec_entry = None
-    for cand in (ch.build_dir / "visual.json", cfg.domain_dir / "visual" / f"{ch.id}.json"):
-        if cand.exists():
-            nodes_map = json.loads(cand.read_text(encoding="utf-8")).get("nodes") or {}
-            spec_entry = nodes_map.get(node["id"])
-            if spec_entry:
-                break
-    if isinstance(spec_entry, list):
-        spec_entry = spec_entry[0] if spec_entry else None
-    if not isinstance(spec_entry, dict):
-        spec_entry = auto_spec(node)
     sg = load_styleguide(cfg)
-    try:
-        with canvas_width(560):
-            frames = render_frames(spec_entry, sg)
-            svg = frames[0][1] if frames else render(spec_entry, sg)
-    except Exception:
-        spec_entry = auto_spec(node)
-        with canvas_width(560):
-            svg = render(spec_entry, sg)
-    return spec_entry, svg
+    entry = load_visual_specs(cfg, ch).get(node["id"])
+    if isinstance(entry, list):
+        entry = entry[0] if entry else None
+    base = {"label": "схема", "class": "B", "title": node.get("title", node["id"])}
+    for spec in ({**base, **entry} if isinstance(entry, dict) else None, {**base, **auto_spec(node)}):
+        if spec is None:
+            continue
+        try:
+            opened = not spec.get("frames")
+            if opened:
+                spec = {**with_reveal(spec), "_reveal": True}  # кадры — части рисунка по порядку, не смена состояния
+            with canvas_width(width):
+                frames = [(str(k), svg) for k, svg in render_frames(spec, sg)] or [("", render(spec, sg))]
+            if opened and len(frames) > 1:  # в ролике части появляются по порядку, целиком рисунок стоит в конце
+                frames = frames[1:] + frames[:1]
+            return spec, frames
+        except Exception:  # описание не рисуется — остаётся простая схема из карточки
+            continue
+    raise ValueError(f"узел {node['id']}: рисунок не строится")
+
+
+_DEPTH_DOWN = {"layers", "section", "reef"}
+
+
+def _node_checklist(spec: dict, by: str, scale: str, domain_dir: Path, numbers_ok: bool) -> list[dict]:
+    """«да» — только то, что держит код; остальное честно «н/п» до просмотра специалистом."""
+    tpl = spec.get("template", "")
+    yes: dict[str, tuple[str, str]] = {
+        "pc.label_matches": ("да", f"Метка «{spec.get('label', 'схема')}» берётся из описания рисунка; код ставит её на каждый кадр."),
+        "pc.exaggeration_named": ("да", f"Подписано на рисунке: {scale}."),
+        "pc.objects_stable": ("да", "Все кадры строятся из одного описания: меняется только параметр, остальное неизменно."),
+    }
+    if by.startswith("model"):
+        yes["pc.causality"] = ("да", "Порядок реплик и каждую фразу сверил с карточкой отдельный проход модели-судьи.")
+        yes["pc.applicability"] = ("да", "В сценарии есть строка об условии, при котором правило не работает.")
+    if numbers_ok:
+        yes["pc.plausible_numbers"] = ("да", "Каждое число реплик есть в карточке узла и в цитатах главы (проверка кодом).")
+    if tpl in _DEPTH_DOWN:
+        yes["pc.depth_down"] = ("да", "Код рисует глубину сверху вниз.")
+        yes["pc.layers_order"] = ("да", "Порядок слоёв задан одним списком и одинаков во всех кадрах.")
+    out = _build_checklist(yes, domain_dir=domain_dir)
+    for row in out:
+        if row["answer"] == "н/п":
+            row["note"] = "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    return out
 
 
 def build_spec_from_node(
@@ -557,105 +591,47 @@ def build_spec_from_node(
     *,
     fmt: str = "9:16",
     out_dir: Path | None = None,
+    llm: Any = None,
+    log: Any = print,
 ) -> tuple[Path, Path]:
-    """Детерминированно (0 LLM) строит scene.json и passport.json для любого узла любого layer.json."""
+    """scene.json и passport.json для любого узла любого слоя. Сценарий — kurs/node_script.py, рисунок — тот же, что в курсе."""
+    from .node_script import claim_map, get_script, script_problems, timeline
+
     out_dir = out_dir or (BUILD / "specs" / ch.id)
     out_dir.mkdir(parents=True, exist_ok=True)
     passport_schema = json.loads((cfg.schemas_dir / "passport.schema.json").read_text(encoding="utf-8"))
 
     nid = node["id"]
-    slug = nid.replace(".", "_")
     is_short = fmt == "9:16"
-    video_id = f"{slug}_{'shorts' if is_short else 'deepdive'}"
-    primary_diff = (node.get("difficulty") or {}).get("primary", "М")
-    secondary_diff = (node.get("difficulty") or {}).get("secondary")
+    video_id = f"{nid.replace('.', '_')}_{'shorts' if is_short else 'deepdive'}"
+    diff = node.get("difficulty") or {}
+    primary_diff = diff.get("primary", "М")
     template_id = _DIFF_TO_TEMPLATE.get(primary_diff, "process-section")
 
-    claims = [c for c in (node.get("claims") or []) if c.get("quote") and c.get("page_pdf")]
-    if not claims:
-        claims = list(node.get("claims") or [])
-    sources = [
-        {
-            "claim_id": c["id"],
-            "page_or_dataset": f"стр. {c['page_pdf']}" if c.get("page_pdf") else "по главе",
-            "quote": c.get("quote") or c.get("text", ""),
-        }
-        for c in claims[:6]
+    spec, frames = _load_node_visual(cfg, ch, node, 560 if is_short else 860)
+    label = spec.get("label") if spec.get("label") in ("реальные данные", "симуляция", "схема") else "схема"
+    cls = spec.get("class", "B")
+    scale = spec.get("scale") or ("данные показаны без преувеличений" if label == "реальные данные" else "форма и размеры условные, не в масштабе")
+    caption = spec.get("caption") or spec.get("title", "")
+    doc = get_script(cfg, ch, node, fmt, [k for k, _ in frames] if len(frames) > 1 else [], caption, llm=llm, log=log)
+    lines = timeline(doc)
+    claims = claim_map(node)
+    script = [
+        {"t_start": x["t_start"], "t_end": x["t_end"], "text": x["text"], "claim_id": claims[x["claim"]]["id"] if x["claim"] in claims else f"{nid}#c1",
+         "is_analogy": x["kind"] == "analogy", "on_screen": x["on_screen"]}
+        for x in lines
     ]
+    sources = []
+    for cid in dict.fromkeys(x["claim"] for x in lines):
+        c = claims.get(cid)
+        if c:
+            sources.append({"claim_id": c["id"], "page_or_dataset": f"стр. {c['page_pdf']}" if c.get("page_pdf") else "по главе", "quote": c.get("quote") or c["text"]})
     if not sources:
         sources = [{"claim_id": f"{nid}#c1", "page_or_dataset": "по главе", "quote": node.get("title", nid)}]
-
-    def cid_at(i: int) -> str:
-        return sources[min(i, len(sources) - 1)]["claim_id"]
-
-    layers = node.get("layers") or {}
-    topic_txt = (layers.get("topic") or {}).get("text") or node.get("title", nid)
-    main_txt = (layers.get("main") or {}).get("text") or topic_txt
-    mech_txt = (layers.get("mechanism") or {}).get("text") or main_txt
-    prac_txt = (layers.get("practice") or {}).get("text") or main_txt
-    nuance_txt = (layers.get("nuances") or {}).get("text") or ""
-    mis_obj = node.get("misconception") or {}
-    mis_txt = mis_obj.get("text") or ""
-    it_obj = node.get("it_analogy") or {}
-    it_txt = it_obj.get("text") or ""
-    it_limit = it_obj.get("breaks_where") or "При выходе за границы допущений модели аналогия нарушается."
-    dm = node.get("data_meaning") or {}
-    dm_txt = (dm.get("from_chapter") or {}).get("text") or prac_txt
-    dm_breaks = (dm.get("breaks") or {}).get("text") or ""
-    steps = [s.get("text", "") for s in (node.get("steps") or []) if s.get("text")]
-
-    pred_q = f"Предсказание: что изменится в модели «{node.get('title', nid)}», если нарушить ключевое условие?"
-    if mis_txt:
-        pred_q = f"Предсказание: верно ли утверждение «{_short_words(mis_txt, 10)}»?"
-    transfer_q = f"Как применить «{node.get('title', nid)}» к новым данным скважины и найти ошибку модели?"
-    if dm_breaks:
-        transfer_q = f"Как в реальных данных распознать момент, когда правило «{_short_words(dm_breaks, 8)}» перестаёт работать?"
-
-    if is_short:
-        raw_lines = [
-            (0.0, 3.2, f"{node.get('title', nid)}. Где здесь кроется ошибка?", cid_at(0), False, _short_words(node.get("title", nid), 6)),
-            (3.4, 13.0, main_txt, cid_at(0), False, _short_words(topic_txt, 6)),
-            (13.2, 22.0, mech_txt, cid_at(1), False, "Механизм процесса"),
-            (22.2, 27.5, "В масштабе 1:1 реальная геометрия пласта сильно тоньше схем преувеличения.", cid_at(1), False, "Истинный масштаб 1:1"),
-            (27.7, 36.0, pred_q + " Подумайте полторы секунды.", cid_at(2), False, "Пауза: ваш ответ?"),
-            (37.5, 46.5, (mis_txt or prac_txt), cid_at(2), False, "Разбор ответа"),
-            (46.7, 53.0, (f"{it_txt} Граница: {it_limit}" if it_txt else dm_txt), cid_at(3), bool(it_txt), "Мост к данным и ИТ"),
-            (53.2, 59.0, transfer_q, cid_at(4), False, "Вопрос на перенос"),
-        ]
-    else:
-        raw_lines = [
-            (0.0, 3.2, f"{node.get('title', nid)}. Разбираем физику и модель шага.", cid_at(0), False, _short_words(node.get("title", nid), 6)),
-            (3.4, 15.0, main_txt, cid_at(0), False, _short_words(topic_txt, 6)),
-            (15.2, 28.0, mech_txt, cid_at(1), False, "Физический механизм"),
-            (28.2, 35.0, "Переходим к истинному масштабу 1:1, чтобы сравнить толщину и длину объекта.", cid_at(1), False, "Истинный масштаб 1:1"),
-            (35.2, 50.0, ("; ".join(steps[:3]) if steps else prac_txt), cid_at(2), False, "По шагам расчёта"),
-            (50.2, 62.0, (nuance_txt or dm_txt), cid_at(3), False, "Условия применимости"),
-            (62.2, 71.0, pred_q + " Остановитесь на секунду и предскажите результат.", cid_at(3), False, "Пауза: предсказание"),
-            (72.5, 84.5, (mis_txt or prac_txt), cid_at(4), False, "Проверка интуиции"),
-            (84.7, 96.0, (f"{it_txt} Но учтите: {it_limit}" if it_txt else dm_txt), cid_at(4), bool(it_txt), "ИТ-мост и граница"),
-            (96.2, 108.0, transfer_q, cid_at(5), False, "Перенос на реальные данные"),
-        ]
-
-    script = [
-        {
-            "t_start": t0,
-            "t_end": t1,
-            "text": re.sub(r"\s+", " ", txt).strip(),
-            "claim_id": cid,
-            "is_analogy": is_an,
-            "on_screen": _short_words(on_scr, 7),
-        }
-        for t0, t1, txt, cid, is_an, on_scr in raw_lines
-    ]
-    total_dur = script[-1]["t_end"]
-    pause_pair = next(([script[i]["t_end"], script[i + 1]["t_start"]] for i in range(len(script) - 1) if script[i + 1]["t_start"] - script[i]["t_end"] >= 1.0), [36.0, 37.5])
-    true_win = [script[3]["t_start"], script[3]["t_end"]]
-
-    vis_spec, vis_svg = _load_node_visual(cfg, ch, node)
-    vis_label = (vis_spec or {}).get("label", "схема")
-    vis_class = (vis_spec or {}).get("class", "B")
-    if vis_label not in ("реальные данные", "симуляция", "схема"):
-        vis_label = "схема"
+    ask = next((i for i, x in enumerate(lines) if x["kind"] == "predict"), None)
+    pause = [script[ask]["t_end"], script[ask + 1]["t_start"]] if ask is not None and ask + 1 < len(script) else []
+    total = script[-1]["t_end"] + 1.2
+    nuance = ((node.get("layers") or {}).get("nuances") or {}).get("text") or ""
 
     scene_path = out_dir / f"{video_id}_scene.json"
     scene_doc = {
@@ -663,74 +639,66 @@ def build_spec_from_node(
         "format": fmt,
         "resolution": [1080, 1920] if is_short else [1920, 1080],
         "fps": 30,
-        "duration_sec": total_dur,
+        "duration_sec": round(total, 2),
         "template_id": template_id,
         "objects": [
-            {"id": "main_visual", "kind": (vis_spec or {}).get("title", node.get("title", nid)), "depth_direction": "down"},
-            {"id": "steps_track", "kind": "шаги и условия из учебного слоя"},
+            {"id": "picture", "kind": f"рисунок шага, шаблон {spec.get('template')}", "depth_direction": "down" if spec.get("template") in _DEPTH_DOWN else "нет"},
+            {"id": "map", "kind": "карта шагов: ключевые слова реплик"},
         ],
         "parameters": {
-            "vertical_exaggeration_default": 20,
-            "true_scale_window_sec": true_win,
-            "prediction_pause_sec": pause_pair,
-            "language": ch.language or "ru",
+            "visual": {k: spec[k] for k in ("template", "params", "frames_label") if k in spec},
+            "frames": [k for k, _ in frames],
+            "prediction_pause_sec": pause,
+            "language": "ru",
         },
         "invariants": [
-            "Все графические объекты и кривые синхронизированы с таймкодами сценария.",
-            "На каждом кадре отображаются плашка происхождения и отметка масштаба.",
+            "Все кадры рисунка построены из одного описания: меняется только подписанный параметр.",
+            "Метка происхождения и подпись масштаба видны на каждом кадре.",
+            "Рисунок тот же, что на шаге курса: один источник — описание в слое.",
         ],
-        "assumptions": [
-            nuance_txt or "Параметры сцены соответствуют базовым допущениям узла главы.",
-        ],
+        "assumptions": [x for x in (scale, nuance) if x],
         "state_sample": {
-            "depth_direction": "down",
             "title": node.get("title", nid),
             "difficulty": primary_diff,
-            "steps": steps[:6],
-            "claims": [{"id": c["id"], "text": c.get("text", ""), "page_pdf": c.get("page_pdf")} for c in claims[:5]],
-            "misconception": mis_txt,
-            "data_meaning": dm_txt,
-            "it_analogy": it_txt,
-            "it_breaks": it_limit,
-            "visual_spec": vis_spec,
-            "visual_svg": vis_svg,
+            "scale_note": scale,
+            "frames_label": spec.get("frames_label") or "",
+            "visual_frames": [{"label": k, "svg": svg} for k, svg in frames],
+            "visual_svg": frames[0][1],
+            "story": [
+                {"kind": x["kind"], "frame": min(max(1, int(x["frame"])), len(frames)), "on_screen": x["on_screen"],
+                 "page": (claims.get(x["claim"]) or {}).get("page_pdf"), "claim_kind": (claims.get(x["claim"]) or {}).get("kind", "")}
+                for x in lines
+            ],
+            "source_line": f"{ch.id.split('_')[0]}, стр. {', '.join(str(p) for p in sorted({claims[x['claim']]['page_pdf'] for x in lines if x['claim'] in claims and claims[x['claim']].get('page_pdf')}))}",
+            "misconception": (node.get("misconception") or {}).get("text") or "",
+            "visual_spec": spec,
         },
+        "script_by": doc.get("by", "rules"),
+        "mentor_note": doc.get("checklist_note", ""),
     }
     scene_path.write_text(json.dumps(scene_doc, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    frames = []
-    for i, ln in enumerate(script):
-        mid = round((ln["t_start"] + ln["t_end"]) / 2.0, 2)
-        frames.append({"t": mid, "class": "B" if i == 3 else vis_class, "label": "схема" if i == 3 else vis_label})
-
+    form = script_problems(doc, node, fmt, max(1, len(frames)))
     passport = {
         "video_id": video_id,
         "node_id": nid,
         "node_card": {
             "chapter": ch.id,
             "title": node.get("title", nid),
-            "difficulty": {"primary": primary_diff, "secondary": secondary_diff},
+            "difficulty": {"primary": primary_diff, "secondary": diff.get("secondary")},
             "format": "шортс" if is_short else "длинное видео",
-            "duration_sec": total_dur,
-            "refutes_misconceptions": [mis_obj["ref"]] if mis_obj.get("ref") else [],
+            "duration_sec": round(total, 2),
+            "refutes_misconceptions": [node["misconception"]["ref"]] if (node.get("misconception") or {}).get("ref") else [],
         },
         "script": script,
         "sources": sources,
         "scene_spec": str(scene_path.relative_to(ROOT)) if scene_path.is_relative_to(ROOT) else str(scene_path),
-        "frames": frames,
-        "exaggerations": [
-            f"вертикальный масштаб условных схем ×20 (на {true_win[0]:.1f}–{true_win[1]:.1f} с показан истинный 1:1)",
-        ],
-        "prediction_question": pred_q,
-        "transfer_question": transfer_q,
-        "data_it_bridge": f"{dm_txt} ИТ-мост: {it_txt}".strip(),
-        "physics_checklist": _build_checklist({
-            "pc.layers_order": ("да", "Геометрия и порядок элементов сохраняются по всем сценам."),
-            "pc.causality": ("да", "Последовательность сцен соответствует причинно-следственной цепочке узла."),
-            "pc.exaggeration_named": ("да", "Преувеличение масштаба подписано, предусмотрен кадр 1:1."),
-            "pc.depth_down": ("да", "Для разрезов и планшетов глубина ориентирована сверху вниз."),
-            "pc.label_matches": ("да", f"Метка «{vis_label}» соответствует источнику визуализации."),
-        }, domain_dir=cfg.domain_dir),
+        "frames": [{"t": round((x["t_start"] + x["t_end"]) / 2, 2), "class": cls, "label": label} for x in script],
+        "exaggerations": [] if label == "реальные данные" else [f"рисунок: {scale}"],
+        "prediction_question": doc["prediction_question"],
+        "transfer_question": doc["transfer_question"],
+        "data_it_bridge": doc["data_bridge"],
+        "physics_checklist": _node_checklist(spec, doc.get("by", "rules"), scale, cfg.domain_dir, not any("число" in x for x in form)),
         "audio_check": {
             "target_lufs": -16.0,
             "max_wer": 0.10,
@@ -778,6 +746,10 @@ def build_template_coverage_report(
         }
         routing = route_by_rules(ch, norm_layer, {t: t for t in SUPPORTED_TEMPLATES}, _txt)
 
+    from .illustrations import generated_specs, reviewed_specs
+    from .video_link import node_story_row
+
+    rev, gen = reviewed_specs(cfg, ch), generated_specs(ch)
     nodes_by_id = {n["id"]: n for n in layer.get("nodes", [])}
     rows = []
     for r in routing.get("routes", []):
@@ -786,25 +758,34 @@ def build_template_coverage_report(
         sec = r.get("secondary_format") or ""
         if not any(k in (fmt, sec) for k in ("шортс", "длинное видео", "интерактив", "практикум на данных")):
             continue
-        node = nodes_by_id.get(nid, {})
-        diff = (node.get("difficulty") or {}).get("primary", "М")
-        tpl = r.get("template") or _DIFF_TO_TEMPLATE.get(diff, "process-section")
-        covered = tpl in SUPPORTED_TEMPLATES
+        node = nodes_by_id.get(nid)
+        if node is None:
+            continue
+        ns = node_story_row(cfg, ch, node, rev, gen)
         rows.append({
             "node_id": nid,
             "title": node.get("title", nid),
-            "difficulty": diff,
+            "difficulty": ns["difficulty"],
             "format": fmt,
             "secondary_format": sec or None,
-            "template_id": tpl,
-            "status": "covered" if covered else "needs_new_template",
-            "state_model": "visual_spec / auto_spec -> Remotion props",
+            "template_id": ns["template"],
+            "route_template": r.get("template") or _DIFF_TO_TEMPLATE.get(ns["difficulty"], ""),
+            "label": ns["label"],
+            "picture": ns["picture"],
+            "frames": ns["frames"],
+            "state_kind": ns["state_kind"],
+            "state_model": ns["state_model"],
+            "script_9x16": ns["9:16"],
+            "script_16x9": ns["16:9"],
+            "status": "covered" if ns["covered"] else "needs_new_template",
+            "status_ru": ns["status"],
         })
 
     report_json = out_dir / "template_coverage.json"
     report_md = out_dir / "template_coverage.md"
     payload = {
         "chapter": ch.id,
+        "template": "NodeStory (video/src/scenes/NodeStory.tsx) + рисунок узла из kurs/visual.py",
         "total_visual_nodes": len(rows),
         "covered_nodes": sum(1 for x in rows if x["status"] == "covered"),
         "needs_new_count": sum(1 for x in rows if x["status"] != "covered"),
@@ -815,12 +796,18 @@ def build_template_coverage_report(
     md_lines = [
         f"# Покрытие узлов шаблонами сцен: `{ch.id}`",
         "",
-        f"Покрыто шаблонами Remotion: **{payload['covered_nodes']} / {payload['total_visual_nodes']}** (требуют нового шаблона: {payload['needs_new_count']}).",
+        f"Видеоёмких узлов по маршрутизации: {payload['total_visual_nodes']}. Закрыто шаблоном NodeStory: **{payload['covered_nodes']}**, "
+        f"нужен новый шаблон: **{payload['needs_new_count']}**.",
         "",
-        "| Узел | Трудность | Формат | Шаблон сцены | Статус |",
-        "|---|---|---|---|---|",
+        "Шаблон один: реплики сценария идут по кадрам рисунка узла; модель состояния — то, что меняется между кадрами. "
+        "«Расчёт» — кадры считаются по параметру, «состояния» — схема в нескольких состояниях, «части» — рисунок раскрывается по частям, "
+        "«статичный» — один кадр. Узлу с трудностью «время» нужен расчёт или состояния.",
+        "",
+        "| Узел | Трудность | Формат | Шаблон (рисунок) | Метка | Модель состояния | Сценарий 9:16 без модели | Статус |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for row in rows:
-        md_lines.append(f"| `{row['node_id']}` | `{row['difficulty']}` | {row['format']} | `{row['template_id']}` | {row['status']} |")
+        md_lines.append(f"| `{row['node_id']}` {row['title']} | {row['difficulty']} | {row['format']} | {row['template_id']} ({row['picture']}) | "
+                        f"{row['label']} | {row['state_model']} | {'да' if row['script_9x16']['rules_pass'] else 'нет, моделью'} | {row['status_ru']} |")
     report_md.write_text("\n".join(md_lines) + "\n", encoding="utf-8")
     return {"json": report_json, "md": report_md}

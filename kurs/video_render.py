@@ -204,6 +204,7 @@ def render_node_video(
     model_id: str | None = None,
     max_chars: int = 8000,
     skip_asr: bool = False,
+    llm: Any = None,
 ) -> dict[str, Any]:
     """Собирает ролик из любого узла layer.json (для тестового дня и сдвига домена)."""
     ch = cfg.chapter(chapter_arg)
@@ -215,7 +216,7 @@ def render_node_video(
     node = next((n for n in layer.get("nodes", []) if n["id"] == node_id), None)
     if node is None:
         raise KeyError(f"Узел {node_id} не найден в {lp}")
-    scene_path, passport_path = build_spec_from_node(cfg, ch, node, fmt=fmt)
+    scene_path, passport_path = build_spec_from_node(cfg, ch, node, fmt=fmt, llm=llm)
     res = render_from_spec(
         cfg,
         passport_path,
@@ -224,7 +225,7 @@ def render_node_video(
         voice_id=voice_id,
         model_id=model_id,
         max_chars=max_chars,
-        lang=ch.language or "ru",
+        lang="ru",  # текст курса и ролика русский и у английской главы; английские только цитаты
         skip_asr=skip_asr,
     )
     src = Source(ch)

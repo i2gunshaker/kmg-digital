@@ -225,7 +225,7 @@ def test_cut_reply_is_paid_and_counted(env):
 
     llm = make_llm(cfg, tmp, cut)
     with pytest.raises(LLMError, match="обрезан"):
-        llm.json("fast", ["s"], "один", SCHEMA_A, label="x")
+        llm.json("fast", ["s"], "один", SCHEMA_A, label="x", effort="low")  # низшая ступень: смягчать некуда, повтора нет
     assert llm.calls == 1 and llm.spent == pytest.approx(0.0006)
     assert json.loads((tmp / "usage.jsonl").read_text(encoding="utf-8"))["cost_usd"] == pytest.approx(0.0006)
 
@@ -777,3 +777,110 @@ def test_quote_cut_by_page_hyphen_loses_broken_word(env):
     u = Unit(id="p1.01", kind="paragraph", page_pdf=1, text="Состав связан главным образом с различ-", pages=[1])
     q, p = snap_quote("связан главным образом с различ-", u, {1: "Состав связан главным образом с различ-\n1"})
     assert q == "связан главным образом с" and p == 1
+
+
+def test_page_footer_is_hidden_from_model_and_excluded_in_coverage():
+    from kurs.layer_gen import build_coverage, content_units, furniture, unit_block
+
+    foot = "© Центр профессиональной переподготовки специалистов нефтегазового дела ТПУ"
+    units = []
+    for p in (30, 31, 32, 33):
+        units.append(Unit(f"p{p:03d}.01", "paragraph", p, f"Дельта растёт в сторону моря на странице {p}."))
+        units.append(Unit(f"p{p:03d}.02", "paragraph", p, foot + (" 1.2. Дельты [Deltas]" if p % 2 else "")))
+    units.append(Unit("p034.01", "heading", 34, "Решение"))
+    skip = furniture(units)
+    assert set(skip) == {f"p{p:03d}.02" for p in (30, 31, 32, 33)}
+    assert foot not in unit_block(units, {}) and "Дельта растёт" in unit_block(units, {})
+    assert {u.id for u in content_units(units)} == {u.id for u in units} - set(skip)
+
+    class Ch:
+        id, prefix = "demo", "demo"
+
+    ol = {"nodes": [{"slug": "delta", "unit_ids": [u.id for u in content_units(units)]}], "excluded": []}
+    rows = {r["unit_id"]: r for r in build_coverage(Ch(), ol, units)["rows"]}
+    assert rows["p031.02"]["node_ids"] == [] and rows["p031.02"]["reason"].startswith("page_furniture")
+    assert rows["p031.01"]["node_ids"] == ["demo.delta"]
+
+
+def test_lost_hedge_warning_goes_to_fix_pass():
+    from kurs.layer_gen import _node_issue_map
+    from kurs.verify import Issue
+
+    layer = {"nodes": [{"id": "d.n", "claims": [{"id": "d.n#c1", "text": "Рябь говорит о волнах."}]}]}
+    issues = [
+        Issue("warn", "d.n/claim d.n#c1", "assumption_as_fact: у автора «могут», в утверждении сказано как факт"),
+        Issue("warn", "d.n/claim d.n#c1", "quote_unsupported: у утверждения и цитаты общих смысловых слов 11%"),
+        Issue("warn", "d.n", "mapped_but_untaught: единица p001.01"),
+    ]
+    out = _node_issue_map(layer, issues)["d.n"]
+    assert len(out) == 1 and "«Рябь говорит о волнах.»" in out[0] and "верните" in out[0]
+
+
+def test_hedge_word_okolo_needs_a_number():
+    from kurs.claimcheck import claim_findings
+
+    place = claim_findings(
+        "Ограниченный размер тела дельты приводит к формированию депоцентра у устья крупной реки.",
+        "Осадочное тело дельты имеет ограниченный размер, благодаря чему около устья крупной реки формируется депоцентр.",
+        [], "")
+    assert not any(f.code == "assumption_as_fact" for f in place)
+    approx = claim_findings(
+        "Мощность дельтовых отложений достигает 30 м.",
+        "Мощность дельтовых отложений достигает около 30 м.",
+        [], "")
+    assert any(f.code == "assumption_as_fact" for f in approx)
+
+
+def test_quote_cut_before_its_subject_is_widened(env):
+    from kurs.repair import repair_card
+
+    _, ch, units, _ = env
+    pages, by_id = load_pages(ch), {u.id: u for u in units}
+    p2 = next(u for u in units if u.text.startswith("Проницаемость"))
+    node = dict(unit_ids=[p2.id], terms_introduced=[], decision_on_data=False)
+    card = card_for([p2.id], units)
+    card["claims"] = [dict(text="Высокая пористость породы ещё не означает её высокую проницаемость.", kind="observation",
+                           unit_id=p2.id, quote="потому что поры бывают не связаны между собой", source_kind="text")]
+    log = repair_card(card, node, by_id, pages, {})
+    q = card["claims"][0]["quote"]
+    assert q.startswith("Высокая пористость не гарантирует") and snap_quote(q, p2, pages)
+    assert any("не держала" in x for x in log)
+
+
+def test_hedge_and_strict_condition_are_seen_across_languages():
+    from kurs.claimcheck import claim_findings
+
+    def codes(text, quote):
+        return {f.code for f in claim_findings(text, quote, [], "")}
+
+    q = "Annular friction losses usually raise the bottomhole pressure during circulation."
+    assert "assumption_as_fact" in codes("Потери на трение в затрубье повышают забойное давление при циркуляции.", q)
+    assert not codes("Потери на трение в затрубье обычно повышают забойное давление при циркуляции.", q)
+    kick = "A kick can occur only when the wellbore pressure falls below the formation pressure."
+    assert "condition_dropped" in codes("Приток возможен, когда давление в стволе ниже пластового.", kick)
+    assert not codes("Приток возможен лишь при давлении в стволе ниже пластового.", kick)
+    assert not codes("Корка не растёт без фильтрации в пласт.", "The filter cake does not grow unless filtrate invades the formation.")
+    # оговорка в другой части длинной цитаты — не про это утверждение
+    assert not codes("Плотность раствора повышают.", "Mud weight is increased by adding barite, which may cause losses in weak formations downhole.")
+    assert not codes("Газ расширяется при подъёме.", "Gas expands as it rises. In a shut-in well it may not expand.")
+
+
+def test_negation_is_seen_across_languages():
+    from kurs.claimcheck import claim_findings
+
+    def codes(text, quote):
+        return {f.code for f in claim_findings(text, quote, [], "")}
+
+    q = "Filtrate does not flow from the formation into the wellbore."
+    assert "negation_dropped" in codes("Фильтрат идёт из пласта в ствол скважины.", q)
+    assert not codes("Фильтрат не идёт из пласта в ствол скважины.", q)
+    assert "negation_added" in codes("Нефть не поднимается к устью скважины.", "Oil rises toward the wellhead of the well.")
+    assert not codes("Нефть поднимается к устью скважины.", "Oil rises toward the wellhead of the well.")
+
+
+def test_overgeneralization_is_seen_across_languages():
+    from kurs.claimcheck import claim_findings
+
+    q = "Losses occur in fractured formations below the casing shoe."
+    assert "overgeneralization" in {f.code for f in claim_findings("Поглощения всегда возникают в трещиноватых пластах под башмаком.", q, [], "")}
+    assert not claim_findings("Поглощения возникают в трещиноватых пластах под башмаком.", q, [], "")

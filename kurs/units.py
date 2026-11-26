@@ -16,7 +16,9 @@ from .config import Chapter, Config
 
 PAGE_RE = re.compile(r"<!--\s*(?:page|стр\.?)\s*(\d+)\s*-->", re.I)
 COMMENT_RE = re.compile(r"<!--.*?-->")
-TASK_RE = re.compile(r"^\s*(\d{1,3})\.\s+\S")
+TASK_RE = re.compile(
+    r"^\s*[*_]{0,2}(?:(?:Задача|Упражнение|Вопрос|Problem|Exercise|Question)\s*№?\s*)?(\d{1,3}(?:\.\d{1,3})?)[.)][*_]{0,2}\s+\S", re.I
+)
 FIG_RE = re.compile(r"^\s*(рис\.|рисунок|fig\.|figure)\s*\d", re.I)
 TABLE_CAPTION_RE = re.compile(r"^\s*(таблица|table)\s*\d", re.I)
 EXAMPLE_RE = re.compile(r"^\s*(пример|example|решение|solution)\b", re.I)
@@ -134,7 +136,12 @@ def _clean_leading_emph(s: str) -> str:
     return re.sub(r"^[*_]+\s*", "", s.strip())
 
 
-def _classify(block: list[str], in_tasks: bool, last_task_num: int | None) -> str:
+def _task_num(s: str) -> tuple[int, ...]:
+    """«86» → (86,), «3.1» → (3, 1): номера задач сравниваются по порядку, в том числе составные."""
+    return tuple(int(x) for x in s.split("."))
+
+
+def _classify(block: list[str], in_tasks: bool, last_task_num: tuple[int, ...] | None) -> str:
     first = block[0].strip()
     first_clean = _clean_leading_emph(first)
     if first.startswith("#"):
@@ -159,7 +166,7 @@ def _classify(block: list[str], in_tasks: bool, last_task_num: int | None) -> st
     if in_tasks:
         m = TASK_RE.match(first)
         if m:
-            num = int(m.group(1))
+            num = _task_num(m.group(1))
             if last_task_num is not None and num <= last_task_num:
                 return "paragraph"
             return "task"
@@ -200,7 +207,7 @@ def parse_units(md: str) -> tuple[list[Unit], dict[int, str]]:
     counters: dict[int, int] = {}
     section = ""
     in_tasks = False
-    last_task_num: int | None = None
+    last_task_num: tuple[int, ...] | None = None
     block: list[str] = []
     block_pages: list[int] = []
     block_line = 0
@@ -223,7 +230,7 @@ def parse_units(md: str) -> tuple[list[Unit], dict[int, str]]:
             last_task_num = None
         elif kind == "paragraph" and in_tasks:
             m_reset = TASK_RE.match(block[0].strip())
-            if m_reset and last_task_num is not None and int(m_reset.group(1)) <= last_task_num:
+            if m_reset and last_task_num is not None and _task_num(m_reset.group(1)) <= last_task_num:
                 # Нумерованный список (1., 2., 3.) после задач — это уже не задачи.
                 in_tasks = False
                 last_task_num = None
@@ -242,12 +249,12 @@ def parse_units(md: str) -> tuple[list[Unit], dict[int, str]]:
                 return
 
         if kind == "task" and in_tasks:
-            parts = re.split(r"\n(?=\s*\d{1,3}\.\s+\S)", text)
+            parts = re.split(r"\n(?=\s*\d{1,3}(?:\.\d{1,3})?[.)]\s+\S)", text)
             for part in parts:
                 part_s = part.strip()
                 m = TASK_RE.match(part_s)
                 if m:
-                    last_task_num = int(m.group(1))
+                    last_task_num = _task_num(m.group(1))
                 u = Unit(
                     new_id(block_pages[0]),
                     "task",

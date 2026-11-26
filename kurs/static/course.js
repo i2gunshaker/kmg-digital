@@ -219,7 +219,9 @@
       var tex = el.getAttribute("data-tex") || el.textContent;
       var display = el.getAttribute("data-display") === "true";
       try {
-        window.katex.render(tex, el, { displayMode: display, throwOnError: false, strict: "ignore" });
+        window.katex.render(tex.replace(/\\tag\*?\s*\{([^{}]*)\}/g, "\\qquad ($1)"), el, { displayMode: display, throwOnError: false, strict: "ignore" });
+        if (!display && (tex.length > 110 || /\\begin/.test(tex))) el.classList.add("math-block");
+        else if (!display && tex.length > 45) el.classList.add("math-wide");
       } catch (e) {}
     });
   }
