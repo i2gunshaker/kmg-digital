@@ -45,6 +45,7 @@ export KURS_LLM_TOTAL=35      # журнал $22,05 + до $13 на тест; н
 ```bash
 .venv/bin/python -m kurs cost path/to/test_chapter.md          # прогноз цены, бесплатно
 .venv/bin/python -m kurs run path/to/test_chapter.md --max-usd 0.5 --video --vision
+.venv/bin/python -m kurs run path/to/test_chapter.md --profile mid --max-usd 2.5 --video --vision   # Sonnet 5.5 на senior: граф, судья, задания, сценарии роликов; Haiku на fast
 ```
 
 `run` делает всё: единицы → слой и покрытие → дополнение (заблуждение, «как сейчас», линза неэффективности, не сказанные единицы) → маршруты → задания → рисунки → проверку → (с `--video`) шортс и разбор по маршрутизации анимацией Remotion → курс с роликами на своих шагах → манифест → строку в `build/metrics.csv`.

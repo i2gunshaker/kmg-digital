@@ -8,10 +8,10 @@ llm:
   # auto: есть ANTHROPIC_API_KEY — anthropic, иначе OPENAI_API_KEY — openai (OPENAI_BASE_URL — совместимый сервер)
   backend: auto
   # общий предел расхода за всё время по build/llm_usage.jsonl, $. Предел на запуск задаёт --max-usd (по умолчанию 0)
-  # До 25.11 22:00 потрачено 20.20. Дальше разрешено ещё 5.00: 3.00 на разработку (23.20), 2.00 отложены на день теста.
-  total_usd: 23.2
+  # До 25.11 22:00 потрачено 20.20; на день теста потолок поднят до 40.00, расход каждого запуска ограничивает --max-usd.
+  total_usd: 40.0
   # единственные модели, к которым разрешены сетевые вызовы
-  allow: [claude-haiku-5-5]
+  allow: [claude-haiku-5-5, claude-sonnet-5-5]
   # одновременные запросы; при 429 запросы ждут своей очереди (KURS_LLM_PATIENCE, с), а не падают
   workers: 4
   # набор моделей: senior — граф узлов, задания, маршрутизация; fast — карточки и правки
@@ -32,6 +32,12 @@ llm:
     mid:
       models: {anthropic: {senior: claude-sonnet-5-5, fast: claude-haiku-5-5}}
       effort: {senior: medium, fast: medium}
+      judge: senior
+      judge_rounds: 1
+      judge_effort: [low]
+    sonnet:
+      models: {anthropic: {senior: claude-sonnet-5-5, fast: claude-sonnet-5-5}}
+      effort: {senior: medium, fast: low}
       judge: senior
       judge_rounds: 1
       judge_effort: [low]
@@ -57,7 +63,7 @@ checks:
 
 # Модуль «Закладки» (python -m kurs.review): название команды в ответе. Категории и тяжести — по review_output.schema.json, в коде.
 review:
-  team: kmg-digital
+  team: Bankai
 
 chapters:
   latyshova_gl5_par17-20:

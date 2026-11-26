@@ -929,7 +929,10 @@ def _format_vtt_ts(sec: float) -> str:
 CAPTION_MAX_WORDS = 7  # стандарт подачи: не больше 7–8 слов на экране
 CAPTION_MIN_SEC = 1.5  # и не меньше 1,5 с на подпись
 _CAPTION_BREAK = re.compile(r"[.,;:!?…»)]$")
-_CAPTION_CLITIC = set("в во и а но на с со по к ко о об у за из от до не ни при для без над под что как the a an of in on at to and or".split())
+_SENTENCE_END = re.compile(r"[.!?…»]$")
+_CAPTION_CLITIC = set(("в во и а но на с со по к ко о об у за из от до не ни при для без над под что как "
+                       "вот те же это эти эта этот его её их ли бы то ту та тут там где когда если через или "
+                       "the a an of in on at to and or").split())
 
 
 def _is_word(tok: str) -> bool:
@@ -964,6 +967,8 @@ def caption_chunks(words: list[dict], t_end: float, max_words: int = CAPTION_MAX
                 cost += 4  # предлог или союз висит в конце подписи
             if not _is_word(toks[i]["word"]):
                 cost += 3  # подпись с тире в начале
+            if any(_SENTENCE_END.search(toks[m]["word"]) for m in range(i, j - 1)) and not _SENTENCE_END.search(toks[j - 1]["word"]):
+                cost += 16  # конец одного предложения и обрывок следующего в одной подписи
             if cost < best[j][0]:
                 best[j] = (cost, i)
     cuts, j = [], n
@@ -979,13 +984,18 @@ def caption_chunks(words: list[dict], t_end: float, max_words: int = CAPTION_MAX
     def words_in(g: list[dict]) -> int:
         return sum(_is_word(w["word"]) for w in g)
 
+    def crosses_sentence(a: int, b: int) -> bool:
+        # слияние перелезло бы через точку в середину следующего предложения
+        return bool(_SENTENCE_END.search(groups[a][-1]["word"])) and not _SENTENCE_END.search(groups[b][-1]["word"])
+
     changed = True
     while changed and len(groups) > 1:
         changed = False
         for gi in range(len(groups)):
             if dur(gi) >= min_sec:
                 continue
-            nb = [x for x in (gi - 1, gi + 1) if 0 <= x < len(groups) and words_in(groups[x]) + words_in(groups[gi]) <= max_words]
+            nb = [x for x in (gi - 1, gi + 1) if 0 <= x < len(groups) and words_in(groups[x]) + words_in(groups[gi]) <= max_words
+                  and not crosses_sentence(*sorted((gi, x)))]
             if nb:
                 o = min(nb, key=lambda x: words_in(groups[x]))
                 a, b = sorted((gi, o))

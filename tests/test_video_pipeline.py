@@ -87,6 +87,19 @@ def test_caption_chunks_short_readable_pieces():
     assert [c["text"] for c in one] == ["Пласт — тонкая полоска."]
 
 
+def test_caption_chunks_do_not_cross_sentence_end():
+    text = "Уберём увеличение по вертикали. Вот те же слои в одном масштабе по обеим осям."
+    for step in (0.25, 0.4, 0.5):
+        words = [{"word": w, "start": i * step, "end": (i + 1) * step} for i, w in enumerate(text.split())]
+        caps = caption_chunks(words, t_end=len(words) * step)
+        assert " ".join(c["text"] for c in caps) == text
+        for c in caps:
+            toks = c["text"].split()
+            inner_end = any(t.endswith(".") for t in toks[:-1])
+            assert not (inner_end and not toks[-1].endswith(".")), c["text"]  # хвост одного предложения + обрывок следующего
+        assert "Уберём увеличение по вертикали. Вот те" not in [c["text"] for c in caps]
+
+
 def test_build_spec_from_arbitrary_node_and_template_coverage(tmp_path):
     cfg = Config()
     ch = cfg.chapter("latyshova_gl5_par17-20")

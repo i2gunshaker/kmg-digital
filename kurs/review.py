@@ -636,7 +636,7 @@ def review(cfg: Config, pkg_path: Path, out_path: Path, *, team: str | None = No
     final = [clean(r, set(src.pages)) for r in pick_one(remarks)]
     order = {str(x.get("id")): i for i, x in enumerate(items + frames)}
     final.sort(key=lambda r: order.get(r["target"], 10**6))
-    doc = {"package_id": str(pkg.get("package_id") or pkg.get("id") or pkg_path.stem), "team": team or (cfg.raw.get("review") or {}).get("team") or "kmg-digital",
+    doc = {"package_id": str(pkg.get("package_id") or pkg.get("id") or pkg_path.stem), "team": team or (cfg.raw.get("review") or {}).get("team") or "Bankai",
            "remarks": final}
     schema_out = find_schema(cfg, "review_output.schema.json", pkg_dir)
     if schema_out:
