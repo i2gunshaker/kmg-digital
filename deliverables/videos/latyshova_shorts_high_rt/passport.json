@@ -9,7 +9,7 @@
       "secondary": "Н"
     },
     "format": "шортс",
-    "duration_sec": 67.24,
+    "duration_sec": 68.44,
     "refutes_misconceptions": [
       "misc.high_res_oil",
       "misc.log_is_rock"
@@ -36,7 +36,7 @@
       "t_start": 13.94,
       "t_end": 22.02,
       "text": "Прибо́р в стволе́ пи́шет о́тклик среды́, а не саму́ поро́ду. Поэтому в сме́шанном разре́зе одного́ ка́жущегося сопротивле́ния ма́ло.",
-      "claim_id": "latyshova.rho_kp_palette#c2",
+      "claim_id": "latyshova.kogda_priznakov_malo#c5",
       "is_analogy": false,
       "on_screen": "Сигнал → интерпретация"
     },
@@ -44,7 +44,7 @@
       "t_start": 22.27,
       "t_end": 31.55,
       "text": "В и́стинном масшта́бе один к одному́ пласт то́лщиной де́сять ме́тров вы́глядит как то́нкая по́лоска, а зо́на проникнове́ния — ми́ллиметры у сте́нки.",
-      "claim_id": "latyshova.rho_kp_palette#c2",
+      "claim_id": "latyshova.kogda_priznakov_malo#c5",
       "is_analogy": false,
       "on_screen": "Истинный масштаб 1:1"
     },
@@ -52,7 +52,7 @@
       "t_start": 31.8,
       "t_end": 44.6,
       "text": "Берём пале́тку сопротивле́ния и по́ристости с поро́гом семна́дцать проце́нтов. При сопротивле́нии де́сять ом-ме́тров и по́ристости пятна́дцать проце́нтов это неколле́ктор. А при двадцати́ проце́нтах — предсказа́ние?",
-      "claim_id": "latyshova.rho_kp_palette#c5",
+      "claim_id": "latyshova.diagramma_pn_kn_fig69#c8",
       "is_analogy": false,
       "on_screen": "Пауза: 10 Ом·м, 20% → ?"
     },
@@ -60,7 +60,7 @@
       "t_start": 46.1,
       "t_end": 53.3,
       "text": "При двадцати́ проце́нтах это нефть. А при двадцати́ пяти́ проце́нтах то же сопротивле́ние уже́ даст нефть с водо́й.",
-      "claim_id": "latyshova.rho_kp_palette#c5",
+      "claim_id": "latyshova.diagramma_pn_kn_fig69#c8",
       "is_analogy": false,
       "on_screen": "20% — нефть, 25% — с водой"
     },
@@ -68,7 +68,7 @@
       "t_start": 53.55,
       "t_end": 60.75,
       "text": "Два́ разных разре́за даю́т оди́н отклик — как сдвиг доме́на в маши́нном обуче́нии, только сдвиг здесь физи́ческий.",
-      "claim_id": "latyshova.rho_kp_palette#c2",
+      "claim_id": "latyshova.kogda_priznakov_malo#c5",
       "is_analogy": true,
       "on_screen": "ИТ-мост: сдвиг домена"
     },
@@ -76,7 +76,7 @@
       "t_start": 61.0,
       "t_end": 67.24,
       "text": "Каку́ю втору́ю криву́ю вы́ доба́вите к сопротивле́нию на сква́жине Волв, что́бы отсе́ять пло́тный просло́й?",
-      "claim_id": "latyshova.rho_kp_palette#c6",
+      "claim_id": "data.volve_15_9_f1b",
       "is_analogy": false,
       "on_screen": "Перенос: какой метод добавить?"
     }
@@ -88,27 +88,27 @@
       "quote": "Ангидриты, чистые плотные кристаллические известняки | максимальное | Отсутствие проникновения"
     },
     {
-      "claim_id": "latyshova.rho_kp_palette#c2",
+      "claim_id": "latyshova.kogda_priznakov_malo#c5",
       "page_or_dataset": "стр. 95",
       "quote": "построение разреза и особенно выделение коллектора можно осуществить лишь на основании количественной интерпретации геофизических данных"
     },
     {
-      "claim_id": "latyshova.rho_kp_palette#c3",
+      "claim_id": "latyshova.diagramma_pn_kn_fig69#c1",
       "page_or_dataset": "стр. 97",
       "quote": "Поле зависимостей ρн = f (kн) разделяется здесь на области неколлекторов (А) и коллекторов (Б) при kн* = 17%."
     },
     {
-      "claim_id": "latyshova.rho_kp_palette#c4",
+      "claim_id": "latyshova.diagramma_pn_kn_fig69#c7",
       "page_or_dataset": "стр. 98",
       "quote": "Пример 46. Определить характер насыщения коллектора в разрезе нефтяного месторождения, для которого ρn = 20 Ом·м, kn = 25 %. Построив точку с указанными координатами, определяем, что коллектор даст при испытании безводную нефть."
     },
     {
-      "claim_id": "latyshova.rho_kp_palette#c5",
+      "claim_id": "latyshova.diagramma_pn_kn_fig69#c8",
       "page_or_dataset": "стр. 98",
       "quote": "Пример 47. Установить, чем представлена порода, имеющая ρn = 10 Ом·м, при значениях kn: а) 15%; б) 20%; в) 25 %. Ответ: а) неколлектор; б) коллектор нефтеносный; в) коллектор, который при испытании даст нефть с водой."
     },
     {
-      "claim_id": "latyshova.rho_kp_palette#c6",
+      "claim_id": "data.volve_15_9_f1b",
       "page_or_dataset": "data.volve_15_9_f1b (стр. Volve 3305–3310 м)",
       "quote": "Equinor Volve 15/9-F-1 B: интервал A (PHIF=0.228, RT=37.27 Ом·м, SW=0.131) vs интервал B (PHIF=0.020, RT=7.43 Ом·м, SAND_FLAG=0)"
     }
@@ -116,42 +116,42 @@
   "scene_spec": "deliverables/videos/latyshova_shorts_high_rt/scene.json",
   "frames": [
     {
-      "t": 1.5,
+      "t": 2.16,
       "class": "B",
       "label": "симуляция"
     },
     {
-      "t": 8.0,
+      "t": 9.13,
       "class": "B",
       "label": "симуляция"
     },
     {
-      "t": 15.0,
+      "t": 17.98,
       "class": "B",
       "label": "симуляция"
     },
     {
-      "t": 22.5,
+      "t": 26.91,
       "class": "B",
       "label": "схема"
     },
     {
-      "t": 30.0,
+      "t": 38.2,
       "class": "A",
       "label": "схема"
     },
     {
-      "t": 38.0,
+      "t": 49.7,
       "class": "A",
       "label": "схема"
     },
     {
-      "t": 46.0,
+      "t": 57.15,
       "class": "A",
       "label": "реальные данные"
     },
     {
-      "t": 53.0,
+      "t": 64.12,
       "class": "A",
       "label": "реальные данные"
     }

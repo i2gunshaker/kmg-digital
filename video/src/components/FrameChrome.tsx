@@ -170,7 +170,8 @@ export const FrameChrome: React.FC<{
           style={{
             position: 'absolute',
             right: padX + 20,
-            top: isPortrait ? 330 : 174,
+            // 9:16: справа внизу области сцены, над субтитрами — не перекрывает заголовок панели
+            ...(isPortrait ? {bottom: bottomSafe + 232} : {top: 174}),
             backgroundColor: 'rgba(15, 20, 25, 0.92)',
             border: '3px solid #F1C40F',
             borderRadius: 18,

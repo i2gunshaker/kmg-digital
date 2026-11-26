@@ -9,7 +9,7 @@
       "secondary": "Ф"
     },
     "format": "длинное видео",
-    "duration_sec": 92.22,
+    "duration_sec": 93.42,
     "refutes_misconceptions": [
       "misc.reservoir_void",
       "misc.pressure_sound_speed"
@@ -20,7 +20,7 @@
       "t_start": 0.0,
       "t_end": 4.4,
       "text": "За́лежь за́перта со всех сторо́н. Отку́да нефть сама́ идёт в сква́жину?",
-      "claim_id": "basniev.elastic_regime_mechanism#c1",
+      "claim_id": "basniev.elastic_regime_energy#c1",
       "is_analogy": false,
       "on_screen": "Запертый пласт. Что толкает нефть?"
     },
@@ -28,7 +28,7 @@
       "t_start": 4.65,
       "t_end": 14.57,
       "text": "Ка́жется, что сжима́емость жи́дкости и поро́ды ничто́жна. Но объёмы пласта́ огро́мны: на Тенги́зе упру́гий режи́м даёт до двадцати́ проце́нтов запа́сов.",
-      "claim_id": "basniev.elastic_regime_mechanism#c3",
+      "claim_id": "basniev.depletion_and_model_intro#c4",
       "is_analogy": false,
       "on_screen": "Тенгиз: до 20% на упругом режиме"
     },
@@ -44,7 +44,7 @@
       "t_start": 25.07,
       "t_end": 32.35,
       "text": "В и́стинном масшта́бе один к одному́ пласт то́лщиной два́дцать ме́тров на ты́сяче ме́тров дли́ны то́ньше листа́ бу́маги.",
-      "claim_id": "basniev.elastic_regime_mechanism#c1",
+      "claim_id": "basniev.elastic_regime_energy#c1",
       "is_analogy": false,
       "on_screen": "Истинный масштаб 1:1"
     },
@@ -52,7 +52,7 @@
       "t_start": 32.6,
       "t_end": 42.68,
       "text": "Перепа́д давле́ния не лети́т как звук. Его́ ведёт диффузио́нный коэффицие́нт пьезопрово́дности: на пра́ктике от о́дной деся́той до пяти́ квадра́тных ме́тров в секун́ду.",
-      "claim_id": "basniev.elastic_regime_mechanism#c5",
+      "claim_id": "basniev.pressure_diffusivity_equation#c7",
       "is_analogy": false,
       "on_screen": "Диффузия давления, не звук"
     },
@@ -60,7 +60,7 @@
       "t_start": 42.93,
       "t_end": 51.73,
       "text": "В ме́тоде последова́тельной сме́ны стациона́рных состоя́ний пласт де́лят на две зо́ны: уже́ возмущённую у сква́жины и нетро́нутую вдали́.",
-      "claim_id": "basniev.elastic_regime_mechanism#c7",
+      "claim_id": "basniev.pssc_method_rate_gallery#c1",
       "is_analogy": false,
       "on_screen": "Возмущённая и невозмущённая зоны"
     },
@@ -68,7 +68,7 @@
       "t_start": 51.98,
       "t_end": 61.98,
       "text": "Ра́диус воро́нки растёт как ко́рень из вре́мени. За первый час возмуще́ние прошло́ сто ме́тров. Ско́лько ещё ждать до двухсо́т ме́тров — оди́н час или три?",
-      "claim_id": "basniev.elastic_regime_mechanism#c8",
+      "claim_id": "basniev.pssc_radial_rate_setup#c10",
       "is_analogy": false,
       "on_screen": "Пауза: 100→200 м за сколько?"
     },
@@ -84,7 +84,7 @@
       "t_start": 75.17,
       "t_end": 84.69,
       "text": "В алгорит́мах э́то похоже на сгла́живание по гра́фу, но при сме́не гради́ента на грани́це воро́нки приближённая фо́рмула даёт скачо́к и теря́ет то́чность.",
-      "claim_id": "basniev.elastic_regime_mechanism#c7",
+      "claim_id": "basniev.pssc_method_rate_gallery#c1",
       "is_analogy": true,
       "on_screen": "ИТ-мост: диффузия и граница ПССС"
     },
@@ -92,14 +92,14 @@
       "t_start": 84.94,
       "t_end": 92.22,
       "text": "Как по вре́менному ря́ду криво́й восстановле́ния давле́ния алгорит́м узна́ет, что воро́нка упёрлась в непроница́емый сброс?",
-      "claim_id": "basniev.elastic_regime_mechanism#c8",
+      "claim_id": "basniev.pssc_radial_rate_setup#c10",
       "is_analogy": false,
       "on_screen": "Перенос: как ГДИС видит границу?"
     }
   ],
   "sources": [
     {
-      "claim_id": "basniev.elastic_regime_mechanism#c1",
+      "claim_id": "basniev.elastic_regime_energy#c1",
       "page_or_dataset": "стр. 474",
       "quote": "основной формой пластовой энергии, обеспечивающей приток жидкости к скважинам в рассматриваемых неустановившихся процессах, является энергия упругой деформации жидкостей (нефти и/или воды) и твердого скелета пласта"
     },
@@ -109,17 +109,17 @@
       "quote": "Коэффициент $\\beta^*$ называется коэффициентом упругоемкости пласта."
     },
     {
-      "claim_id": "basniev.elastic_regime_mechanism#c3",
+      "claim_id": "basniev.depletion_and_model_intro#c4",
       "page_or_dataset": "стр. 478",
       "quote": "Так, например, на крупнейшем месторождении Тенгиз при упругом режиме будет отобрано до 20% запасов нефти."
     },
     {
-      "claim_id": "basniev.elastic_regime_mechanism#c4",
+      "claim_id": "basniev.nonlinear_terms_neglect#c3",
       "page_or_dataset": "стр. 480",
       "quote": "для нефтей $\\beta_\\text{ж}$ изменяется в диапазоне от $7\\cdot10^{-10}$ Па$^{-1}$ до $30\\cdot10^{-10}$ Па$^{-1}$"
     },
     {
-      "claim_id": "basniev.elastic_regime_mechanism#c5",
+      "claim_id": "basniev.pressure_diffusivity_equation#c7",
       "page_or_dataset": "стр. 481",
       "quote": "Наиболее часто встречающиеся в нефтепромысловой практике значения коэффициента пьезопроводности заключены в пределах от 0,1 до 5 м²/с."
     },
@@ -129,12 +129,12 @@
       "quote": "Следовательно, уже через 1 с после пуска скважины расчеты забойного давления, выполненные по формуле (23.52), будут иметь погрешность, не превышающую 0,6%."
     },
     {
-      "claim_id": "basniev.elastic_regime_mechanism#c7",
+      "claim_id": "basniev.pssc_method_rate_gallery#c1",
       "page_or_dataset": "стр. 494",
       "quote": "В каждый момент времени весь пласт условно разделяется на две области – возмущенную и невозмущенную."
     },
     {
-      "claim_id": "basniev.elastic_regime_mechanism#c8",
+      "claim_id": "basniev.pssc_radial_rate_setup#c10",
       "page_or_dataset": "стр. 498",
       "quote": "$$R(t) = \\sqrt{r_c^2 + 4\\kappa t}. \\quad (24.14)$$"
     }
@@ -142,52 +142,52 @@
   "scene_spec": "deliverables/videos/basniev_deepdive_elastic_funnel/scene.json",
   "frames": [
     {
-      "t": 1.5,
+      "t": 2.2,
       "class": "B",
       "label": "схема"
     },
     {
-      "t": 9.0,
+      "t": 9.61,
       "class": "B",
       "label": "симуляция"
     },
     {
-      "t": 20.0,
+      "t": 19.82,
       "class": "B",
       "label": "симуляция"
     },
     {
-      "t": 29.5,
-      "class": "B",
-      "label": "схема"
-    },
-    {
-      "t": 40.0,
-      "class": "A",
-      "label": "симуляция"
-    },
-    {
-      "t": 52.0,
-      "class": "B",
-      "label": "симуляция"
-    },
-    {
-      "t": 64.0,
-      "class": "A",
-      "label": "симуляция"
-    },
-    {
-      "t": 76.0,
-      "class": "A",
-      "label": "симуляция"
-    },
-    {
-      "t": 89.0,
+      "t": 28.71,
       "class": "B",
       "label": "схема"
     },
     {
-      "t": 103.0,
+      "t": 37.64,
+      "class": "A",
+      "label": "симуляция"
+    },
+    {
+      "t": 47.33,
+      "class": "B",
+      "label": "симуляция"
+    },
+    {
+      "t": 56.98,
+      "class": "A",
+      "label": "симуляция"
+    },
+    {
+      "t": 69.2,
+      "class": "A",
+      "label": "симуляция"
+    },
+    {
+      "t": 79.93,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 88.58,
       "class": "A",
       "label": "симуляция"
     }

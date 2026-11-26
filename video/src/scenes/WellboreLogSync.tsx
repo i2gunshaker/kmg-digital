@@ -58,6 +58,16 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
   const panelH = isPortrait ? 1110 : 710;
 
   if (showVolve) {
+    // seg 6: карточки A → B → C по ходу реплики, кривые прорисовываются; seg 7: фокус на ловушке B и PHIF
+    const clampV = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
+    const s6 = props.timings.segments[6];
+    const s6Start = s6?.t_start ?? 0;
+    const s6Dur = s6 ? s6.t_end - s6.t_start : 6;
+    const cardStart = [s6Start, s6Start + 0.25 * s6Dur, s6Start + 0.5 * s6Dur];
+    const inTransfer = segIdx >= 7;
+    const s7Start = props.timings.segments[7]?.t_start ?? 0;
+    const focusT = inTransfer ? interpolate(t, [s7Start, s7Start + 0.6], [0, 1], clampV) : 0;
+    const newestCard = cardStart.reduce((acc, ts, i) => (t >= ts ? i : acc), 0);
     return (
       <FrameChrome
         props={props}
@@ -88,6 +98,13 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
             const verdict =
               iv.id === 'A' ? 'Нефтяной коллектор' : iv.id === 'B' ? 'Плотный неколлектор (ловушка RT!)' : 'Водоносный песок';
             const borderCol = isTrap ? '#F1C40F' : iv.id === 'A' ? '#2ECC71' : '#3498DB';
+            const ts = cardStart[idx] ?? s6Start;
+            const appear = inTransfer ? 1 : interpolate(t, [ts, ts + 0.5], [0, 1], clampV);
+            const draw = inTransfer ? 1 : interpolate(t, [ts + 0.2, ts + 1.6], [0, 1], clampV);
+            const isNewest = !inTransfer && idx === newestCard;
+            const cardOpacity = inTransfer ? (isTrap ? 1 : 1 - 0.45 * focusT) : appear;
+            const strokeW = inTransfer && isTrap ? 3 + 3 * focusT : isNewest ? 3 : isTrap ? 2.5 : 1.5;
+            const phifHi = inTransfer && isTrap;
 
             const trackTop = by + 94;
             const trackH = boxH - 150;
@@ -108,8 +125,11 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
               .join(' ');
 
             return (
-              <g key={iv.id}>
-                <rect x={bx} y={by} width={boxW} height={boxH} rx={14} fill="#121820" stroke={borderCol} strokeWidth={isTrap ? 3 : 1.5} />
+              <g key={iv.id} opacity={cardOpacity} transform={`translate(0, ${(1 - appear) * 24})`}>
+                {inTransfer && isTrap ? (
+                  <rect x={bx - 6} y={by - 6} width={boxW + 12} height={boxH + 12} rx={18} fill="none" stroke="#F1C40F" strokeWidth={8} strokeOpacity={0.3 * focusT} />
+                ) : null}
+                <rect x={bx} y={by} width={boxW} height={boxH} rx={14} fill="#121820" stroke={borderCol} strokeWidth={strokeW} />
                 <text x={bx + 20} y={by + 36} fill="#FFFFFF" fontSize={26} fontWeight={700}>
                   {iv.label}
                 </text>
@@ -117,11 +137,27 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
                   {verdict}
                 </text>
                 <rect x={bx + 20} y={trackTop} width={boxW - 40} height={trackH} rx={8} fill="#19222C" stroke="#2D3B49" />
-                <polyline fill="none" stroke="#2ECC71" strokeWidth={3} points={grPts} />
-                <polyline fill="none" stroke="#F1C40F" strokeWidth={3.5} points={rtPts} />
-                <polyline fill="none" stroke="#3498DB" strokeWidth={3} strokeDasharray="8,5" points={phifPts} />
+                <polyline fill="none" stroke="#2ECC71" strokeWidth={3} points={grPts} pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - draw} />
+                <polyline fill="none" stroke="#F1C40F" strokeWidth={3.5} points={rtPts} pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - draw} />
+                <polyline
+                  fill="none"
+                  stroke={phifHi ? '#5DADE2' : '#3498DB'}
+                  strokeWidth={phifHi ? 3 + 2 * focusT : 3}
+                  strokeDasharray="8,5"
+                  points={phifPts}
+                  opacity={draw}
+                />
                 <text x={bx + 20} y={by + boxH - 22} fill="#ECEFF4" fontSize={20} fontWeight={600}>
-                  RT={s.median_RT} Ом·м · PHIF={s.median_PHIF} · SW={s.median_SW}
+                  RT={s.median_RT} Ом·м ·{' '}
+                  <tspan
+                    fill={phifHi ? '#5DADE2' : '#ECEFF4'}
+                    fontWeight={phifHi ? 800 : 600}
+                    fontSize={phifHi ? 23 : 20}
+                    textDecoration={phifHi ? 'underline' : undefined}
+                  >
+                    PHIF={s.median_PHIF}
+                  </tspan>{' '}
+                  · SW={s.median_SW}
                 </text>
               </g>
             );
@@ -147,11 +183,25 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
     const watLower: [number, number][] = [[30.0, 1.0], [25.0, 1.85], [20.0, 3.92], [17.06, 6.6]];
 
     const revealAnswer = segIdx >= 5 && !inPause;
+    // Последовательное появление точек примера 47 по ходу реплики (координаты палетки не меняются)
+    const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
+    const s4 = props.timings.segments[4];
+    const s5 = props.timings.segments[5];
+    const fadeAt = (t0: number, dur = 0.5) => interpolate(t, [t0, t0 + dur], [0, 1], clamp);
+    const s4Dur = s4 ? s4.t_end - s4.t_start : 1;
+    const s5Dur = s5 ? s5.t_end - s5.t_start : 1;
+    const opA = s4 ? fadeAt(s4.t_start + 1.5, 0.7) : 1;
+    const opB = s4 ? fadeAt(s4.t_start + 0.78 * s4Dur, 0.6) : 1;
+    const opC = revealAnswer && s5 ? fadeAt(s5.t_start + 0.33 * s5Dur, 0.4) : 0;
     const pts = [
-      {label: '47а: 15% (некол.)', x: 15, y: 10, col: '#95A5A6', show: true, dx: 4, dy: 34, anchor: 'middle', fs: 18},
-      {label: revealAnswer ? '47б: 20% → нефть!' : '47б: 20%, 10 Ом·м → ?', x: 20, y: 10, col: '#F1C40F', show: true, dx: 12, dy: -22, anchor: 'middle', fs: 20},
-      {label: '47в: 25% → нефть + вода', x: 25, y: 10, col: '#3498DB', show: revealAnswer, dx: 0, dy: 36, anchor: 'middle', fs: 20},
+      {label: '47а: 15% (некол.)', x: 15, y: 10, col: '#95A5A6', op: opA, dx: 4, dy: 34, anchor: 'middle', fs: 18},
+      {label: revealAnswer ? '47б: 20% → нефть!' : '47б: 20%, 10 Ом·м → ?', x: 20, y: 10, col: '#F1C40F', op: opB, dx: 12, dy: -22, anchor: 'middle', fs: 20},
+      {label: '47в: 25% → нефть + вода', x: 25, y: 10, col: '#3498DB', op: opC, dx: 0, dy: 36, anchor: 'middle', fs: 20},
     ];
+    // Пульсирующее кольцо вокруг 47б во время паузы предсказания
+    const pulsePhase = inPause ? (t * 1.6) % 1 : 0;
+    const pulseR = interpolate(pulsePhase, [0, 1], [16, 34]);
+    const pulseOp = interpolate(pulsePhase, [0, 0.15, 1], [0, 0.9, 0]);
 
     return (
       <FrameChrome
@@ -220,10 +270,13 @@ export const WellboreLogSync: React.FC<{props: VideoProps}> = ({props}) => {
           </text>
 
           {/* Точки примера 47 */}
+          {inPause ? (
+            <circle cx={mapX(20)} cy={mapY(10)} r={pulseR} fill="none" stroke="#F1C40F" strokeWidth={4} strokeOpacity={pulseOp} />
+          ) : null}
           {pts
-            .filter((p) => p.show)
+            .filter((p) => p.op > 0)
             .map((p) => (
-              <g key={p.label}>
+              <g key={p.label} opacity={p.op}>
                 <circle cx={mapX(p.x)} cy={mapY(p.y)} r={12} fill={p.col} stroke="#0F1419" strokeWidth={3} />
                 <text
                   x={mapX(p.x) + p.dx}

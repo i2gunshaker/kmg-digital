@@ -9,8 +9,8 @@
 | `courses/latyshova_gl5_par17-20/` | `course/index.html` + `course/assets/` (CSS, JS, KaTeX, шрифты, 161 SVG), `layer.json`, `coverage.json`, `tasks.json`, `routing.json` | 24 узла, 31 задание (5 типов), 3 шага отправлены в ролик | `qa_course.mjs`: 390×844 и 1280×800, без горизонтальной прокрутки, шрифт 16 px, офлайн |
 | `courses/basniev_gl23-24/` | то же, 158 SVG | 21 узел, 27 заданий (5 типов), 6 шагов в ролик | то же |
 | `courses/kuznetsov_gl10/` | то же, 132 SVG | 17 узлов, 23 задания (5 типов), 5 шагов в ролик | то же |
-| `videos/latyshova_shorts_high_rt/` | `latyshova_shorts_high_rt.mp4`, `passport.json`, `subtitles.vtt`, `scene.json` | 9:16, 1080×1920, 30 к/с, 67,3 с; узел `latyshova.rho_kp_palette` | −16,08 LUFS, true peak −1,5 dBTP, WER 0,059, дрейф субтитров ≤ 0,20 с, `audio_check.status = ok` |
-| `videos/basniev_deepdive_elastic_funnel/` | `basniev_deepdive_elastic_funnel.mp4`, `passport.json`, `subtitles.vtt`, `scene.json` | 16:9, 1920×1080, 30 к/с, 92,2 с; узел `basniev.elastic_regime_mechanism` | −16,04 LUFS, true peak −1,5 dBTP, WER 0,058, дрейф ≤ 0,32 с, `audio_check.status = ok` |
+| `videos/latyshova_shorts_high_rt/` | `latyshova_shorts_high_rt.mp4`, `passport.json`, `subtitles.vtt`, `scene.json` | 9:16, 1080×1920, 30 к/с, 68,5 с; узел `latyshova.rho_kp_palette` | −16,08 LUFS, true peak −1,5 dBTP, WER 0,059, дрейф субтитров ≤ 0,20 с, `audio_check.status = ok` |
+| `videos/basniev_deepdive_elastic_funnel/` | `basniev_deepdive_elastic_funnel.mp4`, `passport.json`, `subtitles.vtt`, `scene.json` | 16:9, 1920×1080, 30 к/с, 93,4 с; узел `basniev.elastic_regime_mechanism` | −16,04 LUFS, true peak −1,5 dBTP, WER 0,058, дрейф ≤ 0,32 с, `audio_check.status = ok` |
 
 Озвучка роликов: ElevenLabs `eleven_v4`, голос Nikolay, `language_code=ru`. Распознавание для WER и дрейфа: Whisper small, локально. Паспорта проходят `passport.schema.json` из пакета вводных; поле `scene_spec` указывает на `scene.json` в этой же папке.
 
@@ -33,6 +33,6 @@ python -m kurs video <глава> --node <node_id> --format 9:16|16:9 --max-usd 
 
 ## Почему эти два ролика
 
-- **Два контрастных формата.** Шортс Латышовой 9:16 на 67 с отвечает на один вопрос («почему высокое сопротивление — ещё не нефть») для телефона. Разбор Басниева 16:9 на 92 с выводит механизм упругого режима и рост воронки депрессии по формулам главы.
+- **Два контрастных формата.** Шортс Латышовой 9:16 на 68 с отвечает на один вопрос («почему высокое сопротивление — ещё не нефть») для телефона. Разбор Басниева 16:9 на 93 с выводит механизм упругого режима и рост воронки депрессии по формулам главы.
 - **Разные типы содержания.** Одна глава геофизическая, с палеткой ρп–kп, оцифрованной со скана. Другая — по подземной гидромеханике, с кривыми, посчитанными по формулам. Так видно, что сцены Remotion строятся из спецификаций рисунков, а не рисуются под конкретный ролик.
 - **Универсальная генерация.** Это образцы, а не предел: тот же конвейер делает ролик по любому узлу слоя командой `kurs video <глава> --node <node_id>`. Сценарий проверяется по утверждениям узла, звук нормируется до −16 LUFS и проверяется распознаванием.

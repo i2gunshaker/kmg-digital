@@ -56,6 +56,44 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
 
   // Оценка ответа после паузы предсказания (segIdx >= 7)
   const showDoubleAnswer = segIdx >= 7 && !inPause;
+  const segs = props.timings.segments;
+  const segStart = (i: number) => segs[Math.min(i, segs.length - 1)]?.t_start ?? 0;
+  const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
+  const answerT = showDoubleAnswer ? interpolate(t, [segStart(7), segStart(7) + 0.5], [0, 1], clamp) : 0;
+
+  // Последовательное проявление профилей -Ei: 1-й сразу, 2-й с seg 2, 3-й с seg 4, 4-й с seg 5
+  const profileRevealSeg = [0, 2, 4, 5];
+  const profileReveal = (idx: number) => {
+    const s = profileRevealSeg[idx] ?? 0;
+    if (s === 0) return 1;
+    return interpolate(t, [segStart(s), segStart(s) + 1.2], [0, 1], clamp);
+  };
+  // Кривая √t прорисовывается в seg 6 (до паузы) и остаётся
+  const sqrtDraw = segs[6] ? interpolate(t, [segStart(6), segStart(6) + 4.0], [0, 1], clamp) : 1;
+
+  // Фокус внимания: активная панель подсвечена, остальные слегка приглушены
+  type PanelKey = 'slab' | 'pores' | 'ei' | 'rt';
+  const focusFor = (i: number): PanelKey[] | null => {
+    if (i <= 2) return ['slab', 'pores'];
+    if (i === 3) return ['slab'];
+    if (i <= 5) return ['ei'];
+    if (i <= 7) return ['rt'];
+    return null; // seg 8–9: всё без приглушения
+  };
+  const curFocus = focusFor(segIdx);
+  const prevFocus = segIdx > 0 ? focusFor(segIdx - 1) : curFocus;
+  const focusBlend = seg ? interpolate(t, [seg.t_start, seg.t_start + 0.5], [0, 1], clamp) : 1;
+  const levelOf = (f: PanelKey[] | null, k: PanelKey) => (f === null || f.includes(k) ? 1 : 0);
+  const glowOf = (f: PanelKey[] | null, k: PanelKey) => (f !== null && f.includes(k) ? 1 : 0);
+  const mix = (a: number, b: number) => a + (b - a) * focusBlend;
+  const panelOpacity = (k: PanelKey) => 0.72 + 0.28 * mix(levelOf(prevFocus, k), levelOf(curFocus, k));
+  const panelGlow = (k: PanelKey) => mix(glowOf(prevFocus, k), glowOf(curFocus, k));
+  const glowRect = (k: PanelKey, x: number, y: number, w: number, h: number, color: string) => {
+    const g = panelGlow(k);
+    return g > 0.01 ? (
+      <rect x={x} y={y} width={w} height={h} rx={16} fill="none" stroke={color} strokeWidth={3.5} strokeOpacity={0.9 * g} />
+    ) : null;
+  };
 
   return (
     <FrameChrome
@@ -68,7 +106,14 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
       <svg viewBox={`0 0 ${panelW} ${panelH}`} width="100%" height="100%">
         <rect x={0} y={0} width={panelW} height={panelH} rx={20} fill={sg.panel || '#1A2129'} stroke="#2E3B49" strokeWidth={2} />
 
+        {/* Подсветка активных панелей */}
+        {glowRect('slab', leftX - 14, 18, leftW + 28, slabTop + slabMaxH + 20 - 18, '#00CEC9')}
+        {!isPortrait ? glowRect('pores', leftX - 4, slabTop + slabMaxH + 34 - 4, leftW + 8, 233, '#00CEC9') : null}
+        {glowRect('ei', rightX - 4, plotTop - 4, rightW + 8, plotH + 8, '#00CEC9')}
+        {glowRect('rt', rightX - 4, rPlotTop - 4, rightW + 8, rPlotH + 8, '#F1C40F')}
+
         {/* 1. Разрез упругого пласта с покрышкой (глубина вниз) */}
+        <g opacity={panelOpacity('slab')}>
         <text x={leftX} y={56} fill="#FFFFFF" fontSize={26} fontWeight={700}>
           Упругий пласт: воронка возмущения R(t) ≈ {rFrontM.toFixed(0)} м
         </text>
@@ -102,10 +147,11 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
             1:1 — пласт 20 м на 1000 м длины тоньше листа бумаги
           </text>
         )}
+        </g>
 
         {/* Врезка микропор (×10 000): сжатие скелета + расширение нефти */}
         {!isPortrait ? (
-          <g transform={`translate(${leftX}, ${slabTop + slabMaxH + 34})`}>
+          <g transform={`translate(${leftX}, ${slabTop + slabMaxH + 34})`} opacity={panelOpacity('pores')}>
             <rect x={0} y={0} width={leftW} height={225} rx={14} fill="#121820" stroke="#364656" strokeWidth={1.5} />
             <text x={20} y={36} fill="#FFFFFF" fontSize={23} fontWeight={700}>
               Врезка пор (увеличено ×10 000): горное давление сжимает скелет
@@ -127,13 +173,13 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
         ) : null}
 
         {/* 2. График p(r, t) по формуле -Ei(-x) */}
-        <g>
+        <g opacity={panelOpacity('ei')}>
           <rect x={rightX} y={plotTop} width={rightW} height={plotH} rx={14} fill="#121820" stroke="#2D3B49" strokeWidth={1.5} />
           <text x={rightX + 20} y={plotTop + 34} fill="#FFFFFF" fontSize={23} fontWeight={700}>
             Воронка давления p(r, t) по -Ei(-r²/4κt)
           </text>
           <line x1={rightX + 60} y1={plotTop + 56} x2={rightX + rightW - 24} y2={plotTop + 56} stroke="#7A8A9A" strokeDasharray="6,6" />
-          <text x={rightX + 66} y={plotTop + 50} fill="#9FB0C0" fontSize={17}>
+          <text x={rightX + rightW - 24} y={plotTop + 46} textAnchor="end" fill="#9FB0C0" fontSize={17}>
             pк = 25 МПа
           </text>
           {profiles.map((pr, idx) => {
@@ -145,7 +191,21 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
                 return `${px.toFixed(1)},${py.toFixed(1)}`;
               })
               .join(' ');
-            return <polyline key={pr.t_sec} fill="none" stroke={profColors[idx % profColors.length]} strokeWidth={3.5} points={pts} />;
+            const rv = profileReveal(idx);
+            if (rv <= 0) return null;
+            return (
+              <polyline
+                key={pr.t_sec}
+                fill="none"
+                stroke={profColors[idx % profColors.length]}
+                strokeWidth={3.5}
+                points={pts}
+                pathLength={1}
+                strokeDasharray="1 1"
+                strokeDashoffset={1 - rv}
+                opacity={interpolate(rv, [0, 0.3, 1], [0, 1, 1])}
+              />
+            );
           })}
           <text x={rightX + rightW - 24} y={plotTop + plotH - 12} textAnchor="end" fill="#9FB0C0" fontSize={18}>
             Расстояние от скважины r, м (0 → 150)
@@ -153,16 +213,27 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
         </g>
 
         {/* 3. График R(t) = sqrt(r_c^2 + 4*kappa*t) (ПССС) */}
-        <g>
+        <g opacity={panelOpacity('rt')}>
           <rect x={rightX} y={rPlotTop} width={rightW} height={rPlotH} rx={14} fill="#121820" stroke="#2D3B49" strokeWidth={1.5} />
           <text x={rightX + 20} y={rPlotTop + 34} fill="#FFFFFF" fontSize={23} fontWeight={700}>
             Радиус возмущения R(t) ∝ √t (не скорость звука!)
           </text>
-          {/* Кривая √t */}
+          {/* Оси графика */}
+          <polyline
+            fill="none"
+            stroke="#4C5E70"
+            strokeWidth={1.5}
+            points={`${rightX + 60},${rPlotTop + 50} ${rightX + 60},${rPlotTop + rPlotH - 38} ${rightX + rightW - 36},${rPlotTop + rPlotH - 38}`}
+          />
+          {/* Кривая √t (прорисовка в seg 6, без бегущей точки) */}
           <polyline
             fill="none"
             stroke="#F1C40F"
             strokeWidth={4}
+            pathLength={1}
+            strokeDasharray="1 1"
+            strokeDashoffset={1 - sqrtDraw}
+            opacity={sqrtDraw > 0 ? 1 : 0}
             points={Array.from({length: 25}, (_, i) => {
               const frac = i / 24;
               const px = rightX + 60 + frac * (rightW - 96);
@@ -171,7 +242,7 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
             }).join(' ')}
           />
           {showDoubleAnswer ? (
-            <g>
+            <g opacity={answerT}>
               <circle cx={rightX + 60 + 0.25 * (rightW - 96)} cy={rPlotTop + rPlotH - 38 - 0.5 * (rPlotH - 88)} r={9} fill="#00CEC9" />
               <text x={rightX + 60 + 0.25 * (rightW - 96) + 12} y={rPlotTop + rPlotH - 38 - 0.5 * (rPlotH - 88) + 22} fill="#00CEC9" fontSize={20} fontWeight={700}>
                 1 ч → 100 м
@@ -183,7 +254,7 @@ export const FieldDiffusion2D: React.FC<{props: VideoProps}> = ({props}) => {
             </g>
           ) : null}
           <text x={rightX + rightW - 24} y={rPlotTop + rPlotH - 12} textAnchor="end" fill="#9FB0C0" fontSize={18}>
-            Время t: удвоение радиуса требует ×4 времени
+            {showDoubleAnswer ? 'Время t: удвоение радиуса требует ×4 времени' : 'Время t (зависимость радиуса воронки от времени)'}
           </text>
         </g>
       </svg>
