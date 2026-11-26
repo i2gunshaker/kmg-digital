@@ -1,0 +1,466 @@
+{
+  "video_id": "slatt_river_delta_progradation_deepdive",
+  "node_id": "slatt.river_delta_progradation",
+  "node_card": {
+    "chapter": "slatt_s9-3_9-4",
+    "title": "Как растёт речная дельта",
+    "difficulty": {
+      "primary": "М",
+      "secondary": "В"
+    },
+    "format": "длинное видео",
+    "duration_sec": 113.19,
+    "refutes_misconceptions": []
+  },
+  "script": [
+    {
+      "t_start": 0.0,
+      "t_end": 5.36,
+      "text": "Почему при наступании дельта мелеет, а главная река смещается к более глубокой воде?",
+      "claim_id": "slatt.river_delta_progradation#c4",
+      "is_analogy": false,
+      "on_screen": "Дельта мелеет, река уходит"
+    },
+    {
+      "t_start": 5.61,
+      "t_end": 9.29,
+      "text": "Дельта Миссисипи долго считалась типовой речной дельтой.",
+      "claim_id": "slatt.river_delta_progradation#c7",
+      "is_analogy": false,
+      "on_screen": "Типовая дельта Миссисипи"
+    },
+    {
+      "t_start": 9.54,
+      "t_end": 14.5,
+      "text": "Рисунок показывает, как за 4600 лет росли её лопасти.",
+      "claim_id": "slatt.river_delta_progradation#c6",
+      "is_analogy": false,
+      "on_screen": "Рост лопастей, 4600 лет"
+    },
+    {
+      "t_start": 14.75,
+      "t_end": 20.19,
+      "text": "Сначала берег защищён от волн: осадок не переотлагается и не разносится вбок.",
+      "claim_id": "slatt.river_delta_progradation#c1",
+      "is_analogy": false,
+      "on_screen": "Защищённый берег"
+    },
+    {
+      "t_start": 20.44,
+      "t_end": 25.56,
+      "text": "Если между морем и дном хватает места для осадка, дельта наступает в море.",
+      "claim_id": "slatt.river_delta_progradation#c2",
+      "is_analogy": false,
+      "on_screen": "Хватает места для осадка"
+    },
+    {
+      "t_start": 25.81,
+      "t_end": 31.89,
+      "text": "Пространство аккомодации – это место между поверхностью моря и морским дном для осадка.",
+      "claim_id": "slatt.river_delta_progradation#c2",
+      "is_analogy": false,
+      "on_screen": "Пространство аккомодации"
+    },
+    {
+      "t_start": 32.14,
+      "t_end": 38.3,
+      "text": "Наступание и аккрецион мелят дельту, и главная река смещается в более глубокую воду.",
+      "claim_id": "slatt.river_delta_progradation#c4",
+      "is_analogy": false,
+      "on_screen": "Мелеет, река уходит глубже"
+    },
+    {
+      "t_start": 38.55,
+      "t_end": 45.59,
+      "text": "Русла при этом переключаются: за 4600 лет на Миссисипи было не менее восьми смен.",
+      "claim_id": "slatt.river_delta_progradation#c5",
+      "is_analogy": false,
+      "on_screen": "Не менее восьми смен русел"
+    },
+    {
+      "t_start": 45.84,
+      "t_end": 51.52,
+      "text": "Песчаные коллекторы дельты – отложения русел и устьевых баров на выходе в море.",
+      "claim_id": "slatt.river_delta_progradation#c8",
+      "is_analogy": false,
+      "on_screen": "Русла и бары — коллекторы"
+    },
+    {
+      "t_start": 51.77,
+      "t_end": 56.89,
+      "text": "В паводок лучший, самый отсортированный песок ложится у вершины бара.",
+      "claim_id": "slatt.river_delta_progradation#c9",
+      "is_analogy": false,
+      "on_screen": "Паводок: лучший песок у вершины"
+    },
+    {
+      "t_start": 57.14,
+      "t_end": 61.94,
+      "text": "Дальше поток слабеет, и там оседают более тонкие пески и илы.",
+      "claim_id": "slatt.river_delta_progradation#c9",
+      "is_analogy": false,
+      "on_screen": "Дальше тоньше"
+    },
+    {
+      "t_start": 62.19,
+      "t_end": 69.47,
+      "text": "Похоже на переключение трафика на другой шлюз, но русла переключаются из-за мелеющей дельты и смещения реки.",
+      "claim_id": "slatt.river_delta_progradation#c4",
+      "is_analogy": true,
+      "on_screen": "Переключение шлюза"
+    },
+    {
+      "t_start": 69.72,
+      "t_end": 76.52,
+      "text": "Мелеющая дельта смещает главную реку к более глубокой воде, и распределительные русла переключаются.",
+      "claim_id": "slatt.river_delta_progradation#c4",
+      "is_analogy": true,
+      "on_screen": "Причина — меление"
+    },
+    {
+      "t_start": 76.77,
+      "t_end": 81.73,
+      "text": "Бар наступает в море: какие осадки окажутся выше, а какие ниже?",
+      "claim_id": "slatt.river_delta_progradation#c11",
+      "is_analogy": false,
+      "on_screen": "Что выше, что ниже?"
+    },
+    {
+      "t_start": 83.23,
+      "t_end": 90.19,
+      "text": "Ближние крупные пески ложатся поверх дальних тонких осадков продельты, поэтому разрез грубеет вверх.",
+      "claim_id": "slatt.river_delta_progradation#c11",
+      "is_analogy": false,
+      "on_screen": "Крупный песок сверху"
+    },
+    {
+      "t_start": 90.44,
+      "t_end": 93.8,
+      "text": "Бар узнают по огрублению зерна вверх по разрезу.",
+      "claim_id": "slatt.river_delta_progradation#c10",
+      "is_analogy": false,
+      "on_screen": "Признак: грубеет вверх"
+    },
+    {
+      "t_start": 94.05,
+      "t_end": 100.29,
+      "text": "Линии времени пересекают границы фаций, и границы не равны поверхностям одного возраста.",
+      "claim_id": "slatt.river_delta_progradation#c3",
+      "is_analogy": false,
+      "on_screen": "Линии времени пересекают фации"
+    },
+    {
+      "t_start": 100.54,
+      "t_end": 106.22,
+      "text": "Эта схема роста верна для защищённого от волн берега, где осадок не разносится вбок.",
+      "claim_id": "slatt.river_delta_progradation#c1",
+      "is_analogy": false,
+      "on_screen": "Открытый берег: другой рост"
+    },
+    {
+      "t_start": 106.47,
+      "t_end": 111.99,
+      "text": "В разрезе зерно грубеет вверх: подходит ли это под наступающий устьевой бар?",
+      "claim_id": "slatt.river_delta_progradation#c10",
+      "is_analogy": false,
+      "on_screen": "Грубеет вверх: бар или нет?"
+    }
+  ],
+  "sources": [
+    {
+      "claim_id": "slatt.river_delta_progradation#c4",
+      "page_or_dataset": "стр. 411",
+      "quote": "progradation and vertical aggradation lead to a progressive shallowing of the water depth, to the point at which the main river(s) feeding sediment to its delta will shift toward deeper water"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c7",
+      "page_or_dataset": "стр. 411",
+      "quote": "has long been considered the “type” river-dominated delta"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c6",
+      "page_or_dataset": "стр. 413",
+      "quote": "Growth patterns of the Mississippi River Delta's lobes during the past 4600 years"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c1",
+      "page_or_dataset": "стр. 411",
+      "quote": "Strong waves and currents do not impinge upon its protected shoreline, so sediment deposited at and near the shore zone is not reworked or dispersed laterally"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c2",
+      "page_or_dataset": "стр. 411",
+      "quote": "With time and sufficient accommodation space between the sea surface and seafloor to accept sediment, such a delta will prograde seaward"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c5",
+      "page_or_dataset": "стр. 411",
+      "quote": "During the past 4600 years, there have been no fewer than eight periods of channel and lobe switching on the Mississippi River Delta"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c8",
+      "page_or_dataset": "стр. 411",
+      "quote": "Sandy reservoir facies are deposits of distributary channels and distributary mouth-bars"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c9",
+      "page_or_dataset": "стр. 415",
+      "quote": "Finer-grained, more poorly sorted sands and muds were deposited more distally, under lower flow-regime conditions"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c11",
+      "page_or_dataset": "стр. 415",
+      "quote": "Schematic facies cross-sections of a progradational channel mouth bar"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c10",
+      "page_or_dataset": "стр. 413",
+      "quote": "a distinctive coarsening-upward grain size"
+    },
+    {
+      "claim_id": "slatt.river_delta_progradation#c3",
+      "page_or_dataset": "стр. 411",
+      "quote": "surfaces representing instants in geologic time crosscut boundaries between sedimentary facies"
+    }
+  ],
+  "scene_spec": "build/specs/slatt_s9-3_9-4/slatt_river_delta_progradation_deepdive_scene.json",
+  "frames": [
+    {
+      "t": 2.68,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 7.45,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 12.02,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 17.47,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 23.0,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 28.85,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 35.22,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 42.07,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 48.68,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 54.33,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 59.54,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 65.83,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 73.12,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 79.25,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 86.71,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 92.12,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 97.17,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 103.38,
+      "class": "B",
+      "label": "схема"
+    },
+    {
+      "t": 109.23,
+      "class": "B",
+      "label": "схема"
+    }
+  ],
+  "exaggerations": [
+    "рисунок: не в масштабе, оси безразмерны"
+  ],
+  "prediction_question": "Бар наступает в море: какие осадки окажутся выше, а какие ниже?",
+  "transfer_question": "В керне зерно грубеет вверх по разрезу: похоже ли это на наступающий устьевой бар?",
+  "data_it_bridge": "Смена русел оставляет в одном разрезе несколько песчаных тел разного возраста, и соседние скважины могут пересекать разные русла. Признак для специалиста — огрубление зерна вверх по керну.",
+  "physics_checklist": [
+    {
+      "item": "pc.layers_order: Порядок слоёв сохраняется во всех кадрах; молодые лежат на старых, если не показан надвиг или опрокидывание.",
+      "answer": "да",
+      "note": "Порядок слоёв задан одним списком и одинаков во всех кадрах."
+    },
+    {
+      "item": "pc.fault_consistent: Разлом смещает слои согласованно по обе стороны; смещение не исчезает и не меняет знак между кадрами.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.unconformity_event: Несогласие показано как событие: размыв, перерыв, новое накопление.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.fluids_in_pores: Нефть и газ находятся в порах породы, а не в полостях и озёрах.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.gas_oil_water: Газ над нефтью, нефть над водой; контакт горизонтален или оговорено иное.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.flow_high_to_low: Флюид движется от высокого давления к низкому; ловушка имеет покрышку.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.causality: Порядок операций и событий верный: причина раньше следствия.",
+      "answer": "да",
+      "note": "Порядок реплик и каждую фразу сверил с карточкой отдельный проход модели-судьи."
+    },
+    {
+      "item": "pc.balance: Соблюдается баланс (масса, объём).",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.views_consistent: Разрез, план и поверхность показывают одно и то же состояние.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.tool_mechanism: Механизм прибора верный (ГК — собственное излучение, не «отражение»).",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.signal_vs_property: Сигнал отделён от свойства: прибор измеряет отклик, свойство получают интерпретацией.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.applicability: Названы условия применимости правила (напр., знак ПС зависит от соотношения минерализаций).",
+      "answer": "да",
+      "note": "В сценарии есть строка об условии, при котором правило не работает."
+    },
+    {
+      "item": "pc.curve_sync: Кривая синхронна с прибором и вычислена из той же модели.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.plausible_numbers: Глубины, температуры, давления и размеры правдоподобны.",
+      "answer": "да",
+      "note": "Каждое число реплик есть в карточке узла и в цитатах главы (проверка кодом)."
+    },
+    {
+      "item": "pc.exaggeration_named: Преувеличения названы числом, а не только общей плашкой.",
+      "answer": "да",
+      "note": "Подписано на рисунке: не в масштабе, оси безразмерны."
+    },
+    {
+      "item": "pc.objects_stable: Оборудование и прибор не меняют конструкцию между кадрами.",
+      "answer": "да",
+      "note": "Все кадры строятся из одного описания: меняется только параметр, остальное неизменно."
+    },
+    {
+      "item": "pc.objects_plausible: Объекты не совмещены неправдоподобно.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.depth_down: Глубина растёт вниз; шкалы, единицы и полярность подписаны.",
+      "answer": "да",
+      "note": "Код рисует глубину сверху вниз."
+    },
+    {
+      "item": "pc.label_matches: Вертикальное преувеличение подписано числом; метка происхождения соответствует тому, как сделан кадр.",
+      "answer": "да",
+      "note": "Метка «схема» берётся из описания рисунка; код ставит её на каждый кадр."
+    },
+    {
+      "item": "pc.modern_or_historic: Оборудование современное или помечено как историческое.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.hydrostatic: Гидростатическое давление растёт с глубиной и плотностью раствора; при циркуляции давление на забой выше статического.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.gas_closed_well: Газ в закрытой скважине почти не может расшириться и, всплывая, поднимает давление по всему стволу; в открытой скважине газ расширяется, сильнее всего у устья.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.pit_gain: Рост объёма раствора в приёмной ёмкости — признак притока из пласта, уменьшение — признак поглощения.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    },
+    {
+      "item": "pc.well_construction: Колонны, пакеры и оборудование на своих местах во всех кадрах; конструкция скважины не меняется между видами.",
+      "answer": "н/п",
+      "note": "Код этого не проверяет: смотрит специалист по кадрам, если процесс в ролике показан."
+    }
+  ],
+  "audio_check": {
+    "target_lufs": -16.0,
+    "max_wer": 0.1,
+    "max_sync_drift_sec": 0.33,
+    "prediction_pause_sec": 1.5,
+    "status": "ok",
+    "backend": "elevenlabs",
+    "model_id": "eleven_v4",
+    "voice_id": "3EuKHIEZbSzrHGNmdYsx",
+    "measured_lufs": -16.04,
+    "true_peak_dbtp": -1.5,
+    "wer": 0.0664,
+    "asr_transcript": "Почему при наступании дельта мелеет, а главная река смещается к более глубокой воде? Дельта Миссисиппи долго считалась типовой речной дельтой. Рисунок показывает, как за 4600 лет росли её лопасти. Сначала берег защищен от волн. Осадок не переотлагается и не разносится в бок. Если между морем и дном хватает места для осадка, дельта наступает в море. Пространство аккомодации – это место между поверхностью моря и морским дном для осадка. Наступание и акрецион мелят дельту, и главная река смещается в более глубокую воду. Русла при этом переключаются. За 4600 лет на Миссисиппи было не менее 8 смен. Пещанные коллекторы дельты, отложение русел и устьевых баров на выходе в море. В поводок лучший, самый отсортированный песок ложится у вершины бара. Дальше поток слабеет, и там оседают более тонкие пески и илы. Похоже на переключение трафика на другой шлюз, но русла переключаются из-за милеющей дельты и смещения реки. Милеющая дельта смещает главную реку к более глубокой воде, и распределительные русла переключаются. Бар наступает в море. Какие осадки окажутся выше, а какие ниже? Ближние крупные пески ложатся поверх дальних тонких осадков продельты, поэтому разрез грубеет вверх. Бар узнают по огрублению зерна вверх по разрезу. Линии времени пересекают границы фаций, и границы неравны поверхностям одного возраста. Эта схема роста верна для защищенного от волн берега, где осадок не разносится в бок. В разрезе зерно грубеет вверх. Подходит ли это под наступающий устьевой бар?"
+  }
+}

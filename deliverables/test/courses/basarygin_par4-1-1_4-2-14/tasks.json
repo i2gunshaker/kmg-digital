@@ -1,0 +1,539 @@
+{
+ "chapter": "basarygin_par4-1-1_4-2-14",
+ "tasks": [
+  {
+   "id": "basarygin.t01",
+   "type": "multiple",
+   "step_id": "basarygin.kick_signs_overview",
+   "claim_ids": [
+    "basarygin.kick_signs_overview#c11",
+    "basarygin.kick_signs_overview#c12"
+   ],
+   "prompt": "Какие признаки проявления могут возникать и без проявления, по другим косвенным причинам?",
+   "answer": [
+    "c",
+    "d"
+   ],
+   "explanation": "Три последних признака, включая газосодержание и свойства раствора, имеют и другие причины.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Рост объёма в ёмкостях",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Недолив при подъёме колонны",
+     "misconception": "misc.trip_out_no_risk"
+    },
+    {
+     "id": "c",
+     "text": "Изменение свойств раствора",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Изменение газосодержания раствора",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t02",
+   "type": "single",
+   "step_id": "basarygin.rop_jump_sign",
+   "claim_ids": [
+    "basarygin.rop_jump_sign#c7",
+    "basarygin.rop_jump_sign#c8"
+   ],
+   "prompt": "Механическая скорость при бурении известняков резко выросла из-за провала инструмента в карстовую каверну. Что вероятнее?",
+   "answer": "d",
+   "explanation": "Провал в трещину или каверну чаще ведёт к поглощению, а не к проявлению.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Рост ЭЦД",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Дифференциальный прихват",
+     "misconception": "misc.differential_sticking_mechanical"
+    },
+    {
+     "id": "c",
+     "text": "Проявление пластового флюида",
+     "misconception": "misc.losses_only_in_caverns"
+    },
+    {
+     "id": "d",
+     "text": "Поглощение раствора",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t03",
+   "type": "gap",
+   "step_id": "basarygin.rop_jump_sign",
+   "claim_ids": [
+    "basarygin.rop_jump_sign#c6"
+   ],
+   "prompt": "За рубежом быстрое повышение механической скорости более чем в {{1}} раза считают признаком вскрытия пласта высокого давления.",
+   "answer": [
+    "2"
+   ],
+   "explanation": "Порог из зарубежной практики по тексту: более чем в 2 раза.",
+   "kind": "recall"
+  },
+  {
+   "id": "basarygin.t04",
+   "type": "single",
+   "step_id": "basarygin.tank_level_detection",
+   "claim_ids": [
+    "basarygin.tank_level_detection#c7",
+    "basarygin.tank_level_detection#c9"
+   ],
+   "prompt": "Чему равен минимальный объём притока, который фиксирует уровнемер в приёмной ёмкости?",
+   "answer": "b",
+   "explanation": "По формуле автора ΔV_min = εS: объём равен погрешности датчика на площадь.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Площади поверхности жидкости, умноженной на плотность раствора",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Погрешности датчика, умноженной на площадь поверхности жидкости",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Погрешности датчика, делённой на площадь поверхности жидкости",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Объёму всей ёмкости, делённому на число ёмкостей",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t05",
+   "type": "calc",
+   "step_id": "basarygin.tank_level_detection",
+   "claim_ids": [
+    "basarygin.tank_level_detection#c7",
+    "basarygin.tank_level_detection#c10"
+   ],
+   "prompt": "Абсолютная погрешность датчика уровнемера 0,01 м, площадь поверхности раствора 20 м². Найдите минимальный регистрируемый объём притока.",
+   "answer": 0.2,
+   "explanation": "ΔV_min = εS = 0,01 × 20.",
+   "kind": "data",
+   "tolerance": 0.001,
+   "unit": "м³",
+   "expression": "0.01*20"
+  },
+  {
+   "id": "basarygin.t06",
+   "type": "multiple",
+   "step_id": "basarygin.tank_level_detection",
+   "claim_ids": [
+    "basarygin.tank_level_detection#c16",
+    "basarygin.tank_level_detection#c17",
+    "basarygin.tank_level_detection#c13"
+   ],
+   "prompt": "Какие меры повышают чувствительность контроля уровня раствора в ёмкостях к притоку?",
+   "answer": [
+    "c",
+    "d"
+   ],
+   "explanation": "Меньшая площадь поверхности даёт меньший порог обнаружения.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Ждать перелива из скважины",
+     "misconception": "misc.kick_only_by_overflow"
+    },
+    {
+     "id": "b",
+     "text": "Объединить все ёмкости в один большой блок",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Поставить перегородку и уменьшить поверхность ёмкости",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Изолировать циркулирующую приёмную ёмкость от других",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t07",
+   "type": "single",
+   "step_id": "basarygin.outflow_rate_detection",
+   "claim_ids": [
+    "basarygin.outflow_rate_detection#c2"
+   ],
+   "prompt": "При каком превышении расхода на выходе индикатор потока обнаруживает начавшееся проявление?",
+   "answer": "c",
+   "explanation": "Порог индикатора потока по тексту: превышение расхода на выходе на 10 % и более.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Только при росте плотности раствора",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Только при падении давления на насосах",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "На 10 % и более",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Только при переливе раствора из скважины",
+     "misconception": "misc.kick_only_by_overflow"
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t08",
+   "type": "calc",
+   "step_id": "basarygin.outflow_rate_detection",
+   "claim_ids": [
+    "basarygin.outflow_rate_detection#c7",
+    "basarygin.outflow_rate_detection#c8",
+    "basarygin.outflow_rate_detection#c9"
+   ],
+   "prompt": "Относительная приведённая погрешность расходомера δ = 2 %, максимальный измеряемый расход Q_max = 50 л/с. Найдите минимальный обнаруживаемый прирост расхода.",
+   "answer": 1.0,
+   "explanation": "ΔQ_min = δ·Q_max/100.",
+   "kind": "data",
+   "tolerance": 0.01,
+   "unit": "л/с",
+   "expression": "2*50/100"
+  },
+  {
+   "id": "basarygin.t09",
+   "type": "gap",
+   "step_id": "basarygin.outflow_rate_detection",
+   "claim_ids": [
+    "basarygin.outflow_rate_detection#c10"
+   ],
+   "prompt": "С ростом подачи насосов время обнаружения газового проявления при том же притоке {{1}}.",
+   "answer": [
+    "сокращается"
+   ],
+   "explanation": "При большей подаче приращение расхода растёт, и газ обнаруживают быстрее.",
+   "kind": "understanding"
+  },
+  {
+   "id": "basarygin.t10",
+   "type": "multiple",
+   "step_id": "basarygin.pump_pressure_change",
+   "claim_ids": [
+    "basarygin.pump_pressure_change#c6",
+    "basarygin.pump_pressure_change#c8",
+    "basarygin.pump_pressure_change#c11"
+   ],
+   "prompt": "Что верно о давлении на буровых насосах при проявлении?",
+   "answer": [
+    "b",
+    "d"
+   ],
+   "explanation": "Газ расширяется и снижает давление, а при высоком давлении пласта давление в трубах возможен рост.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Падение давления означает слабое проявление",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "При подъёме газа его столб растёт, давление на насосах снижается",
+     "misconception": "misc.gas_does_not_expand"
+    },
+    {
+     "id": "c",
+     "text": "Проявление бывает только газовым, поэтому давление всегда падает",
+     "misconception": "misc.kick_needs_gas"
+    },
+    {
+     "id": "d",
+     "text": "При высоком пластовом давлении и продуктивности давление в трубах может вырасти",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t11",
+   "type": "single",
+   "step_id": "basarygin.trip_volume_control",
+   "claim_ids": [
+    "basarygin.trip_volume_control#c6",
+    "basarygin.trip_volume_control#c12"
+   ],
+   "prompt": "Что служит признаком притока при спуске колонны?",
+   "answer": "a",
+   "explanation": "При спуске лишний объём в приёмной ёмкости против расчёта означает приток.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Прирост объёма в приёмной ёмкости против расчётного вытеснения",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Недолив относительно объёма металла труб",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Только перелив из скважины",
+     "misconception": "misc.kick_only_by_overflow"
+    },
+    {
+     "id": "d",
+     "text": "Снижение плотности раствора",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t12",
+   "type": "gap",
+   "step_id": "basarygin.trip_volume_control",
+   "claim_ids": [
+    "basarygin.trip_volume_control#c15"
+   ],
+   "prompt": "При спуске вытеснение сверяют с контрольным объёмом после каждых {{1}} свечей.",
+   "answer": [
+    "10"
+   ],
+   "explanation": "Контрольный объём вытеснения сверяют после спуска каждых 10 свечей.",
+   "kind": "recall"
+  },
+  {
+   "id": "basarygin.t13",
+   "type": "single",
+   "step_id": "basarygin.shut_in_wellhead_layout",
+   "claim_ids": [
+    "basarygin.shut_in_wellhead_layout#c5",
+    "basarygin.shut_in_wellhead_layout#c6"
+   ],
+   "prompt": "Почему после закрытия скважины приток прекращается не мгновенно?",
+   "answer": "b",
+   "explanation": "Приток прекращается, когда давление на устье плюс гидростатика равно пластовому.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Раствор поднимается по бурильным трубам",
+     "misconception": "misc.mud_flows_up_pipe"
+    },
+    {
+     "id": "b",
+     "text": "Жидкость в скважине сжимаема, и приток затухает по мере роста давления",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Газ в закрытой скважине не опасен, давление не меняется",
+     "misconception": "misc.shut_in_gas_migration_safe"
+    },
+    {
+     "id": "d",
+     "text": "Превентор закрывается медленно из-за веса колонны",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t14",
+   "type": "order",
+   "step_id": "basarygin.shut_in_procedure",
+   "claim_ids": [
+    "basarygin.shut_in_procedure#c2",
+    "basarygin.shut_in_procedure#c3"
+   ],
+   "prompt": "Расставьте действия при сигнале о проявлении во время бурения.",
+   "answer": [
+    "a",
+    "c",
+    "b",
+    "d"
+   ],
+   "explanation": "Порядок по перечню автора: стоп бурения, подъём трубы, насосы и проверка, закрытие.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Прекратить бурение",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Отключить насосы и проверить на самоприток",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Поднять рабочую трубу над столом ротора",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Перекрыть скважину устьевым оборудованием при переливе",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t15",
+   "type": "multiple",
+   "step_id": "basarygin.shut_in_procedure",
+   "claim_ids": [
+    "basarygin.shut_in_procedure#c6",
+    "basarygin.shut_in_procedure#c10"
+   ],
+   "prompt": "Какие утверждения верны при сравнении быстрого и мягкого перекрытия скважины?",
+   "answer": [
+    "a",
+    "c"
+   ],
+   "explanation": "Быстрое закрытие даёт колебания давления, мягкое занимает больше времени и пускает больше флюида.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Быстрое перекрытие вызывает значительные колебания давления",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Мягкое перекрытие даёт наименьший приток",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Мягкое перекрытие длится дольше, и поступает больше флюида",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Быстрое перекрытие не влияет на параметры контроля",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t16",
+   "type": "order",
+   "step_id": "basarygin.well_kill_methods",
+   "claim_ids": [
+    "basarygin.well_kill_methods#c5",
+    "basarygin.well_kill_methods#c7",
+    "basarygin.well_kill_methods#c8",
+    "basarygin.well_kill_methods#c9"
+   ],
+   "prompt": "Расставьте этапы метода бурильщика в порядке выполнения.",
+   "answer": [
+    "a",
+    "b",
+    "d",
+    "c"
+   ],
+   "explanation": "Первый этап вымывает флюид, затем второй этап нагнетает тяжёлый раствор.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Включение насоса и задание давления в затрубье штуцером",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Остановка циркуляции и сравнение давлений в трубах и затрубье",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Закрытие штуцера и скважины после выхода тяжёлого раствора",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Нагнетание утяжелённого раствора",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t17",
+   "type": "single",
+   "step_id": "basarygin.well_kill_methods",
+   "claim_ids": [
+    "basarygin.well_kill_methods#c10",
+    "basarygin.well_kill_methods#c11"
+   ],
+   "prompt": "Чем метод ожидания и веса отличается от метода бурильщика?",
+   "answer": "c",
+   "explanation": "Раствор глушения готовят сразу после закрытия, и циркуляция идёт в один этап.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Идёт в два этапа с обычным раствором",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Применяют вместо закрытия скважины",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Идёт в один этап с утяжелённым раствором с самого начала",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Не требует контроля давления в трубах",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "basarygin.t18",
+   "type": "gap",
+   "step_id": "basarygin.well_kill_methods",
+   "claim_ids": [
+    "basarygin.well_kill_methods#c12"
+   ],
+   "prompt": "Значение коэффициента безопасности при глушении принимают равным {{1}} МПа.",
+   "answer": [
+    "1"
+   ],
+   "explanation": "Автор принимает запас в 1 МПа в зависимости от состояния скважины.",
+   "kind": "recall"
+  }
+ ]
+}

@@ -1,0 +1,140 @@
+{
+ "chapter": "dake_ch5_s7-3",
+ "routes": [
+  {
+   "node_id": "dake.radial_flow_setup",
+   "format": "карточки",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Ф/П пороговый: список допущений модели. Видеоёмкость низкая (сумма 2), хватает карточек с допущениями и схемой радиального притока."
+  },
+  {
+   "node_id": "dake.mass_balance_derivation",
+   "format": "текст",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Ф: вывод уравнения из баланса массы, а вывод формулы в видео не идёт. Критерии слабые (сумма 3), нужен текст с пояснением, почему уравнение нелинейно."
+  },
+  {
+   "node_id": "dake.flow_regimes_conditions",
+   "format": "шортс",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "М/Ф: три режима притока сменяют друг друга во времени, граничные условия задают смысл. Сработали time, cause_effect, invisible (сумма 5), поэтому короткий ролик, а режимы и условия в карточках."
+  },
+  {
+   "node_id": "dake.average_reservoir_pressure",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Пр/Н: расчёт среднего давления по дебитам, выбор подхода из-за трудности определения объёмов. Сумма 4, видео не оправдано, лучше практикум на данных по дебитам."
+  },
+  {
+   "node_id": "dake.linearization_liquids",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Ф/Н: упрощение верно для слабосжимаемой жидкости и неприменимо для газа, граница применимости задаёт решение. Сумма 3, интерактив на сценарии флюидов, условия в карточках."
+  },
+  {
+   "node_id": "dake.porosity_compressibility_heat",
+   "format": "карточки",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Ф: два равноценных способа записи произведения и аналогия с теплопроводностью. Сумма 2, достаточно карточек с определениями и сравнением."
+  },
+  {
+   "node_id": "dake.pressure_decline_stages",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 2,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "В/М: три стадии падения давления на забое, волна давления доходит до границы дренирования. Сработали time, invisible, cause_effect (сумма 8), видео оправдано, ползунок времени в интерактиве."
+  },
+  {
+   "node_id": "dake.line_source_derivation",
+   "format": "текст",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Ф: подстановка Больцмана и интеграл, а вывод формулы в видео не идёт. Сумма 4, нужен текст и карточки с идеей одной переменной x."
+  },
+  {
+   "node_id": "dake.exponential_integral_use",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Н/Ф: выбор между логарифмическим приближением при x < 0.01 и полной формой через ei для удалённых точек. Сумма 3, видео не нужно, практикум на данных проверяет границу применимости."
+  }
+ ]
+}

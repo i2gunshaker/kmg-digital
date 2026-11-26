@@ -1,0 +1,125 @@
+{
+ "chapter": "slatt_s9-3_9-4",
+ "routes": [
+  {
+   "node_id": "slatt.clinoforms_time_lines",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 0,
+    "counterintuitive": 2,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Тип В/П: линии времени пересекают литологию, поэтому лучше работает схема с движущимся сечением. Видеоёмкость 7 по сумме, но статичная схема с переключением слоёв «литология и время» объясняет лучше анимации."
+  },
+  {
+   "node_id": "slatt.delta_switching_lowstand",
+   "format": "длинное видео",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 2,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "time-evolution",
+   "why": "Тип В/М: смена русел и рост дельты разворачиваются во времени. Сработали time, counterintuitive (русла важнее уровня моря) и cause_effect."
+  },
+  {
+   "node_id": "slatt.river_delta_progradation",
+   "format": "длинное видео",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 2,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "Тип М/В: механизм наступления дельты, мелеющей и смещающей русло, показывается анимацией разреза. Сработали time и cause_effect, видео оправдано."
+  },
+  {
+   "node_id": "slatt.river_delta_facies",
+   "format": "карточки",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Р/П: узнавание признаков фаций (огрубление вверх, профиль каротажа). Видеоёмкость низкая, подходят карточки и квиз по признакам."
+  },
+  {
+   "node_id": "slatt.mouth_bar_heterogeneity",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Тип Н/П: проницаемость меняется внутри одного бара, нужно положение в объёме. Сумма ниже 6, видео не нужно, хватит интерактивной схемы бара."
+  },
+  {
+   "node_id": "slatt.prudhoe_bay_romeo_correlation",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип П/В с решением на данных: сравнение корреляции по времени и литостратиграфической схемы с историей добычи. Сумма 6, но практикум нагляднее ролика."
+  },
+  {
+   "node_id": "slatt.prudhoe_bay_shales_wells",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н/Пр: решение, где ставить горизонтальный ствол, зависит от непрерывности сланцев. Сценарии со сплошным и прерывистым сланцем, видео не нужно (сумма 5)."
+  },
+  {
+   "node_id": "slatt.kuparuk_and_wave_deltas",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "geometry-section",
+   "why": "Тип П/М: шесть песчаных тел вместо одного показываются сечением. Сумма 6 на границе, статичная схема с разделяющими сланцами понятнее."
+  }
+ ]
+}

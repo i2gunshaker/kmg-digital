@@ -1,0 +1,200 @@
+{
+ "chapter": "basarygin_par4-1-1_4-2-14",
+ "routes": [
+  {
+   "node_id": "basarygin.kick_prevention_measures",
+   "format": "карточки",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Пр/Н, но узел это перечень из шести мер без механизма и данных. Критерии видеоёмкости почти не сработали, хватает карточек."
+  },
+  {
+   "node_id": "basarygin.kick_signs_overview",
+   "format": "карточки",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "И/Р: восемь признаков разной значимости, три последних бывают и без проявления. Сумма 5, видео не оправдано, нужны карточки для различения и практикум для порогов."
+  },
+  {
+   "node_id": "basarygin.rop_jump_sign",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 2,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "И/Н: один и тот же скачок проходки означает АВПД или поглощение, это неоднозначность и цена ошибки. Контринтуитивность высокая, но сумма 5, лучше сценарный интерактив."
+  },
+  {
+   "node_id": "basarygin.tank_level_detection",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "И/Пр: уровень в ёмкостях связан с погрешностью датчика и площадью поверхности, нужно считать чувствительность на данных. Причина и следствие сильные, сумма 5, видео не нужно."
+  },
+  {
+   "node_id": "basarygin.outflow_rate_detection",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 0,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "wellbore-log-sync",
+   "why": "И/Ф: приток вытесняет раствор, расход растёт, сигнал сверяют с уровнем в ёмкостях. Сумма 4, достаточно интерактива с кривыми и практикума."
+  },
+  {
+   "node_id": "basarygin.mud_gas_cutting",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "И/Н: нужно различить источник газа по поведению при остановке и промывке и решить выше фона. Сумма 5, ценность в сценариях решений, не в видео."
+  },
+  {
+   "node_id": "basarygin.pump_pressure_change",
+   "format": "шортс",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 2,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "М/Ф: лёгкий флюид нарушает баланс давлений в трубах и затрубье, давление обычно падает, но может вырасти. Сработали невидимое, контринтуитивность и причина-следствие, сумма 8, видео оправдано, короткого шортса хватает."
+  },
+  {
+   "node_id": "basarygin.trip_volume_control",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Пр/И: сверка фактического и расчётного объёма долива по трубам, плёнке раствора и контрольному объёму. Сумма 5, нужна работа с данными, а не видео."
+  },
+  {
+   "node_id": "basarygin.mud_property_changes",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 1,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "И/Н: сигнал неоднозначен и запаздывает, судят по нескольким показателям при слабых проявлениях. Сумма 4, видео не нужно, подойдёт сценарный интерактив."
+  },
+  {
+   "node_id": "basarygin.fluid_inflow_causes_intro",
+   "format": "текст",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 2,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "М/Н, но систематизация причин на рис. 4.3, в тексте её нет. Остаётся мысль, что приток при забойном давлении выше пластового почти не создаёт предвыбросовой ситуации, сумма 4, хватает текста."
+  },
+  {
+   "node_id": "basarygin.shut_in_wellhead_layout",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 2,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "process-section",
+   "why": "М/Пр: устье из превенторов, манифольдов и штуцерных линий, затем приток затухает до равновесия давлений. Время, невидимое и причина-следствие дают сумму 8, видео с разрезом оправдано."
+  },
+  {
+   "node_id": "basarygin.shut_in_procedure",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Пр/Н: выбор быстрого или мягкого закрытия зависит от опыта, допустимого давления на устье и прочности породы у башмака. Сумма 4, лучше интерактив на сценарии."
+  },
+  {
+   "node_id": "basarygin.well_kill_methods",
+   "format": "длинное видео",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 2,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 0,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Пр/М: два метода глушения, бурильщика в два этапа и ожидания и веса в один, сравниваются по ходу удаления флюида и закачки тяжёлого раствора. Сумма 7, видео оправдано, шаги и выбор метода удобно показать блок-схемой."
+  }
+ ]
+}

@@ -1,0 +1,599 @@
+{
+ "chapter": "slatt_s9-3_9-4",
+ "tasks": [
+  {
+   "id": "slatt.t01",
+   "type": "single",
+   "step_id": "slatt.clinoforms_time_lines",
+   "claim_ids": [
+    "slatt.clinoforms_time_lines#c1"
+   ],
+   "prompt": "Что отражают клиноформы по отношению к литостратиграфическим границам?",
+   "answer": "a",
+   "explanation": "Клиноформы отражают линии времени и пересекают литостратиграфические границы.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Линии геологического времени, пересекающие литологические границы",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Литологические границы, совпадающие с линиями времени",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Границы пластов, всегда параллельные кровле коллектора",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Контакты нефти и воды внутри одного песчаного тела",
+     "misconception": "misc.owc_sharp"
+    }
+   ]
+  },
+  {
+   "id": "slatt.t02",
+   "type": "multiple",
+   "step_id": "slatt.clinoforms_time_lines",
+   "claim_ids": [
+    "slatt.clinoforms_time_lines#c4",
+    "slatt.clinoforms_time_lines#c5",
+    "slatt.clinoforms_time_lines#c9"
+   ],
+   "prompt": "Что верно для корреляции песков по одной литологии между скважинами 1 и 2?",
+   "answer": [
+    "c",
+    "d"
+   ],
+   "explanation": "Литокорреляция скрывает глинистые разделы, и это вредит заводнению и дебиту.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Глинистые интервалы на хроностратиграфической схеме не видны",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Гетеролитовые интервалы пески соединяют в единое тело",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Пески могут выглядеть сплошными, хотя разделены глинами",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Ошибка может ухудшить заводнение и дебит скважины",
+     "misconception": null
+    },
+    {
+     "id": "e",
+     "text": "Одинаковая литология гарантирует одно время и связь песков",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t03",
+   "type": "gap",
+   "step_id": "slatt.clinoforms_time_lines",
+   "claim_ids": [
+    "slatt.clinoforms_time_lines#c8"
+   ],
+   "prompt": "Наступание дельты Меконга датировано за последние {{1}} лет.",
+   "answer": [
+    "6000"
+   ],
+   "explanation": "В тексте шага указано наступание за последние 6000 лет.",
+   "kind": "recall"
+  },
+  {
+   "id": "slatt.t04",
+   "type": "single",
+   "step_id": "slatt.delta_switching_lowstand",
+   "claim_ids": [
+    "slatt.delta_switching_lowstand#c2"
+   ],
+   "prompt": "Какой контроль развития дельты по Overeem и др. может быть важнее изменения уровня моря?",
+   "answer": "a",
+   "explanation": "Переключение русел может быть важнее уровня моря.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Переключение распределительных русел",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Положение буровой вышки",
+     "misconception": "misc.rig_stays"
+    },
+    {
+     "id": "c",
+     "text": "Смена скорости звука в породе",
+     "misconception": "misc.pressure_sound_speed"
+    },
+    {
+     "id": "d",
+     "text": "Рост глинистости раствора",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t05",
+   "type": "gap",
+   "step_id": "slatt.delta_switching_lowstand",
+   "claim_ids": [
+    "slatt.delta_switching_lowstand#c4"
+   ],
+   "prompt": "Дельта низкого стояния образуется в ответ на раннее {{1}} уровня моря.",
+   "answer": [
+    "падение"
+   ],
+   "explanation": "Дельты низкого стояния возникают при падении уровня моря.",
+   "kind": "recall"
+  },
+  {
+   "id": "slatt.t06",
+   "type": "order",
+   "step_id": "slatt.river_delta_progradation",
+   "claim_ids": [
+    "slatt.river_delta_progradation#c2",
+    "slatt.river_delta_progradation#c4",
+    "slatt.river_delta_progradation#c5"
+   ],
+   "prompt": "Расположите шаги роста защищённой от волн дельты по порядку.",
+   "answer": [
+    "b",
+    "a",
+    "c"
+   ],
+   "explanation": "Сначала наступление, затем меление и смещение реки, затем переключение русел.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Наступание и аккрецион мелят дельту, река уходит к глубокой воде",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Дельта наступает в море при достаточной аккомодации",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Смещение реки переключает распределительные русла",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t07",
+   "type": "multiple",
+   "step_id": "slatt.river_delta_progradation",
+   "claim_ids": [
+    "slatt.river_delta_progradation#c1",
+    "slatt.river_delta_progradation#c4",
+    "slatt.river_delta_progradation#c5"
+   ],
+   "prompt": "Что верно для дельты Миссисипи и защищённых от волн дельт?",
+   "answer": [
+    "b",
+    "c"
+   ],
+   "explanation": "Осадок не разносится, и смены русел на Миссисипи многократны.",
+   "kind": "data",
+   "options": [
+    {
+     "id": "a",
+     "text": "Переключение русел происходит независимо от меления",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "За последние 4600 лет было не менее восьми смен русел и лопастей",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Осадок у берега не разносится вбок волнами",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Река остаётся в мелеющей части дельты",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t08",
+   "type": "single",
+   "step_id": "slatt.river_delta_facies",
+   "claim_ids": [
+    "slatt.river_delta_facies#c2"
+   ],
+   "prompt": "Какую роль в подземных коллекторах играют межрусловые заливы, болота и лагуны?",
+   "answer": "d",
+   "explanation": "Межрусловые водоёмы разделяют пески и дают глинистые барьеры.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Всегда служат подземным озером нефти",
+     "misconception": "misc.oil_lake"
+    },
+    {
+     "id": "b",
+     "text": "Повышают проницаемость соседних русел",
+     "misconception": "misc.porosity_eq_perm"
+    },
+    {
+     "id": "c",
+     "text": "Образуют главные песчаные коллекторы дельты",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Дают глинистые барьеры между песчаными фациями",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t09",
+   "type": "gap",
+   "step_id": "slatt.river_delta_facies",
+   "claim_ids": [
+    "slatt.river_delta_facies#c4"
+   ],
+   "prompt": "В обнажении фации речной дельты узнают по взаимоотношениям фаций и огрублению зерна {{1}}.",
+   "answer": [
+    "вверх"
+   ],
+   "explanation": "Признак: огрубление зерна вверх.",
+   "kind": "recall"
+  },
+  {
+   "id": "slatt.t10",
+   "type": "calc",
+   "step_id": "slatt.mouth_bar_heterogeneity",
+   "claim_ids": [
+    "slatt.mouth_bar_heterogeneity#c2",
+    "slatt.mouth_bar_heterogeneity#c3"
+   ],
+   "prompt": "Лучшая литофация бара в среднем имеет 129 md, а одна из остальных 40 md. Во сколько раз первая проницаемее?",
+   "answer": 3.225,
+   "explanation": "Отношение 129 к 40 даёт примерно 3,2.",
+   "kind": "data",
+   "tolerance": 0.01,
+   "unit": "раз",
+   "expression": "129/40"
+  },
+  {
+   "id": "slatt.t11",
+   "type": "single",
+   "step_id": "slatt.mouth_bar_heterogeneity",
+   "claim_ids": [
+    "slatt.mouth_bar_heterogeneity#c5",
+    "slatt.mouth_bar_heterogeneity#c8"
+   ],
+   "prompt": "Где в устьевом баре лежат пески с наибольшей проницаемостью?",
+   "answer": "a",
+   "explanation": "Лучшие пески отложены шлейфами паводка у вершины и ближнего края.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "У вершины бара и вдоль его ближнего края",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Равномерно по всему бару",
+     "misconception": "misc.core_eq_cuttings"
+    },
+    {
+     "id": "c",
+     "text": "Только на границе с лагуной",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Только в дальней илистой части бара",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t12",
+   "type": "multiple",
+   "step_id": "slatt.mouth_bar_heterogeneity",
+   "claim_ids": [
+    "slatt.mouth_bar_heterogeneity#c6",
+    "slatt.mouth_bar_heterogeneity#c8",
+    "slatt.mouth_bar_heterogeneity#c9"
+   ],
+   "prompt": "Почему одно среднее значение проницаемости плохо описывает бар?",
+   "answer": [
+    "a",
+    "c"
+   ],
+   "explanation": "Среднее скрывает разрывы и разделение литофаций ветвлением.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Фации и проницаемость внутри бара прерывисты",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Все литофации бара имеют одинаковую проницаемость",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Ветвление русел разделяет литофации",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Дальше от русла пески крупнее и лучше отсортированы",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t13",
+   "type": "single",
+   "step_id": "slatt.prudhoe_bay_romeo_correlation",
+   "claim_ids": [
+    "slatt.prudhoe_bay_romeo_correlation#c10"
+   ],
+   "prompt": "Какая корреляция в интервале Romeo лучше совпала с историей добычи?",
+   "answer": "a",
+   "explanation": "Схема по времени лучше совпала с историей добычи.",
+   "kind": "recall",
+   "options": [
+    {
+     "id": "a",
+     "text": "Хроностратиграфическая, по времени",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Корреляция по глубине без учёта фаций",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Литостратиграфическая, по сходству пород",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Только по кривой ГК",
+     "misconception": "misc.gr_measures_clay"
+    }
+   ]
+  },
+  {
+   "id": "slatt.t14",
+   "type": "order",
+   "step_id": "slatt.prudhoe_bay_shales_wells",
+   "claim_ids": [
+    "slatt.prudhoe_bay_shales_wells#c6",
+    "slatt.prudhoe_bay_shales_wells#c7",
+    "slatt.prudhoe_bay_shales_wells#c8"
+   ],
+   "prompt": "Расположите шаги примера автора с вертикальной скважиной по порядку.",
+   "answer": [
+    "c",
+    "a",
+    "b"
+   ],
+   "explanation": "Картирование сланца, рост воды, затем боковой ствол.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Заметить рост добычи воды в скважине",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Пробурить боковой ствол в песчаник под сланцем",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Закартировать сланец на 8950 ft как покрышку",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t15",
+   "type": "calc",
+   "step_id": "slatt.prudhoe_bay_shales_wells",
+   "claim_ids": [
+    "slatt.prudhoe_bay_shales_wells#c10"
+   ],
+   "prompt": "Горизонтальный участок 894 ft полностью в целевом песчанике, из них 475 ft эффективной толщины. Сколько футов не эффективная толщина?",
+   "answer": 419.0,
+   "explanation": "Разность 894 и 475 равна 419.",
+   "kind": "data",
+   "tolerance": 0.1,
+   "unit": "ft",
+   "expression": "894-475"
+  },
+  {
+   "id": "slatt.t16",
+   "type": "multiple",
+   "step_id": "slatt.prudhoe_bay_shales_wells",
+   "claim_ids": [
+    "slatt.prudhoe_bay_shales_wells#c2",
+    "slatt.prudhoe_bay_shales_wells#c3"
+   ],
+   "prompt": "Что верно о сланцах как барьерах потока?",
+   "answer": [
+    "a",
+    "b"
+   ],
+   "explanation": "Сланец с размывом или выклиниванием может не быть барьером.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Прерывистый сланец нельзя считать барьером без проверки",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Непрерывные сланцы создают вертикальные барьеры и фокусируют заводнение",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Сланцы не влияют на выбор ствола",
+     "misconception": null
+    },
+    {
+     "id": "d",
+     "text": "Любой сланец автоматически экранирует весь пласт",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t17",
+   "type": "gap",
+   "step_id": "slatt.kuparuk_and_wave_deltas",
+   "claim_ids": [
+    "slatt.kuparuk_and_wave_deltas#c4"
+   ],
+   "prompt": "Корреляция по стратиграфической последовательности показала: пласт A Kuparuk состоит из {{1}} отдельных песчаных тел.",
+   "answer": [
+    "шести"
+   ],
+   "explanation": "Пласт A состоит из шести тел, разделённых сланцами.",
+   "kind": "recall"
+  },
+  {
+   "id": "slatt.t18",
+   "type": "order",
+   "step_id": "slatt.kuparuk_and_wave_deltas",
+   "claim_ids": [
+    "slatt.kuparuk_and_wave_deltas#c7",
+    "slatt.kuparuk_and_wave_deltas#c8",
+    "slatt.kuparuk_and_wave_deltas#c10"
+   ],
+   "prompt": "Расположите этапы формирования волновой дельты по порядку.",
+   "answer": [
+    "b",
+    "c",
+    "a"
+   ],
+   "explanation": "Снос вдоль берега, затем рост берега, затем итоговое тело.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Образуется веерообразное или дугообразное песчаное тело",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Осадок у незащищённого берега разносится вдоль него",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Берег растёт вбок и наступает в бассейн",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t19",
+   "type": "single",
+   "step_id": "slatt.kuparuk_and_wave_deltas",
+   "claim_ids": [
+    "slatt.kuparuk_and_wave_deltas#c11",
+    "slatt.kuparuk_and_wave_deltas#c12"
+   ],
+   "prompt": "Как меняются пористость и проницаемость вверх по разрезу наступающих пляжевых валов?",
+   "answer": "b",
+   "explanation": "Разрез вверх крупнозернистее, поэтому свойства растут.",
+   "kind": "understanding",
+   "options": [
+    {
+     "id": "a",
+     "text": "Остаются равными, потому что это одно свойство",
+     "misconception": "misc.porosity_eq_perm"
+    },
+    {
+     "id": "b",
+     "text": "Растут из-за увеличения размера зерна",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Растут, потому что пласт становится пустотой",
+     "misconception": "misc.reservoir_void"
+    },
+    {
+     "id": "d",
+     "text": "Падают из-за роста глинистости",
+     "misconception": null
+    }
+   ]
+  },
+  {
+   "id": "slatt.t20",
+   "type": "single",
+   "step_id": "slatt.kuparuk_and_wave_deltas",
+   "claim_ids": [
+    "slatt.kuparuk_and_wave_deltas#c3",
+    "slatt.kuparuk_and_wave_deltas#c4",
+    "slatt.kuparuk_and_wave_deltas#c5"
+   ],
+   "prompt": "Инженер на ранней стадии считает пласт A одним непрерывным телом. Что показала корреляция по последовательности?",
+   "answer": "b",
+   "explanation": "Каждое из шести тел отделено высокочастотным трансгрессивным морским сланцем.",
+   "kind": "transfer",
+   "options": [
+    {
+     "id": "a",
+     "text": "Пласт действительно единое тело без разделов",
+     "misconception": null
+    },
+    {
+     "id": "b",
+     "text": "Тела разделены трансгрессивным морским сланцем",
+     "misconception": null
+    },
+    {
+     "id": "c",
+     "text": "Разделы видны только по сейсмике напрямую",
+     "misconception": "misc.seismic_sees_oil"
+    },
+    {
+     "id": "d",
+     "text": "Тела разделены обсадной колонной",
+     "misconception": "misc.casing_flows"
+    }
+   ]
+  }
+ ]
+}

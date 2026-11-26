@@ -1,0 +1,275 @@
+{
+  "video_id": "basarygin_shut_in_procedure_shorts",
+  "format": "9:16",
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "duration_sec": 60.76,
+  "template_id": "procedure-flow",
+  "objects": [
+    {
+      "id": "picture",
+      "kind": "рисунок шага, шаблон flow",
+      "depth_direction": "нет"
+    },
+    {
+      "id": "map",
+      "kind": "карта шагов: ключевые слова реплик"
+    }
+  ],
+  "parameters": {
+    "visual": {
+      "template": "flow",
+      "params": {
+        "numbered": false,
+        "items": [
+          {
+            "head": "Признаки",
+            "text": "Плотность поступающего из скважины раствора относительно прочности породы у башмака; Максимально допустимое давление на устье скважины",
+            "kind": "in"
+          },
+          {
+            "head": "Правило",
+            "text": "Выбирают способ перекрытия, сопоставив опыт месторождения, плотность флюида и прочность у башмака",
+            "kind": "rule"
+          },
+          {
+            "head": "Вывод",
+            "text": "В главе не задан порог, по которому выбирают способ",
+            "kind": "out"
+          },
+          {
+            "head": "Где ломается",
+            "text": "При больших давлениях в скважине задвижку трудно открыть без сообщения с нагнетательной стороной клапана, поэтому быстрое перекрытие не всегда проще",
+            "kind": "warn"
+          }
+        ]
+      },
+      "frames_label": "Показать части по порядку"
+    },
+    "frames": [
+      "1",
+      "1–2",
+      "1–3",
+      "всё"
+    ],
+    "prediction_pause_sec": [
+      48.05,
+      49.55
+    ],
+    "language": "ru"
+  },
+  "invariants": [
+    "Все кадры рисунка построены из одного описания: меняется только подписанный параметр.",
+    "Метка происхождения и подпись масштаба видны на каждом кадре.",
+    "Рисунок тот же, что на шаге курса: один источник — описание в слое."
+  ],
+  "assumptions": [
+    "форма и размеры условные, не в масштабе",
+    "Порядок меняется по типу скважины, месту расположения, установке и виду работ.\n\nБыстрое перекрытие плохо для контроля: колебания давления искажают параметры, по которым ведут глушение.\n\nМягкое перекрытие плохо тем, что приток больше, а контроль за скважиной сложнее."
+  ],
+  "state_sample": {
+    "title": "Порядок закрытия скважины",
+    "difficulty": "Пр",
+    "scale_note": "форма и размеры условные, не в масштабе",
+    "frames_label": "Показать части по порядку",
+    "visual_frames": [
+      {
+        "label": "1",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 560 605\" width=\"560\" height=\"605\" role=\"img\" aria-label=\"Порядок закрытия скважины\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Порядок закрытия скважины</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"560\" height=\"605\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Порядок закрытия скважины</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"18.0\" y=\"14.0\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#3498DB\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"39.0\" font-size=\"16\" fill=\"#3498DB\" text-anchor=\"start\" font-weight=\"700\">Признаки</text>\n<text x=\"42.0\" y=\"61.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Плотность поступающего из скважины раствора</text>\n<text x=\"42.0\" y=\"82.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">относительно прочности породы у башмака;</text>\n<text x=\"42.0\" y=\"104.5\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Максимально допустимое давление на устье скважины</text>\n</g>\n<text x=\"18.0\" y=\"580.6\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 232–316</text>\n</svg>\n"
+      },
+      {
+        "label": "1–2",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 560 605\" width=\"560\" height=\"605\" role=\"img\" aria-label=\"Порядок закрытия скважины\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Порядок закрытия скважины</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"560\" height=\"605\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Порядок закрытия скважины</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"18.0\" y=\"14.0\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#3498DB\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"39.0\" font-size=\"16\" fill=\"#3498DB\" text-anchor=\"start\" font-weight=\"700\">Признаки</text>\n<text x=\"42.0\" y=\"61.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Плотность поступающего из скважины раствора</text>\n<text x=\"42.0\" y=\"82.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">относительно прочности породы у башмака;</text>\n<text x=\"42.0\" y=\"104.5\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Максимально допустимое давление на устье скважины</text>\n<line x1=\"280.0\" y1=\"122.3\" x2=\"280.0\" y2=\"140.3\" stroke=\"#4DC4BF\" stroke-width=\"2.2\" marker-end=\"url(#ar)\"/>\n<rect x=\"18.0\" y=\"144.3\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#F1C40F\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"144.3\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#F1C40F\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"169.3\" font-size=\"16\" fill=\"#F1C40F\" text-anchor=\"start\" font-weight=\"700\">Правило</text>\n<text x=\"42.0\" y=\"191.3\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Выбирают способ перекрытия, сопоставив опыт</text>\n<text x=\"42.0\" y=\"213.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">месторождения, плотность флюида и прочность у</text>\n<text x=\"42.0\" y=\"234.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">башмака</text>\n</g>\n<text x=\"18.0\" y=\"580.6\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 232–316</text>\n</svg>\n"
+      },
+      {
+        "label": "1–3",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 560 605\" width=\"560\" height=\"605\" role=\"img\" aria-label=\"Порядок закрытия скважины\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Порядок закрытия скважины</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"560\" height=\"605\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Порядок закрытия скважины</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"18.0\" y=\"14.0\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#3498DB\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"39.0\" font-size=\"16\" fill=\"#3498DB\" text-anchor=\"start\" font-weight=\"700\">Признаки</text>\n<text x=\"42.0\" y=\"61.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Плотность поступающего из скважины раствора</text>\n<text x=\"42.0\" y=\"82.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">относительно прочности породы у башмака;</text>\n<text x=\"42.0\" y=\"104.5\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Максимально допустимое давление на устье скважины</text>\n<line x1=\"280.0\" y1=\"122.3\" x2=\"280.0\" y2=\"140.3\" stroke=\"#4DC4BF\" stroke-width=\"2.2\" marker-end=\"url(#ar)\"/>\n<rect x=\"18.0\" y=\"144.3\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#F1C40F\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"144.3\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#F1C40F\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"169.3\" font-size=\"16\" fill=\"#F1C40F\" text-anchor=\"start\" font-weight=\"700\">Правило</text>\n<text x=\"42.0\" y=\"191.3\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Выбирают способ перекрытия, сопоставив опыт</text>\n<text x=\"42.0\" y=\"213.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">месторождения, плотность флюида и прочность у</text>\n<text x=\"42.0\" y=\"234.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">башмака</text>\n<line x1=\"280.0\" y1=\"252.6\" x2=\"280.0\" y2=\"270.6\" stroke=\"#4DC4BF\" stroke-width=\"2.2\" marker-end=\"url(#ar)\"/>\n<rect x=\"18.0\" y=\"274.6\" width=\"524.0\" height=\"62.8\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#2ECC71\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"274.6\" width=\"8.0\" height=\"62.8\" rx=\"4\" fill=\"#2ECC71\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"299.6\" font-size=\"16\" fill=\"#2ECC71\" text-anchor=\"start\" font-weight=\"700\">Вывод</text>\n<text x=\"42.0\" y=\"321.6\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">В главе не задан порог, по которому выбирают способ</text>\n</g>\n<text x=\"18.0\" y=\"580.6\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 232–316</text>\n</svg>\n"
+      },
+      {
+        "label": "всё",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 560 605\" width=\"560\" height=\"605\" role=\"img\" aria-label=\"Порядок закрытия скважины\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Порядок закрытия скважины</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"560\" height=\"605\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Порядок закрытия скважины</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"18.0\" y=\"14.0\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#3498DB\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"39.0\" font-size=\"16\" fill=\"#3498DB\" text-anchor=\"start\" font-weight=\"700\">Признаки</text>\n<text x=\"42.0\" y=\"61.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Плотность поступающего из скважины раствора</text>\n<text x=\"42.0\" y=\"82.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">относительно прочности породы у башмака;</text>\n<text x=\"42.0\" y=\"104.5\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Максимально допустимое давление на устье скважины</text>\n<line x1=\"280.0\" y1=\"122.3\" x2=\"280.0\" y2=\"140.3\" stroke=\"#4DC4BF\" stroke-width=\"2.2\" marker-end=\"url(#ar)\"/>\n<rect x=\"18.0\" y=\"144.3\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#F1C40F\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"144.3\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#F1C40F\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"169.3\" font-size=\"16\" fill=\"#F1C40F\" text-anchor=\"start\" font-weight=\"700\">Правило</text>\n<text x=\"42.0\" y=\"191.3\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Выбирают способ перекрытия, сопоставив опыт</text>\n<text x=\"42.0\" y=\"213.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">месторождения, плотность флюида и прочность у</text>\n<text x=\"42.0\" y=\"234.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">башмака</text>\n<line x1=\"280.0\" y1=\"252.6\" x2=\"280.0\" y2=\"270.6\" stroke=\"#4DC4BF\" stroke-width=\"2.2\" marker-end=\"url(#ar)\"/>\n<rect x=\"18.0\" y=\"274.6\" width=\"524.0\" height=\"62.8\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#2ECC71\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"274.6\" width=\"8.0\" height=\"62.8\" rx=\"4\" fill=\"#2ECC71\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"299.6\" font-size=\"16\" fill=\"#2ECC71\" text-anchor=\"start\" font-weight=\"700\">Вывод</text>\n<text x=\"42.0\" y=\"321.6\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">В главе не задан порог, по которому выбирают способ</text>\n<line x1=\"280.0\" y1=\"339.3\" x2=\"280.0\" y2=\"357.3\" stroke=\"#4DC4BF\" stroke-width=\"2.2\" marker-end=\"url(#ar)\"/>\n<rect x=\"18.0\" y=\"361.3\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#F0AD4E\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"361.3\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#F0AD4E\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"386.3\" font-size=\"16\" fill=\"#F0AD4E\" text-anchor=\"start\" font-weight=\"700\">Где ломается</text>\n<text x=\"42.0\" y=\"408.3\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">При больших давлениях в скважине задвижку трудно</text>\n<text x=\"42.0\" y=\"430.1\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">открыть без сообщения с нагнетательной стороной</text>\n<text x=\"42.0\" y=\"451.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">клапана, поэтому быстрое перекрытие не всегда проще</text>\n</g>\n<text x=\"18.0\" y=\"580.6\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 232–316</text>\n</svg>\n"
+      }
+    ],
+    "visual_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 560 605\" width=\"560\" height=\"605\" role=\"img\" aria-label=\"Порядок закрытия скважины\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Порядок закрытия скважины</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"560\" height=\"605\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Порядок закрытия скважины</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"18.0\" y=\"14.0\" width=\"524.0\" height=\"106.3\" rx=\"10\" fill=\"#1A2129\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"8.0\" height=\"106.3\" rx=\"4\" fill=\"#3498DB\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"42.0\" y=\"39.0\" font-size=\"16\" fill=\"#3498DB\" text-anchor=\"start\" font-weight=\"700\">Признаки</text>\n<text x=\"42.0\" y=\"61.0\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Плотность поступающего из скважины раствора</text>\n<text x=\"42.0\" y=\"82.8\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">относительно прочности породы у башмака;</text>\n<text x=\"42.0\" y=\"104.5\" font-size=\"17\" fill=\"#ECEFF4\" text-anchor=\"start\">Максимально допустимое давление на устье скважины</text>\n</g>\n<text x=\"18.0\" y=\"580.6\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 232–316</text>\n</svg>\n",
+    "story": [
+      {
+        "kind": "hook",
+        "frame": 1,
+        "on_screen": "Раствора в ёмкости прибыло",
+        "page": 232,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "context",
+        "frame": 1,
+        "on_screen": "Рост объёма — приток флюида",
+        "page": 232,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 2,
+        "on_screen": "Стоп бурение, насосы, самоприток",
+        "page": 314,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "why",
+        "frame": 2,
+        "on_screen": "Перелив — срочное закрытие",
+        "page": 314,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 2,
+        "on_screen": "Быстрое перекрытие",
+        "page": 315,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "data",
+        "frame": 3,
+        "on_screen": "Быстро — колебания давления",
+        "page": 315,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 3,
+        "on_screen": "Мягкое: через штуцер",
+        "page": 315,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "limit",
+        "frame": 3,
+        "on_screen": "Дольше — больше флюида",
+        "page": 315,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "predict",
+        "frame": 4,
+        "on_screen": "Что с первыми показаниями?",
+        "page": 315,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "answer",
+        "frame": 4,
+        "on_screen": "Показания могут быть ошибочными",
+        "page": 315,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "transfer",
+        "frame": 4,
+        "on_screen": "От чего зависит выбор способа",
+        "page": 315,
+        "claim_kind": "inference"
+      }
+    ],
+    "source_line": "basarygin, стр. 232, 314, 315",
+    "misconception": "",
+    "visual_spec": {
+      "label": "схема",
+      "class": "B",
+      "title": "Порядок закрытия скважины",
+      "origin": "code_from_model",
+      "source": "по тексту главы, стр. 232–316",
+      "template": "flow",
+      "caption": "От признаков к выводу: Порядок закрытия скважины.",
+      "params": {
+        "numbered": false,
+        "items": [
+          {
+            "head": "Признаки",
+            "text": "Плотность поступающего из скважины раствора относительно прочности породы у башмака; Максимально допустимое давление на устье скважины",
+            "kind": "in"
+          },
+          {
+            "head": "Правило",
+            "text": "Выбирают способ перекрытия, сопоставив опыт месторождения, плотность флюида и прочность у башмака",
+            "kind": "rule"
+          },
+          {
+            "head": "Вывод",
+            "text": "В главе не задан порог, по которому выбирают способ",
+            "kind": "out"
+          },
+          {
+            "head": "Где ломается",
+            "text": "При больших давлениях в скважине задвижку трудно открыть без сообщения с нагнетательной стороной клапана, поэтому быстрое перекрытие не всегда проще",
+            "kind": "warn"
+          }
+        ]
+      },
+      "frames_label": "Показать части по порядку",
+      "frames_ui": "buttons",
+      "frames": [
+        {
+          "label": "всё",
+          "params": {}
+        },
+        {
+          "label": "1",
+          "params": {
+            "items": [
+              {
+                "head": "Признаки",
+                "text": "Плотность поступающего из скважины раствора относительно прочности породы у башмака; Максимально допустимое давление на устье скважины",
+                "kind": "in"
+              }
+            ]
+          }
+        },
+        {
+          "label": "1–2",
+          "params": {
+            "items": [
+              {
+                "head": "Признаки",
+                "text": "Плотность поступающего из скважины раствора относительно прочности породы у башмака; Максимально допустимое давление на устье скважины",
+                "kind": "in"
+              },
+              {
+                "head": "Правило",
+                "text": "Выбирают способ перекрытия, сопоставив опыт месторождения, плотность флюида и прочность у башмака",
+                "kind": "rule"
+              }
+            ]
+          }
+        },
+        {
+          "label": "1–3",
+          "params": {
+            "items": [
+              {
+                "head": "Признаки",
+                "text": "Плотность поступающего из скважины раствора относительно прочности породы у башмака; Максимально допустимое давление на устье скважины",
+                "kind": "in"
+              },
+              {
+                "head": "Правило",
+                "text": "Выбирают способ перекрытия, сопоставив опыт месторождения, плотность флюида и прочность у башмака",
+                "kind": "rule"
+              },
+              {
+                "head": "Вывод",
+                "text": "В главе не задан порог, по которому выбирают способ",
+                "kind": "out"
+              }
+            ]
+          }
+        }
+      ],
+      "_reveal": true
+    }
+  },
+  "script_by": "model",
+  "mentor_note": "На рисунке условно показаны порядок задвижек, клапанов и штуцера; порога выбора способа в главе нет."
+}

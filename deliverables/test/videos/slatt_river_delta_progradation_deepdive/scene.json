@@ -1,0 +1,1178 @@
+{
+  "video_id": "slatt_river_delta_progradation_deepdive",
+  "format": "16:9",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fps": 30,
+  "duration_sec": 111.6,
+  "template_id": "process-section",
+  "objects": [
+    {
+      "id": "picture",
+      "kind": "рисунок шага, шаблон section",
+      "depth_direction": "down"
+    },
+    {
+      "id": "map",
+      "kind": "карта шагов: ключевые слова реплик"
+    }
+  ],
+  "parameters": {
+    "visual": {
+      "template": "section",
+      "params": {
+        "view": "depth",
+        "bodies": [
+          {
+            "points": [
+              [
+                0,
+                0.85
+              ],
+              [
+                1,
+                0.85
+              ],
+              [
+                1,
+                1
+              ],
+              [
+                0,
+                1
+              ]
+            ],
+            "lith": "shale",
+            "op": 0.35,
+            "label": "более древние морские глины"
+          },
+          {
+            "points": [
+              [
+                0.3,
+                0.15
+              ],
+              [
+                1,
+                0.15
+              ],
+              [
+                1,
+                0.85
+              ],
+              [
+                0.52,
+                0.85
+              ],
+              [
+                0.42,
+                0.6
+              ],
+              [
+                0.36,
+                0.4
+              ],
+              [
+                0.3,
+                0.2
+              ]
+            ],
+            "color": "water",
+            "op": 0.22,
+            "label": "море"
+          },
+          {
+            "points": [
+              [
+                0,
+                0.6
+              ],
+              [
+                0.42,
+                0.6
+              ],
+              [
+                0.52,
+                0.85
+              ],
+              [
+                0,
+                0.85
+              ]
+            ],
+            "lith": "shale",
+            "op": 0.7,
+            "label": "тонкие илы продельты"
+          },
+          {
+            "points": [
+              [
+                0,
+                0.4
+              ],
+              [
+                0.36,
+                0.4
+              ],
+              [
+                0.42,
+                0.6
+              ],
+              [
+                0,
+                0.6
+              ]
+            ],
+            "lith": "sand",
+            "op": 0.35,
+            "label": "мелкий песок"
+          },
+          {
+            "points": [
+              [
+                0,
+                0.2
+              ],
+              [
+                0.3,
+                0.2
+              ],
+              [
+                0.36,
+                0.4
+              ],
+              [
+                0,
+                0.4
+              ]
+            ],
+            "lith": "sand",
+            "op": 0.85,
+            "label": "крупный песок устьевого бара"
+          }
+        ],
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0.15
+              ],
+              [
+                1,
+                0.15
+              ]
+            ],
+            "kind": "level",
+            "label": "уровень моря",
+            "label_t": 0.95
+          }
+        ],
+        "arrows": [
+          {
+            "from": [
+              0.36,
+              0.3
+            ],
+            "to": [
+              0.5,
+              0.3
+            ],
+            "label": "дельта наступает"
+          }
+        ],
+        "wells": [
+          {
+            "x": 0.62,
+            "top": 0.15,
+            "bottom": 0.95,
+            "label": "скважина"
+          }
+        ],
+        "sides": [
+          "суша, русла",
+          "море"
+        ]
+      },
+      "frames_label": "этап"
+    },
+    "frames": [
+      "раньше",
+      "позже",
+      "ещё позже"
+    ],
+    "prediction_pause_sec": [
+      80.46,
+      81.96
+    ],
+    "language": "ru"
+  },
+  "invariants": [
+    "Все кадры рисунка построены из одного описания: меняется только подписанный параметр.",
+    "Метка происхождения и подпись масштаба видны на каждом кадре.",
+    "Рисунок тот же, что на шаге курса: один источник — описание в слое."
+  ],
+  "assumptions": [
+    "не в масштабе, оси безразмерны",
+    "Механизм идёт при защищённом берегу. Если берег открыт волнам, осадок разносится вдоль берега, и рост идёт иначе.\n\nРост требует достаточного пространства аккомодации. Без него дельта не наступает в море."
+  ],
+  "state_sample": {
+    "title": "Как растёт речная дельта",
+    "difficulty": "М",
+    "scale_note": "не в масштабе, оси безразмерны",
+    "frames_label": "этап",
+    "visual_frames": [
+      {
+        "label": "раньше",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 860 487\" width=\"860\" height=\"487\" role=\"img\" aria-label=\"Наступание дельты: устьевой бар ложится на илы продельты\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Наступание дельты: устьевой бар ложится на илы продельты</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"860\" height=\"487\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"105.9\" y=\"33.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">не в масштабе, оси безразмерны</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Наступание дельты: устьевой бар ложится на илы продельты</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"#121C26\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<clipPath id=\"sec\"><rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\"/></clipPath>\n<line x1=\"28.0\" y1=\"32.0\" x2=\"28.0\" y2=\"302.0\" stroke=\"#AEB9C5\" stroke-width=\"1.6\" marker-end=\"url(#aw)\"/>\n<text x=\"20.0\" y=\"167.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"middle\" transform=\"rotate(-90 20.0 167.0)\">глубина</text>\n<g clip-path=\"url(#sec)\">\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"#6B8E5A\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"284.8,72.5 842.0,72.5 842.0,261.5 459.9,261.5 380.3,194.0 332.6,140.0 284.8,86.0\" fill=\"#3498DB\" fill-opacity=\"0.22\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 380.3,194.0 459.9,261.5 46.0,261.5\" fill=\"#6B8E5A\" fill-opacity=\"0.7\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 380.3,194.0 459.9,261.5 46.0,261.5\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,140.0 332.6,140.0 380.3,194.0 46.0,194.0\" fill=\"#E8C872\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,140.0 332.6,140.0 380.3,194.0 46.0,194.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,86.0 284.8,86.0 332.6,140.0 46.0,140.0\" fill=\"#E8C872\" fill-opacity=\"0.85\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,86.0 284.8,86.0 332.6,140.0 46.0,140.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polyline points=\"46.0,72.5 842.0,72.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2.2\" stroke-linejoin=\"round\" stroke-dasharray=\"8,5\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#0F1419\" stroke-width=\"7\" stroke-linejoin=\"round\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#ECEFF4\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n<line x1=\"332.6\" y1=\"113.0\" x2=\"444.0\" y2=\"113.0\" stroke=\"#0F1419\" stroke-width=\"5.5\"/>\n<line x1=\"332.6\" y1=\"113.0\" x2=\"444.0\" y2=\"113.0\" stroke=\"#ECEFF4\" stroke-width=\"2.6\" marker-end=\"url(#aw)\"/>\n</g>\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<text x=\"539.5\" y=\"23.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\">скважина</text>\n<text x=\"740.0\" y=\"274.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">более древние морские</text>\n<text x=\"740.0\" y=\"294.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">глины</text>\n<text x=\"679.5\" y=\"173.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">море</text>\n<text x=\"356.4\" y=\"233.8\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">тонкие илы продельты</text>\n<text x=\"310.7\" y=\"173.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">мелкий песок</text>\n<text x=\"260.9\" y=\"109.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">крупный песок</text>\n<text x=\"260.9\" y=\"129.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">устьевого бара</text>\n<text x=\"104.0\" y=\"65.5\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">уровень моря</text>\n<text x=\"388.3\" y=\"84.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">дельта наступает</text>\n<text x=\"46.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">суша, русла</text>\n<text x=\"842.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"end\">море</text>\n</g>\n<text x=\"18.0\" y=\"439.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"start\">Линии времени — прежние положения фронта дельты: они пересекают границы песка и ила.</text>\n<text x=\"18.0\" y=\"462.5\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 411, 413, 415</text>\n</svg>\n"
+      },
+      {
+        "label": "позже",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 860 487\" width=\"860\" height=\"487\" role=\"img\" aria-label=\"Наступание дельты: устьевой бар ложится на илы продельты\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Наступание дельты: устьевой бар ложится на илы продельты</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"860\" height=\"487\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"105.9\" y=\"33.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">не в масштабе, оси безразмерны</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Наступание дельты: устьевой бар ложится на илы продельты</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"#121C26\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<clipPath id=\"sec\"><rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\"/></clipPath>\n<line x1=\"28.0\" y1=\"32.0\" x2=\"28.0\" y2=\"302.0\" stroke=\"#AEB9C5\" stroke-width=\"1.6\" marker-end=\"url(#aw)\"/>\n<text x=\"20.0\" y=\"167.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"middle\" transform=\"rotate(-90 20.0 167.0)\">глубина</text>\n<g clip-path=\"url(#sec)\">\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"#6B8E5A\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"444.0,72.5 842.0,72.5 842.0,261.5 619.1,261.5 539.5,194.0 491.8,140.0 444.0,86.0\" fill=\"#3498DB\" fill-opacity=\"0.22\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 539.5,194.0 619.1,261.5 46.0,261.5\" fill=\"#6B8E5A\" fill-opacity=\"0.7\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 539.5,194.0 619.1,261.5 46.0,261.5\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,140.0 491.8,140.0 539.5,194.0 46.0,194.0\" fill=\"#E8C872\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,140.0 491.8,140.0 539.5,194.0 46.0,194.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,86.0 444.0,86.0 491.8,140.0 46.0,140.0\" fill=\"#E8C872\" fill-opacity=\"0.85\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,86.0 444.0,86.0 491.8,140.0 46.0,140.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polyline points=\"46.0,72.5 842.0,72.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2.2\" stroke-linejoin=\"round\" stroke-dasharray=\"8,5\"/>\n<polyline points=\"284.8,86.0 332.6,140.0 380.3,194.0 459.9,261.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#AEB9C5\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#0F1419\" stroke-width=\"7\" stroke-linejoin=\"round\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#ECEFF4\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n<line x1=\"491.8\" y1=\"113.0\" x2=\"603.2\" y2=\"113.0\" stroke=\"#0F1419\" stroke-width=\"5.5\"/>\n<line x1=\"491.8\" y1=\"113.0\" x2=\"603.2\" y2=\"113.0\" stroke=\"#ECEFF4\" stroke-width=\"2.6\" marker-end=\"url(#aw)\"/>\n</g>\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<text x=\"539.5\" y=\"23.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\">скважина</text>\n<text x=\"740.0\" y=\"274.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">более древние морские</text>\n<text x=\"740.0\" y=\"294.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">глины</text>\n<text x=\"692.8\" y=\"173.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">море</text>\n<text x=\"499.7\" y=\"233.8\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">тонкие илы продельты</text>\n<text x=\"457.3\" y=\"173.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">мелкий песок</text>\n<text x=\"417.5\" y=\"109.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">крупный песок</text>\n<text x=\"417.5\" y=\"129.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">устьевого бара</text>\n<text x=\"104.0\" y=\"65.5\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">уровень моря</text>\n<text x=\"332.6\" y=\"153.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">линия времени</text>\n<text x=\"547.5\" y=\"84.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">дельта наступает</text>\n<text x=\"46.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">суша, русла</text>\n<text x=\"842.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"end\">море</text>\n</g>\n<text x=\"18.0\" y=\"439.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"start\">Линии времени — прежние положения фронта дельты: они пересекают границы песка и ила.</text>\n<text x=\"18.0\" y=\"462.5\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 411, 413, 415</text>\n</svg>\n"
+      },
+      {
+        "label": "ещё позже",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 860 487\" width=\"860\" height=\"487\" role=\"img\" aria-label=\"Наступание дельты: устьевой бар ложится на илы продельты\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Наступание дельты: устьевой бар ложится на илы продельты</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"860\" height=\"487\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"105.9\" y=\"33.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">не в масштабе, оси безразмерны</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Наступание дельты: устьевой бар ложится на илы продельты</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"#121C26\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<clipPath id=\"sec\"><rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\"/></clipPath>\n<line x1=\"28.0\" y1=\"32.0\" x2=\"28.0\" y2=\"302.0\" stroke=\"#AEB9C5\" stroke-width=\"1.6\" marker-end=\"url(#aw)\"/>\n<text x=\"20.0\" y=\"167.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"middle\" transform=\"rotate(-90 20.0 167.0)\">глубина</text>\n<g clip-path=\"url(#sec)\">\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"#6B8E5A\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"619.1,72.5 842.0,72.5 842.0,261.5 794.2,261.5 714.6,194.0 666.9,140.0 619.1,86.0\" fill=\"#3498DB\" fill-opacity=\"0.22\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 714.6,194.0 794.2,261.5 46.0,261.5\" fill=\"#6B8E5A\" fill-opacity=\"0.7\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 714.6,194.0 794.2,261.5 46.0,261.5\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,140.0 666.9,140.0 714.6,194.0 46.0,194.0\" fill=\"#E8C872\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,140.0 666.9,140.0 714.6,194.0 46.0,194.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,86.0 619.1,86.0 666.9,140.0 46.0,140.0\" fill=\"#E8C872\" fill-opacity=\"0.85\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,86.0 619.1,86.0 666.9,140.0 46.0,140.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polyline points=\"46.0,72.5 842.0,72.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2.2\" stroke-linejoin=\"round\" stroke-dasharray=\"8,5\"/>\n<polyline points=\"284.8,86.0 332.6,140.0 380.3,194.0 459.9,261.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#AEB9C5\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/>\n<polyline points=\"444.0,86.0 491.8,140.0 539.5,194.0 619.1,261.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#AEB9C5\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#0F1419\" stroke-width=\"7\" stroke-linejoin=\"round\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#ECEFF4\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n<line x1=\"666.9\" y1=\"113.0\" x2=\"778.3\" y2=\"113.0\" stroke=\"#0F1419\" stroke-width=\"5.5\"/>\n<line x1=\"666.9\" y1=\"113.0\" x2=\"778.3\" y2=\"113.0\" stroke=\"#ECEFF4\" stroke-width=\"2.6\" marker-end=\"url(#aw)\"/>\n</g>\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<text x=\"539.5\" y=\"23.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\">скважина</text>\n<text x=\"740.0\" y=\"274.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">более древние морские</text>\n<text x=\"740.0\" y=\"294.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">глины</text>\n<text x=\"758.4\" y=\"149.4\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">море</text>\n<text x=\"669.5\" y=\"233.8\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">тонкие илы продельты</text>\n<text x=\"631.1\" y=\"173.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">мелкий песок</text>\n<text x=\"589.3\" y=\"109.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">крупный песок</text>\n<text x=\"589.3\" y=\"129.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">устьевого бара</text>\n<text x=\"104.0\" y=\"65.5\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">уровень моря</text>\n<text x=\"332.6\" y=\"133.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">линия времени</text>\n<text x=\"491.8\" y=\"153.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">линия времени</text>\n<text x=\"722.6\" y=\"84.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">дельта наступает</text>\n<text x=\"46.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">суша, русла</text>\n<text x=\"842.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"end\">море</text>\n</g>\n<text x=\"18.0\" y=\"439.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"start\">Линии времени — прежние положения фронта дельты: они пересекают границы песка и ила.</text>\n<text x=\"18.0\" y=\"462.5\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 411, 413, 415</text>\n</svg>\n"
+      }
+    ],
+    "visual_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 860 487\" width=\"860\" height=\"487\" role=\"img\" aria-label=\"Наступание дельты: устьевой бар ложится на илы продельты\" font-family=\"'Segoe UI','Noto Sans',system-ui,-apple-system,Roboto,sans-serif\">\n<title>Наступание дельты: устьевой бар ложится на илы продельты</title>\n<defs><marker id=\"ar\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#4DC4BF\"/></marker><marker id=\"aw\" viewBox=\"0 0 10 10\" refX=\"8\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M0 1L10 5L0 9z\" fill=\"#ECEFF4\"/></marker><pattern id=\"hatch\" width=\"8\" height=\"8\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"8\" stroke=\"#95A5A6\" stroke-width=\"2\"/></pattern><pattern id=\"dots\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"3\" r=\"1.3\" fill=\"#0F1419\"/><circle cx=\"8\" cy=\"8\" r=\"1.1\" fill=\"#0F1419\"/></pattern><pattern id=\"dash\" width=\"14\" height=\"8\" patternUnits=\"userSpaceOnUse\"><line x1=\"1\" y1=\"4\" x2=\"9\" y2=\"4\" stroke=\"#0F1419\" stroke-width=\"1.4\"/></pattern><pattern id=\"brick\" width=\"24\" height=\"14\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 0H24M0 7H24M6 0V7M18 7V14\" stroke=\"#0F1419\" stroke-width=\"1.1\" fill=\"none\"/></pattern></defs>\n<rect width=\"860\" height=\"487\" rx=\"10\" fill=\"#0F1419\"/>\n<rect x=\"18.0\" y=\"14.0\" width=\"75.9\" height=\"28.0\" rx=\"14\" fill=\"#8E44AD\" fill-opacity=\"1.0\" stroke=\"none\" stroke-width=\"1.2\"/>\n<text x=\"55.9\" y=\"33.0\" font-size=\"16\" fill=\"#FFFFFF\" text-anchor=\"middle\" font-weight=\"700\">схема</text>\n<text x=\"105.9\" y=\"33.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">не в масштабе, оси безразмерны</text>\n<text x=\"18.0\" y=\"70.0\" font-size=\"19\" fill=\"#ECEFF4\" text-anchor=\"start\" font-weight=\"700\">Наступание дельты: устьевой бар ложится на илы продельты</text>\n<g transform=\"translate(0 87.0)\">\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"#121C26\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<clipPath id=\"sec\"><rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\"/></clipPath>\n<line x1=\"28.0\" y1=\"32.0\" x2=\"28.0\" y2=\"302.0\" stroke=\"#AEB9C5\" stroke-width=\"1.6\" marker-end=\"url(#aw)\"/>\n<text x=\"20.0\" y=\"167.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"middle\" transform=\"rotate(-90 20.0 167.0)\">глубина</text>\n<g clip-path=\"url(#sec)\">\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"#6B8E5A\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,261.5 842.0,261.5 842.0,302.0 46.0,302.0\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"284.8,72.5 842.0,72.5 842.0,261.5 459.9,261.5 380.3,194.0 332.6,140.0 284.8,86.0\" fill=\"#3498DB\" fill-opacity=\"0.22\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 380.3,194.0 459.9,261.5 46.0,261.5\" fill=\"#6B8E5A\" fill-opacity=\"0.7\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,194.0 380.3,194.0 459.9,261.5 46.0,261.5\" fill=\"url(#dash)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,140.0 332.6,140.0 380.3,194.0 46.0,194.0\" fill=\"#E8C872\" fill-opacity=\"0.35\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,140.0 332.6,140.0 380.3,194.0 46.0,194.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polygon points=\"46.0,86.0 284.8,86.0 332.6,140.0 46.0,140.0\" fill=\"#E8C872\" fill-opacity=\"0.85\" stroke=\"#0F1419\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/>\n<polygon points=\"46.0,86.0 284.8,86.0 332.6,140.0 46.0,140.0\" fill=\"url(#dots)\" fill-opacity=\"0.32\"/>\n<polyline points=\"46.0,72.5 842.0,72.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3498DB\" stroke-width=\"2.2\" stroke-linejoin=\"round\" stroke-dasharray=\"8,5\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#0F1419\" stroke-width=\"7\" stroke-linejoin=\"round\"/>\n<polyline points=\"539.5,72.5 539.5,288.5\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#ECEFF4\" stroke-width=\"4\" stroke-linejoin=\"round\"/>\n<line x1=\"332.6\" y1=\"113.0\" x2=\"444.0\" y2=\"113.0\" stroke=\"#0F1419\" stroke-width=\"5.5\"/>\n<line x1=\"332.6\" y1=\"113.0\" x2=\"444.0\" y2=\"113.0\" stroke=\"#ECEFF4\" stroke-width=\"2.6\" marker-end=\"url(#aw)\"/>\n</g>\n<rect x=\"46.0\" y=\"32.0\" width=\"796.0\" height=\"270.0\" rx=\"0\" fill=\"none\" fill-opacity=\"1.0\" stroke=\"#3A4754\" stroke-width=\"1.2\"/>\n<text x=\"539.5\" y=\"23.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\">скважина</text>\n<text x=\"740.0\" y=\"274.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">более древние морские</text>\n<text x=\"740.0\" y=\"294.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">глины</text>\n<text x=\"679.5\" y=\"173.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">море</text>\n<text x=\"356.4\" y=\"233.8\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">тонкие илы продельты</text>\n<text x=\"310.7\" y=\"173.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">мелкий песок</text>\n<text x=\"260.9\" y=\"109.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">крупный песок</text>\n<text x=\"260.9\" y=\"129.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" font-weight=\"700\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">устьевого бара</text>\n<text x=\"104.0\" y=\"65.5\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">уровень моря</text>\n<text x=\"388.3\" y=\"84.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"middle\" stroke=\"#0F1419\" stroke-width=\"4\" paint-order=\"stroke\" stroke-linejoin=\"round\">дельта наступает</text>\n<text x=\"46.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">суша, русла</text>\n<text x=\"842.0\" y=\"322.0\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"end\">море</text>\n</g>\n<text x=\"18.0\" y=\"439.0\" font-size=\"16\" fill=\"#ECEFF4\" text-anchor=\"start\">Линии времени — прежние положения фронта дельты: они пересекают границы песка и ила.</text>\n<text x=\"18.0\" y=\"462.5\" font-size=\"16\" fill=\"#AEB9C5\" text-anchor=\"start\">по тексту главы, стр. 411, 413, 415</text>\n</svg>\n",
+    "story": [
+      {
+        "kind": "hook",
+        "frame": 1,
+        "on_screen": "Дельта мелеет, река уходит",
+        "page": 411,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "context",
+        "frame": 1,
+        "on_screen": "Типовая дельта Миссисипи",
+        "page": 411,
+        "claim_kind": "assumption"
+      },
+      {
+        "kind": "context",
+        "frame": 1,
+        "on_screen": "Рост лопастей, 4600 лет",
+        "page": 413,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 1,
+        "on_screen": "Защищённый берег",
+        "page": 411,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 1,
+        "on_screen": "Хватает места для осадка",
+        "page": 411,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 2,
+        "on_screen": "Пространство аккомодации",
+        "page": 411,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 2,
+        "on_screen": "Мелеет, река уходит глубже",
+        "page": 411,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "why",
+        "frame": 2,
+        "on_screen": "Не менее восьми смен русел",
+        "page": 411,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 2,
+        "on_screen": "Русла и бары — коллекторы",
+        "page": 411,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 2,
+        "on_screen": "Паводок: лучший песок у вершины",
+        "page": 415,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "mechanism",
+        "frame": 2,
+        "on_screen": "Дальше тоньше",
+        "page": 415,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "analogy",
+        "frame": 2,
+        "on_screen": "Переключение шлюза",
+        "page": 411,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "analogy",
+        "frame": 2,
+        "on_screen": "Причина — меление",
+        "page": 411,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "predict",
+        "frame": 3,
+        "on_screen": "Что выше, что ниже?",
+        "page": 415,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "answer",
+        "frame": 3,
+        "on_screen": "Крупный песок сверху",
+        "page": 415,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "data",
+        "frame": 3,
+        "on_screen": "Признак: грубеет вверх",
+        "page": 413,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "data",
+        "frame": 3,
+        "on_screen": "Линии времени пересекают фации",
+        "page": 411,
+        "claim_kind": "inference"
+      },
+      {
+        "kind": "limit",
+        "frame": 3,
+        "on_screen": "Открытый берег: другой рост",
+        "page": 411,
+        "claim_kind": "observation"
+      },
+      {
+        "kind": "transfer",
+        "frame": 3,
+        "on_screen": "Грубеет вверх: бар или нет?",
+        "page": 413,
+        "claim_kind": "observation"
+      }
+    ],
+    "source_line": "slatt, стр. 411, 413, 415",
+    "misconception": "",
+    "visual_spec": {
+      "label": "схема",
+      "class": "B",
+      "title": "Наступание дельты: устьевой бар ложится на илы продельты",
+      "template": "section",
+      "origin": "redrawn_from_book",
+      "by": "human",
+      "caption": "Разрез от суши к морю: дельта наступает, крупный песок бара ложится поверх мелкого песка и илов, поэтому в скважине разрез грубеет вверх.",
+      "source": "по тексту главы, стр. 411, 413, 415",
+      "params": {
+        "view": "depth",
+        "bodies": [
+          {
+            "points": [
+              [
+                0,
+                0.85
+              ],
+              [
+                1,
+                0.85
+              ],
+              [
+                1,
+                1
+              ],
+              [
+                0,
+                1
+              ]
+            ],
+            "lith": "shale",
+            "op": 0.35,
+            "label": "более древние морские глины"
+          },
+          {
+            "points": [
+              [
+                0.3,
+                0.15
+              ],
+              [
+                1,
+                0.15
+              ],
+              [
+                1,
+                0.85
+              ],
+              [
+                0.52,
+                0.85
+              ],
+              [
+                0.42,
+                0.6
+              ],
+              [
+                0.36,
+                0.4
+              ],
+              [
+                0.3,
+                0.2
+              ]
+            ],
+            "color": "water",
+            "op": 0.22,
+            "label": "море"
+          },
+          {
+            "points": [
+              [
+                0,
+                0.6
+              ],
+              [
+                0.42,
+                0.6
+              ],
+              [
+                0.52,
+                0.85
+              ],
+              [
+                0,
+                0.85
+              ]
+            ],
+            "lith": "shale",
+            "op": 0.7,
+            "label": "тонкие илы продельты"
+          },
+          {
+            "points": [
+              [
+                0,
+                0.4
+              ],
+              [
+                0.36,
+                0.4
+              ],
+              [
+                0.42,
+                0.6
+              ],
+              [
+                0,
+                0.6
+              ]
+            ],
+            "lith": "sand",
+            "op": 0.35,
+            "label": "мелкий песок"
+          },
+          {
+            "points": [
+              [
+                0,
+                0.2
+              ],
+              [
+                0.3,
+                0.2
+              ],
+              [
+                0.36,
+                0.4
+              ],
+              [
+                0,
+                0.4
+              ]
+            ],
+            "lith": "sand",
+            "op": 0.85,
+            "label": "крупный песок устьевого бара"
+          }
+        ],
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0.15
+              ],
+              [
+                1,
+                0.15
+              ]
+            ],
+            "kind": "level",
+            "label": "уровень моря",
+            "label_t": 0.95
+          }
+        ],
+        "arrows": [
+          {
+            "from": [
+              0.36,
+              0.3
+            ],
+            "to": [
+              0.5,
+              0.3
+            ],
+            "label": "дельта наступает"
+          }
+        ],
+        "wells": [
+          {
+            "x": 0.62,
+            "top": 0.15,
+            "bottom": 0.95,
+            "label": "скважина"
+          }
+        ],
+        "sides": [
+          "суша, русла",
+          "море"
+        ]
+      },
+      "claim_ids": [
+        "slatt.river_delta_progradation#c2",
+        "slatt.river_delta_progradation#c3",
+        "slatt.river_delta_progradation#c4",
+        "slatt.river_delta_progradation#c9",
+        "slatt.river_delta_progradation#c11"
+      ],
+      "note": "Линии времени — прежние положения фронта дельты: они пересекают границы песка и ила.",
+      "scale": "не в масштабе, оси безразмерны",
+      "frames_label": "этап",
+      "frames": [
+        {
+          "label": "раньше",
+          "params": {
+            "view": "depth",
+            "bodies": [
+              {
+                "points": [
+                  [
+                    0,
+                    0.85
+                  ],
+                  [
+                    1,
+                    0.85
+                  ],
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ],
+                "lith": "shale",
+                "op": 0.35,
+                "label": "более древние морские глины"
+              },
+              {
+                "points": [
+                  [
+                    0.3,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.85
+                  ],
+                  [
+                    0.52,
+                    0.85
+                  ],
+                  [
+                    0.42,
+                    0.6
+                  ],
+                  [
+                    0.36,
+                    0.4
+                  ],
+                  [
+                    0.3,
+                    0.2
+                  ]
+                ],
+                "color": "water",
+                "op": 0.22,
+                "label": "море"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.6
+                  ],
+                  [
+                    0.42,
+                    0.6
+                  ],
+                  [
+                    0.52,
+                    0.85
+                  ],
+                  [
+                    0,
+                    0.85
+                  ]
+                ],
+                "lith": "shale",
+                "op": 0.7,
+                "label": "тонкие илы продельты"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.4
+                  ],
+                  [
+                    0.36,
+                    0.4
+                  ],
+                  [
+                    0.42,
+                    0.6
+                  ],
+                  [
+                    0,
+                    0.6
+                  ]
+                ],
+                "lith": "sand",
+                "op": 0.35,
+                "label": "мелкий песок"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.2
+                  ],
+                  [
+                    0.3,
+                    0.2
+                  ],
+                  [
+                    0.36,
+                    0.4
+                  ],
+                  [
+                    0,
+                    0.4
+                  ]
+                ],
+                "lith": "sand",
+                "op": 0.85,
+                "label": "крупный песок устьевого бара"
+              }
+            ],
+            "lines": [
+              {
+                "points": [
+                  [
+                    0,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.15
+                  ]
+                ],
+                "kind": "level",
+                "label": "уровень моря",
+                "label_t": 0.95
+              }
+            ],
+            "arrows": [
+              {
+                "from": [
+                  0.36,
+                  0.3
+                ],
+                "to": [
+                  0.5,
+                  0.3
+                ],
+                "label": "дельта наступает"
+              }
+            ],
+            "wells": [
+              {
+                "x": 0.62,
+                "top": 0.15,
+                "bottom": 0.95,
+                "label": "скважина"
+              }
+            ],
+            "sides": [
+              "суша, русла",
+              "море"
+            ]
+          }
+        },
+        {
+          "label": "позже",
+          "params": {
+            "view": "depth",
+            "bodies": [
+              {
+                "points": [
+                  [
+                    0,
+                    0.85
+                  ],
+                  [
+                    1,
+                    0.85
+                  ],
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ],
+                "lith": "shale",
+                "op": 0.35,
+                "label": "более древние морские глины"
+              },
+              {
+                "points": [
+                  [
+                    0.5,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.85
+                  ],
+                  [
+                    0.72,
+                    0.85
+                  ],
+                  [
+                    0.62,
+                    0.6
+                  ],
+                  [
+                    0.56,
+                    0.4
+                  ],
+                  [
+                    0.5,
+                    0.2
+                  ]
+                ],
+                "color": "water",
+                "op": 0.22,
+                "label": "море"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.6
+                  ],
+                  [
+                    0.62,
+                    0.6
+                  ],
+                  [
+                    0.72,
+                    0.85
+                  ],
+                  [
+                    0,
+                    0.85
+                  ]
+                ],
+                "lith": "shale",
+                "op": 0.7,
+                "label": "тонкие илы продельты"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.4
+                  ],
+                  [
+                    0.56,
+                    0.4
+                  ],
+                  [
+                    0.62,
+                    0.6
+                  ],
+                  [
+                    0,
+                    0.6
+                  ]
+                ],
+                "lith": "sand",
+                "op": 0.35,
+                "label": "мелкий песок"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.2
+                  ],
+                  [
+                    0.5,
+                    0.2
+                  ],
+                  [
+                    0.56,
+                    0.4
+                  ],
+                  [
+                    0,
+                    0.4
+                  ]
+                ],
+                "lith": "sand",
+                "op": 0.85,
+                "label": "крупный песок устьевого бара"
+              }
+            ],
+            "lines": [
+              {
+                "points": [
+                  [
+                    0,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.15
+                  ]
+                ],
+                "kind": "level",
+                "label": "уровень моря",
+                "label_t": 0.95
+              },
+              {
+                "points": [
+                  [
+                    0.3,
+                    0.2
+                  ],
+                  [
+                    0.36,
+                    0.4
+                  ],
+                  [
+                    0.42,
+                    0.6
+                  ],
+                  [
+                    0.52,
+                    0.85
+                  ]
+                ],
+                "kind": "border",
+                "label": "линия времени",
+                "label_t": 0.5
+              }
+            ],
+            "arrows": [
+              {
+                "from": [
+                  0.56,
+                  0.3
+                ],
+                "to": [
+                  0.7,
+                  0.3
+                ],
+                "label": "дельта наступает"
+              }
+            ],
+            "wells": [
+              {
+                "x": 0.62,
+                "top": 0.15,
+                "bottom": 0.95,
+                "label": "скважина"
+              }
+            ],
+            "sides": [
+              "суша, русла",
+              "море"
+            ]
+          }
+        },
+        {
+          "label": "ещё позже",
+          "params": {
+            "view": "depth",
+            "bodies": [
+              {
+                "points": [
+                  [
+                    0,
+                    0.85
+                  ],
+                  [
+                    1,
+                    0.85
+                  ],
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    0,
+                    1
+                  ]
+                ],
+                "lith": "shale",
+                "op": 0.35,
+                "label": "более древние морские глины"
+              },
+              {
+                "points": [
+                  [
+                    0.72,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.85
+                  ],
+                  [
+                    0.94,
+                    0.85
+                  ],
+                  [
+                    0.84,
+                    0.6
+                  ],
+                  [
+                    0.78,
+                    0.4
+                  ],
+                  [
+                    0.72,
+                    0.2
+                  ]
+                ],
+                "color": "water",
+                "op": 0.22,
+                "label": "море"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.6
+                  ],
+                  [
+                    0.84,
+                    0.6
+                  ],
+                  [
+                    0.94,
+                    0.85
+                  ],
+                  [
+                    0,
+                    0.85
+                  ]
+                ],
+                "lith": "shale",
+                "op": 0.7,
+                "label": "тонкие илы продельты"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.4
+                  ],
+                  [
+                    0.78,
+                    0.4
+                  ],
+                  [
+                    0.84,
+                    0.6
+                  ],
+                  [
+                    0,
+                    0.6
+                  ]
+                ],
+                "lith": "sand",
+                "op": 0.35,
+                "label": "мелкий песок"
+              },
+              {
+                "points": [
+                  [
+                    0,
+                    0.2
+                  ],
+                  [
+                    0.72,
+                    0.2
+                  ],
+                  [
+                    0.78,
+                    0.4
+                  ],
+                  [
+                    0,
+                    0.4
+                  ]
+                ],
+                "lith": "sand",
+                "op": 0.85,
+                "label": "крупный песок устьевого бара"
+              }
+            ],
+            "lines": [
+              {
+                "points": [
+                  [
+                    0,
+                    0.15
+                  ],
+                  [
+                    1,
+                    0.15
+                  ]
+                ],
+                "kind": "level",
+                "label": "уровень моря",
+                "label_t": 0.95
+              },
+              {
+                "points": [
+                  [
+                    0.3,
+                    0.2
+                  ],
+                  [
+                    0.36,
+                    0.4
+                  ],
+                  [
+                    0.42,
+                    0.6
+                  ],
+                  [
+                    0.52,
+                    0.85
+                  ]
+                ],
+                "kind": "border",
+                "label": "линия времени",
+                "label_t": 0.5
+              },
+              {
+                "points": [
+                  [
+                    0.5,
+                    0.2
+                  ],
+                  [
+                    0.56,
+                    0.4
+                  ],
+                  [
+                    0.62,
+                    0.6
+                  ],
+                  [
+                    0.72,
+                    0.85
+                  ]
+                ],
+                "kind": "border",
+                "label": "линия времени",
+                "label_t": 0.5
+              }
+            ],
+            "arrows": [
+              {
+                "from": [
+                  0.78,
+                  0.3
+                ],
+                "to": [
+                  0.9199999999999999,
+                  0.3
+                ],
+                "label": "дельта наступает"
+              }
+            ],
+            "wells": [
+              {
+                "x": 0.62,
+                "top": 0.15,
+                "bottom": 0.95,
+                "label": "скважина"
+              }
+            ],
+            "sides": [
+              "суша, русла",
+              "море"
+            ]
+          }
+        }
+      ],
+      "frames_ui": "buttons"
+    }
+  },
+  "script_by": "model+edit",
+  "mentor_note": "Условно показано, как наклонные линии времени смещаются в сторону моря по трём кадрам."
+}

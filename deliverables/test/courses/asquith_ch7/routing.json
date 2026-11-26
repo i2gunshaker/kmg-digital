@@ -1,0 +1,230 @@
+{
+ "chapter": "asquith_ch7",
+ "routes": [
+  {
+   "node_id": "asquith.archie_sw_basics",
+   "format": "шортс",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "field-diffusion-2d",
+   "why": "Тип Ф/И: смысл уравнения Арчи, вывод формулы не нужен. Невидимое (насыщение по сопротивлению) и частично контринтуитивность (Sw не равно продуктивности), сумма 5, на шортс и ползунки."
+  },
+  {
+   "node_id": "asquith.flushed_zone_sxo",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 1,
+    "invisible": 2,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "wellbore-log-sync",
+   "why": "Тип И/Ф: сравнение Sxo и Sw по кривым, порог не задан, значит нужна практика на данных. Сработали invisible и cause_effect, сумма 7, но отдельный ролик не нужен, хватает интерактива."
+  },
+  {
+   "node_id": "asquith.ratio_method",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 2,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Ф/Н: пороги 0.7 и 0.6 дают решение по сценариям. Контринтуитивно, что пористость сокращается, но сумма 4, видео не оправдано."
+  },
+  {
+   "node_id": "asquith.ratio_swr_checks",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Н/Ф: сверка Swa и Swr, ветка совпало или разошлось, лучше работает на данных. Сумма 3, видео не нужно."
+  },
+  {
+   "node_id": "asquith.scanning_logs",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 1,
+    "counterintuitive": 1,
+    "cause_effect": 0
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Пр/Р: порядок отбора коллекторов и точка выбора по типу породы. Сумма 2, видео не нужно, нужна блок-схема."
+  },
+  {
+   "node_id": "asquith.quicklook_rxo_rt",
+   "format": "карточки",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип Р/И: узнать по расхождению кривых с ПС, дать флаг без окончательного ответа. Сумма 3, достаточно карточек."
+  },
+  {
+   "node_id": "asquith.quicklook_rwa",
+   "format": "интерактив",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н/Пр: минимум Rwa принимают за Rw при условиях применимости. Сценарии, где допущение нарушено, лучше разобрать на данных. Сумма 3."
+  },
+  {
+   "node_id": "asquith.quicklook_porosity_ro",
+   "format": "карточки",
+   "secondary_format": "практикум на данных",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": null,
+   "why": "Тип И/Р: узнать занижение резистивной пористости против истинной. Сумма 3, хватает карточек."
+  },
+  {
+   "node_id": "asquith.bulk_volume_water",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "feature-recognition",
+   "why": "Тип Н/Р: постоянный или разбросанный BVW по глубинам, выводы о воде. Сумма 3, видео не нужно."
+  },
+  {
+   "node_id": "asquith.pickett_theory",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "feature-recognition",
+   "why": "Тип Ф/Р: узнать водяную прямую и отклонение точек вправо, из наклона и отрезка читают m и a×Rw. Сумма 3."
+  },
+  {
+   "node_id": "asquith.pickett_matrix_lines",
+   "format": "практикум на данных",
+   "secondary_format": "интерактив",
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Пр/Ф: подбор матрицы и построение линий насыщения, допущение о неизменных параметрах. Сумма 2, нужна работа на данных."
+  },
+  {
+   "node_id": "asquith.hingle_plot",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "feature-recognition",
+   "why": "Тип Ф/Р: на специальной сетке водяные точки ложатся на прямую, результат зависит от a и m сетки. Сумма 3, видео не оправдано."
+  },
+  {
+   "node_id": "asquith.crossplot_worked_example",
+   "format": "практикум на данных",
+   "secondary_format": null,
+   "video_scores": {
+    "time": 0,
+    "invisible": 0,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "procedure-flow",
+   "why": "Тип Пр/Н: два графика на одной таблице Morrow, сравнение Rw и Sw как проверка. Сумма 2, лучше практикум."
+  },
+  {
+   "node_id": "asquith.log_permeability",
+   "format": "интерактив",
+   "secondary_format": "текст",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 1,
+    "cause_effect": 1
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Ф/Н: формулы верны только при неснижаемой воде, K сравнивают с соседями. Сценарий применимости, сумма 3."
+  },
+  {
+   "node_id": "asquith.shaly_sand",
+   "format": "интерактив",
+   "secondary_format": "карточки",
+   "video_scores": {
+    "time": 0,
+    "invisible": 1,
+    "scale": 0,
+    "counterintuitive": 2,
+    "cause_effect": 2
+   },
+   "hook_short": false,
+   "template": "scenario-range",
+   "why": "Тип Н/Ф: глина искажает Sw и может сделать водяной пласт похожим на нефтяной. Контринтуитивность и причина-следствие, сумма 5, ниже порога, нужен сценарный интерактив."
+  }
+ ]
+}
